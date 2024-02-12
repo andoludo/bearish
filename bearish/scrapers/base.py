@@ -87,7 +87,7 @@ def init_chrome(load_strategy_none=False, headless=False):
     return Chrome(options=option)
 
 
-def bearish_path():
+def bearish_path_fun():
     current_working_directory = Path.cwd()
     bearish_path = current_working_directory / "bearish"
     bearish_path.mkdir(parents=True, exist_ok=True)
@@ -114,12 +114,12 @@ def clean_dict(data):
     return cleaned_data
 
 
-class BasePage(abc.ABC, BaseModel):
+class BasePage(BaseModel):
     url: str
     source: Sources
     settings: BaseSettings
     browser: Optional[Chrome] = Field(default_factory=init_chrome, description="")
-    bearish_path: Optional[Path] = Field(default_factory=bearish_path, description="")
+    bearish_path: Optional[Path] = Field(default_factory=bearish_path_fun, description="")
     model_config = ConfigDict(arbitrary_types_allowed=True, use_enum_values=True)
     _tables = PrivateAttr(default_factory=lambda: [])
     _skip_existing = PrivateAttr(default=True)

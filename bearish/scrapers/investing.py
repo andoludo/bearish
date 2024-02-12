@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 from webbrowser import Chrome
 
@@ -17,7 +18,7 @@ from bearish.scrapers.base import (
     BaseTickerPage,
     Locator,
     Sources,
-    init_chrome,
+    init_chrome, bearish_path_fun,
 )
 
 
@@ -92,7 +93,7 @@ class InvestingScreenerScraper(BasePage):
 
     @model_validator(mode="before")
     def url_validator(cls, data):
-        return {
+        return data | {
             "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country'].value}|sector::a|industry::a|equityType::"
             "a|exchange::14|eq_pe_ratio::-670.36,370.54%3Ceq_market_cap;1",
             "country": data["country"],
@@ -147,7 +148,7 @@ class InvestingTickerScraper(BaseTickerPage):
 
     @model_validator(mode="before")
     def url_validator(cls, data):
-        return {
+        return data | {
             "url": f"https://www.investing.com/equities/{data['exchange']}-historical-data",
             "exchange": data["exchange"],
         }

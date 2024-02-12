@@ -18,7 +18,7 @@ from bearish.scrapers.trading import (
 logger = logging.getLogger(__name__)
 
 def test_investing_screener_scraper_belgium_check_path():
-    scraper = InvestingScreenerScraper(country=InvestingCountry.belgium, bearish_path = "/tmp/")
+    scraper = InvestingScreenerScraper(bearish_path = Path("/tmp/"), country=InvestingCountry.belgium)
     scraper.go()
     data = scraper.scrape()
 

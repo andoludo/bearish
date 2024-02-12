@@ -8,7 +8,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic._internal._model_construction import ModelMetaclass
 
-from bearish.scrapers.base import bearish_path
+from bearish.scrapers.base import bearish_path_fun
 from bearish.scrapers.investing import (
     InvestingCountry,
     InvestingScreenerScraper,
@@ -53,7 +53,7 @@ class Country(Enum):
 
 class Scraper(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, use_enum_values=True)
-    bearish_path: Optional[Path] = Field(default_factory=bearish_path, description="")
+    bearish_path: Optional[Path] = Field(default_factory=bearish_path_fun, description="")
     source: DataSource
     country: Country
 
