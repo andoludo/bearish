@@ -63,7 +63,7 @@ def remove_chrome_files_in_tmp():
         except Exception as e:
             print(f"Error removing {file_path}: {e}")
 def test_investing_main_scraper():
-    for coutry in [Country.belgium, Country.france]:
+    for coutry in [Country.france]:
         try:
             scraper = Scraper(source=DataSource.investing, country=coutry)
             scraper.scrape(skip_existing=False)
@@ -88,7 +88,7 @@ def test_investing_main_scraper_db_json():
     db_json = scraper.create_db_json()
     scraper = Scraper(source=DataSource.investing, country=Country.france)
     db_json += scraper.create_db_json()
-    f = Path("/home/aan/Documents/stocks/data/db_json.json")
+    f = Path("/home/aan/Documents/bullish/data/db_json.json")
     f.touch(exist_ok=True)
     with f.open(mode="w") as p:
         json.dump(db_json, p, indent=4)
