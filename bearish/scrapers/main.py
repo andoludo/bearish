@@ -53,15 +53,11 @@ class Country(Enum):
 
 class Scraper(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, use_enum_values=True)
-    bearish_path: Optional[Path] = Field(default_factory=bearish_path_fun, description="")
+    bearish_path: Optional[Path] = Field(
+        default_factory=bearish_path_fun, description=""
+    )
     source: DataSource
     country: Country
-
-    def _scraper(self):
-        return self.source.screener(
-            country=getattr(self.source.country, self.country),
-            bearish_path=self.bearish_path,
-        )
 
     def _filter_by_symbols(
         self, tickers: list[Ticker], symbols: Optional[list[str]] = None
@@ -70,10 +66,15 @@ class Scraper(BaseModel):
             return tickers
         return [ticker for ticker in tickers if ticker.symbol in symbols]
 
-    def scrape(self, skip_existing: bool = True, symbols: Optional[list[str]] = None):
-        scraper = self._scraper()
-        scraper.scrape(skip_existing=skip_existing)
-        tickers = Ticker.from_json(scraper.get_stored_raw())
+    def scrape(
+        self, skip_existing: bool = True, symbols: Optional[list[str]] = None
+    ) -> None:
+        screener_scraper = self.source.screener(
+            country=getattr(self.source.country, self.country),
+            bearish_path=self.bearish_path,
+        )
+        screener_scraper.scrape(skip_existing=skip_existing)
+        tickers = Ticker.from_json(screener_scraper.get_stored_raw())
         tickers = self._filter_by_symbols(tickers=tickers, symbols=symbols)
         for ticker in tickers:
             scraper = self.source.ticker(
@@ -84,7 +85,7 @@ class Scraper(BaseModel):
             except Exception as e:
                 logger.error(f"Fail {ticker.reference}. reason: {e}")
 
-    def create_db_json(self):
+    def create_db_json(self) -> list[dict]:
         scraper = self._scraper()
         if not scraper.get_stored_raw().exists():
             return

@@ -1,6 +1,6 @@
+import contextlib
 from enum import Enum
-from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 from webbrowser import Chrome
 
 import pandas as pd
@@ -10,6 +10,7 @@ from selenium.common import (
     ElementNotInteractableException,
     TimeoutException,
 )
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from bearish.scrapers.base import (
@@ -18,8 +19,9 @@ from bearish.scrapers.base import (
     BaseTickerPage,
     Locator,
     Sources,
-    init_chrome, bearish_path_fun,
+    init_chrome,
 )
+from bearish.scrapers.model import HistoricalData
 
 
 class InvestingSettings(BaseSettings):
@@ -65,7 +67,7 @@ class InvestingSettings(BaseSettings):
         }
     )
 
-    def get_statements_urls(self, exchange):
+    def get_statements_urls(self, exchange: str) -> List[str]:
 
         return [
             f"https://www.investing.com/equities/{exchange}" + suffix
@@ -84,30 +86,33 @@ class InvestingScreenerScraper(BasePage):
     country: InvestingCountry
     settings: InvestingSettings = Field(default=InvestingSettings())
     source: Sources = Sources.investing
-    browser: Optional[Chrome] = Field(
-        default_factory=lambda: init_chrome(load_strategy_none=True, headless=False), description=""
+    browser: Optional[Union[Chrome, WebDriver]] = Field(
+        default_factory=lambda: init_chrome(load_strategy_none=True, headless=True),
+        description="",
     )
 
-    def _get_country_name(self):
+    def _get_country_name(self) -> str:
         return self._get_country_name_per_enum(InvestingCountry, self.country)
 
     @model_validator(mode="before")
-    def url_validator(cls, data):
+    @classmethod
+    def url_validator(cls, data: dict) -> dict:
         return data | {
-            "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country'].value}|sector::a|industry::a|equityType::"
+            "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country'].value}|"
+            f"sector::a|industry::a|equityType::"
             "a|exchange::14|eq_pe_ratio::-670.36,370.54%3Ceq_market_cap;1",
             "country": data["country"],
         }
 
-    def click_one_trust_button(self):
+    def click_one_trust_button(self) -> None:
         self.click(self.settings.one_trust_button)
 
-    def _preprocess_tables(self):
+    def _preprocess_tables(self) -> pd.DataFrame:
         dataframe = pd.concat([table[-1] for table in self._tables])
         new_dataframe = pd.DataFrame()
         for columns_ in dataframe.columns:
             if isinstance(columns_, tuple) and len(columns_) == 2:
-                for i, column in enumerate(columns_):
+                for i, _ in enumerate(columns_):
                     new_series = dataframe[columns_].apply(lambda x: x[i])
                     if not new_series.any():
                         continue
@@ -117,10 +122,10 @@ class InvestingScreenerScraper(BasePage):
                 new_dataframe[columns_] = dataframe[columns_]
         return new_dataframe.rename(columns={"Name_1": "reference"})
 
-    def _read_html(self):
+    def _read_html(self) -> pd.DataFrame:
         return pd.read_html(self.browser.page_source, extract_links="all")
 
-    def read_next_pages(self):
+    def read_next_pages(self) -> None:
         page_number = 2
         while True:
             try:
@@ -130,7 +135,7 @@ class InvestingScreenerScraper(BasePage):
                 break
             page_number += 1
 
-    def _custom_scrape(self):
+    def _custom_scrape(self) -> list[dict]:
         self.click_one_trust_button()
         self.read_current_page(pause=self.settings.pause)
         self.read_next_pages()
@@ -142,24 +147,27 @@ class InvestingTickerScraper(BaseTickerPage):
     exchange: str
     source: str = "investing"
     settings: InvestingSettings = Field(default=InvestingSettings())
-    browser: Optional[Chrome] = Field(
-        default_factory=lambda: init_chrome(load_strategy_none=True), description=""
+    browser: Optional[Union[Chrome, WebDriver]] = Field(
+        default_factory=lambda: init_chrome(load_strategy_none=True, headless=True),
+        description="",
     )
 
+    def _get_country_name(self) -> str:
+        ...
+
     @model_validator(mode="before")
-    def url_validator(cls, data):
+    @classmethod
+    def url_validator(cls, data: dict) -> dict:
         return data | {
             "url": f"https://www.investing.com/equities/{data['exchange']}-historical-data",
             "exchange": data["exchange"],
         }
 
-    def click_one_trust_button(self):
-        try:
+    def click_one_trust_button(self) -> None:
+        with contextlib.suppress(TimeoutException):
             self.click(self.settings.one_trust_button)
-        except TimeoutException:
-            pass
 
-    def read_historical(self, pause: int = 1):
+    def read_historical(self, pause: int = 1) -> HistoricalData:
         self.click(self.settings.date_picker)
         self.write(self.settings.start_date_input, self.settings.start_date)
         self.click(self.settings.date_picker_apply)
@@ -167,9 +175,9 @@ class InvestingTickerScraper(BaseTickerPage):
         data = self._read_html()
         data = [d for d in data if "Price" in d.columns][0]
         data.index = data["Date"]
-        return {"historical": data.to_dict()}
+        return HistoricalData(**data.to_dict())
 
-    def _preprocess_tables(self):
+    def _preprocess_tables(self) -> dict:
         tables = [table for tables in self._tables for table in tables]
         records = {}
         for table in tables:
@@ -177,9 +185,11 @@ class InvestingTickerScraper(BaseTickerPage):
             records.update(table.T.to_dict())
         return records
 
-    def _custom_scrape(self):
+    def _custom_scrape(self) -> dict:
         self.click_one_trust_button()
-        historical_data = self.read_historical(pause=self.settings.pause)
+        historical_data = {
+            "historical": self.read_historical(pause=self.settings.pause).model_dump()
+        }
         for url in self.settings.get_statements_urls(self.exchange):
             self.browser.get(url)
             self.read_current_page(

@@ -1,46 +1,41 @@
 import json
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 
 @pytest.fixture(scope="session")
-def screener_investing():
+def screener_investing() -> Path:
     return Path(__file__).parent / "data" / "screener_investing.json"
 
 
 @pytest.fixture(scope="session")
-def screener_trading():
+def screener_trading() -> Path:
     return Path(__file__).parent / "data" / "screener_trading.json"
 
+
 @pytest.fixture(scope="session")
-def ticker_trading():
-    return json.loads((Path(__file__).parent / "data" / "ticker_trading.json").read_text())
+def ticker_trading() -> Path:
+    return json.loads(
+        (Path(__file__).parent / "data" / "ticker_trading.json").read_text()
+    )
 
 
-
-
-
-
-# @pytest.fixture(scope = "session")
-# def trading_file_path():
-#  return Path("/home/aan/Documents/stocks/tests/scrapers/output/trading_screener_2024_01_24_09_33.csv")
 @pytest.fixture(scope="session")
-def investing_records(screener_investing):
+def investing_records(screener_investing: Path) -> list[dict]:
     return json.loads(screener_investing.read_text())
 
 
 @pytest.fixture(scope="session")
-def trading_records(screener_trading):
+def trading_records(screener_trading: Path) -> list[dict]:
     return json.loads(screener_trading.read_text())
 
 
 @pytest.fixture(scope="session")
-def investing_record(investing_records):
+def investing_record(investing_records: list[dict]) -> dict:
     return investing_records[0]
 
 
 @pytest.fixture(scope="session")
-def trading_record(trading_records):
+def trading_record(trading_records: list[dict]) -> dict:
     return trading_records[0]

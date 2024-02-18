@@ -1,22 +1,19 @@
+import contextlib
 import copy
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Type
 
-import pandas as pd
 from pydantic import (
     AliasChoices,
     BaseModel,
     ConfigDict,
     Field,
-    ValidationError,
     field_validator,
     model_validator,
 )
 from pydantic._internal._model_construction import ModelMetaclass
-from typing_extensions import Annotated
-
 
 EXPECTED_DATE_FORMATS = ["%Y%d/%m", "%Y", "%d %b '%y", "H%q '%y", "%m/%d/%Y"]
 FINAL_DATE_FORMAT = "%Y-%m-%d"
@@ -28,7 +25,7 @@ class BaseTickerModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-def get_date(date):
+def get_date(date: str) -> str:
     dates = [
         datetime.strptime(date, format).strftime(FINAL_DATE_FORMAT)
         for format in EXPECTED_DATE_FORMATS
@@ -39,7 +36,7 @@ def get_date(date):
     return dates[0]
 
 
-def is_date_format(date, format):
+def is_date_format(date: str, format: str) -> bool:
     try:
         datetime.strptime(date, format)
         return True
@@ -47,16 +44,16 @@ def is_date_format(date, format):
         return False
 
 
-def all_final_format(data):
+def all_final_format(data: dict) -> bool:
     return all([is_date_format(date, FINAL_DATE_FORMAT) for date, _ in data.items()])
 
 
-def clean_value(value):
+def clean_value(value: float | str | int | None) -> float:
     if value is None:
         return
     if isinstance(value, str):
         value = (
-            value.replace(" ", "") # TODO: horrible
+            value.replace(" ", "")  # TODO: horrible
             .replace("    ", "")
             .replace("%", "")
             .replace("USD", "")
@@ -75,20 +72,18 @@ def clean_value(value):
         return value
 
 
-def _validate_date(v):
+def _validate_date(v: dict) -> dict:
     if (not v) or all_final_format(v):
         return v
     results = {}
     for date, value in v.items():
-        try:
+        with contextlib.suppress(ValueError):
             results[get_date(date)] = clean_value(value)
-        except ValueError:
-            pass
     return results
 
 
-def _indentify_yearly_quarterly(data):
-    for key, value in data.items():
+def _indentify_yearly_quarterly(data: dict) -> dict:
+    for key, _ in data.items():
         if "quarterly" in key and key.replace("quarterly", "").strip() in data:
             data[key.replace("quarterly", "").strip()] = {
                 "yearly": data[key.replace("quarterly", "").strip()],
@@ -97,7 +92,7 @@ def _indentify_yearly_quarterly(data):
     return data
 
 
-def _create_yearly_quarterly(data):
+def _create_yearly_quarterly(data: dict) -> dict:
     if "yearly" not in data and "quarterly" not in data:
         return {"yearly": data, "quarterly": None}
     return data
@@ -112,15 +107,12 @@ class Resolution(BaseTickerModel):
         "quarterly",
         mode="before",
     )
-    def date_field(cls, v):
+    @classmethod
+    def date_field(cls, v: str | dict) -> str | dict:
         return _validate_date(v)
 
 
 class IncomeStatement(BaseTickerModel):
-
-    # revenue_single: Optional[str | float] = Field(
-    #     default=None, validation_alias=AliasChoices("Revenue", "RevenueTTM")
-    # )
     revenue: Optional[Resolution] = Field(
         default=None, validation_alias=AliasChoices("Total Revenue", "Total revenue")
     )
@@ -151,12 +143,10 @@ class IncomeStatement(BaseTickerModel):
     net_income: Optional[Resolution] = Field(
         default=None, validation_alias=AliasChoices("Net Income", "Net income")
     )
-    # revenue_growth_yoy: Optional[Resolution] = Field(
-    #     default=None, validation_alias=AliasChoices("Revenue growthTTM YoY")
-    # )
 
     @model_validator(mode="before")
-    def identify_yearly_or_quarterly(cls, data):
+    @classmethod
+    def identify_yearly_or_quarterly(cls, data: dict) -> dict:
         return _indentify_yearly_quarterly(data)
 
     @field_validator(
@@ -170,7 +160,8 @@ class IncomeStatement(BaseTickerModel):
         "net_income",
         mode="before",
     )
-    def date_field(cls, v):
+    @classmethod
+    def date_field(cls, v: dict) -> dict:
         if not v:
             return v
         return _create_yearly_quarterly(v)
@@ -195,7 +186,8 @@ class BalanceSheet(BaseTickerModel):
     )
 
     @model_validator(mode="before")
-    def identify_yearly_or_quarterly(cls, data):
+    @classmethod
+    def identify_yearly_or_quarterly(cls, data: dict) -> dict:
 
         return _indentify_yearly_quarterly(data)
 
@@ -207,7 +199,8 @@ class BalanceSheet(BaseTickerModel):
         "total_equity",
         mode="before",
     )
-    def date_field(cls, v):
+    @classmethod
+    def date_field(cls, v: dict) -> dict:
         if not v:
             return v
         return _create_yearly_quarterly(v)
@@ -249,7 +242,8 @@ class Ratios(BaseTickerModel):
         "dividend_yield",
         mode="before",
     )
-    def must_be_float(cls, v):
+    @classmethod
+    def must_be_float(cls, v: Optional[float]) -> float:
         if not v:
             return
         return clean_value(v)
@@ -271,7 +265,8 @@ class Valuation(BaseTickerModel):
         "enterprise_value",
         mode="before",
     )
-    def must_be_float(cls, v):
+    @classmethod
+    def must_be_float(cls, v: Optional[str | float]) -> Optional[float]:
         if not v:
             return
         return clean_value(v)
@@ -345,7 +340,8 @@ class HistoricalData(BaseTickerModel):
         "change",
         mode="before",
     )
-    def date_field(cls, v):
+    @classmethod
+    def date_field(cls, v: dict) -> dict:
         return _validate_date(v)
 
 
@@ -367,29 +363,26 @@ class Ticker(BaseTickerModel):
     historical: Optional[HistoricalData] = None
 
     @field_validator("reference", mode="before")
-    def reference_validator(cls, value):
+    @classmethod
+    def reference_validator(cls, value: str) -> str:
         if value and isinstance(value, str):
             return value.split("/")[-1].split("?")[0]
         return value
 
     @classmethod
-    def from_record(cls, record):
+    def from_record(cls, record: dict) -> "Ticker":
         return cls(**unflatten_json(cls, record))
 
     @classmethod
-    def from_json(cls, path):
+    def from_json(cls, path: Path) -> List["Ticker"]:
         records = json.loads(Path(path).read_text())
         tickers = []
         for record in records:
-            try:
-                tickers.append(cls(**unflatten_json(cls, record)))
-            except ValidationError as e:
-                # TODO: bad!!!!
-                pass
+            tickers.append(cls(**unflatten_json(cls, record)))
         return tickers
 
 
-def is_nested(schema):
+def is_nested(schema: Type[BaseModel]) -> bool:
     return any(
         [
             field.annotation.__name__ in globals()
@@ -398,7 +391,9 @@ def is_nested(schema):
     )
 
 
-def merge(schema, instance_1, instance_2):
+def merge(
+    schema: Type[BaseModel], instance_1: BaseModel, instance_2: BaseModel
+) -> None:
     for name, field in schema.model_fields.items():
         if (
             field.annotation.__name__ in globals()
@@ -414,7 +409,7 @@ def merge(schema, instance_1, instance_2):
             pass
 
 
-def unflatten_json(schema, data):
+def unflatten_json(schema: Type[BaseModel], data: dict) -> dict:
     if not is_nested(schema):
         return schema(**data).model_dump()
     copy_data = copy.deepcopy(data)
