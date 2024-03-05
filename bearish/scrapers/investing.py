@@ -1,7 +1,7 @@
 import contextlib
 from enum import Enum
-from typing import List, Optional, Union
-from webbrowser import Chrome
+from functools import partial
+from typing import Any, Dict, List, Literal
 
 import pandas as pd
 from pydantic import Field, model_validator
@@ -17,11 +17,14 @@ from bearish.scrapers.base import (
     BasePage,
     BaseSettings,
     BaseTickerPage,
+    CountryNameMixin,
     Locator,
-    Sources,
+    _get_country_name_per_enum,
     init_chrome,
 )
 from bearish.scrapers.model import HistoricalData
+
+COLUMNS_LENGTH = 2
 
 
 class InvestingSettings(BaseSettings):
@@ -82,21 +85,21 @@ class InvestingCountry(Enum):
     usa: int = 5
 
 
-class InvestingScreenerScraper(BasePage):
-    country: InvestingCountry
+class InvestingScreenerScraper(BasePage, CountryNameMixin):
+    country: int
     settings: InvestingSettings = Field(default=InvestingSettings())
-    source: Sources = Sources.investing
-    browser: Optional[Union[Chrome, WebDriver]] = Field(
+    source: Literal["trading", "investing", "yahoo"] = "investing"
+    browser: WebDriver = Field(
         default_factory=lambda: init_chrome(load_strategy_none=True, headless=True),
         description="",
     )
 
     def _get_country_name(self) -> str:
-        return self._get_country_name_per_enum(InvestingCountry, self.country)
+        return _get_country_name_per_enum(InvestingCountry, self.country)
 
     @model_validator(mode="before")
     @classmethod
-    def url_validator(cls, data: dict) -> dict:
+    def url_validator(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         return data | {
             "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country'].value}|"
             f"sector::a|industry::a|equityType::"
@@ -107,22 +110,25 @@ class InvestingScreenerScraper(BasePage):
     def click_one_trust_button(self) -> None:
         self.click(self.settings.one_trust_button)
 
-    def _preprocess_tables(self) -> pd.DataFrame:
+    def _preprocess_tables(self) -> List[Dict[str, Any]]:
         dataframe = pd.concat([table[-1] for table in self._tables])
         new_dataframe = pd.DataFrame()
         for columns_ in dataframe.columns:
-            if isinstance(columns_, tuple) and len(columns_) == 2:
+            if isinstance(columns_, tuple) and len(columns_) == COLUMNS_LENGTH:
                 for i, _ in enumerate(columns_):
-                    new_series = dataframe[columns_].apply(lambda x: x[i])
+                    new_series = dataframe[columns_].apply(
+                        partial(lambda x, index: x[index], index=i)
+                    )
                     if not new_series.any():
                         continue
                     column_name = f"{columns_[0]}_{i}" if i else columns_[0]
                     new_dataframe[column_name] = new_series
             else:
                 new_dataframe[columns_] = dataframe[columns_]
-        return new_dataframe.rename(columns={"Name_1": "reference"})
+        new_dataframe = new_dataframe.rename(columns={"Name_1": "reference"})
+        return new_dataframe.to_dict(orient="records")  # type: ignore
 
-    def _read_html(self) -> pd.DataFrame:
+    def _read_html(self) -> List[pd.DataFrame]:
         return pd.read_html(self.browser.page_source, extract_links="all")
 
     def read_next_pages(self) -> None:
@@ -135,29 +141,25 @@ class InvestingScreenerScraper(BasePage):
                 break
             page_number += 1
 
-    def _custom_scrape(self) -> list[dict]:
+    def _custom_scrape(self) -> list[dict[str, Any]]:
         self.click_one_trust_button()
         self.read_current_page(pause=self.settings.pause)
         self.read_next_pages()
-        data = self._preprocess_tables()
-        return data.to_dict(orient="records")
+        return self._preprocess_tables()
 
 
 class InvestingTickerScraper(BaseTickerPage):
     exchange: str
-    source: str = "investing"
+    source: Literal["trading", "investing", "yahoo"] = "investing"
     settings: InvestingSettings = Field(default=InvestingSettings())
-    browser: Optional[Union[Chrome, WebDriver]] = Field(
-        default_factory=lambda: init_chrome(load_strategy_none=True, headless=True),
+    browser: WebDriver = Field(
+        default_factory=lambda: init_chrome(load_strategy_none=True, headless=False),
         description="",
     )
 
-    def _get_country_name(self) -> str:
-        ...
-
     @model_validator(mode="before")
     @classmethod
-    def url_validator(cls, data: dict) -> dict:
+    def url_validator(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         return data | {
             "url": f"https://www.investing.com/equities/{data['exchange']}-historical-data",
             "exchange": data["exchange"],
@@ -172,12 +174,12 @@ class InvestingTickerScraper(BaseTickerPage):
         self.write(self.settings.start_date_input, self.settings.start_date)
         self.click(self.settings.date_picker_apply)
         self.pause(pause)
-        data = self._read_html()
-        data = [d for d in data if "Price" in d.columns][0]
-        data.index = data["Date"]
-        return HistoricalData(**data.to_dict())
+        datas = self._read_html()
+        data = next(data for data in datas if "Price" in data.columns)
+        data.index = data["Date"]  # type: ignore
+        return HistoricalData(**data.to_dict())  # type: ignore
 
-    def _preprocess_tables(self) -> dict:
+    def _preprocess_tables(self) -> Dict[str, Any]:
         tables = [table for tables in self._tables for table in tables]
         records = {}
         for table in tables:
@@ -185,7 +187,7 @@ class InvestingTickerScraper(BaseTickerPage):
             records.update(table.T.to_dict())
         return records
 
-    def _custom_scrape(self) -> dict:
+    def _custom_scrape(self) -> Dict[str, Any]:
         self.click_one_trust_button()
         historical_data = {
             "historical": self.read_historical(pause=self.settings.pause).model_dump()

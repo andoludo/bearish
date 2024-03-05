@@ -1,14 +1,11 @@
 import json
 import logging
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Literal, Optional, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic._internal._model_construction import ModelMetaclass
 
-from bearish.scrapers.base import bearish_path_fun
+from bearish.scrapers.base import BasePage, bearish_path_fun
 from bearish.scrapers.investing import (
     InvestingCountry,
     InvestingScreenerScraper,
@@ -24,31 +21,31 @@ from bearish.scrapers.trading import (
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class Source:
-    screener: ModelMetaclass
-    ticker: ModelMetaclass
-    country: Enum
+class Source(BaseModel):
+    screener: Union[Type[InvestingScreenerScraper], Type[TradingScreenerScraper]]
+    ticker: Union[Type[InvestingTickerScraper], Type[TradingTickerScraper]]
+    country: Union[Type[InvestingCountry], Type[TradingCountry]]
 
 
-class DataSource(Enum):
-    investing = Source(
+class DataSource:
+    investing: Source = Source(
         screener=InvestingScreenerScraper,
         ticker=InvestingTickerScraper,
         country=InvestingCountry,
     )
-    trading = Source(
+    trading: Source = Source(
         screener=TradingScreenerScraper,
         ticker=TradingTickerScraper,
         country=TradingCountry,
     )
 
 
-class Country(Enum):
-    germany: str = "germany"
-    france: str = "france"
-    belgium: str = "belgium"
-    usa: str = "usa"
+def _filter_by_symbols(
+    tickers: list[Ticker], symbols: Optional[list[str]] = None
+) -> list[Ticker]:
+    if not symbols:
+        return tickers
+    return [ticker for ticker in tickers if ticker.symbol in symbols]
 
 
 class Scraper(BaseModel):
@@ -56,28 +53,24 @@ class Scraper(BaseModel):
     bearish_path: Optional[Path] = Field(
         default_factory=bearish_path_fun, description=""
     )
-    source: DataSource
-    country: Country
+    source: Source
+    country: Literal["germany", "france", "belgium", "usa"]
 
-    def _filter_by_symbols(
-        self, tickers: list[Ticker], symbols: Optional[list[str]] = None
-    ) -> list[Ticker]:
-        if not symbols:
-            return tickers
-        return [ticker for ticker in tickers if ticker.symbol in symbols]
+    def _screener_scraper(self) -> BasePage:
+        return self.source.screener(  # type: ignore
+            country=getattr(self.source.country, self.country),
+            bearish_path=self.bearish_path,
+        )
 
     def scrape(
         self, skip_existing: bool = True, symbols: Optional[list[str]] = None
     ) -> None:
-        screener_scraper = self.source.screener(
-            country=getattr(self.source.country, self.country),
-            bearish_path=self.bearish_path,
-        )
+        screener_scraper = self._screener_scraper()
         screener_scraper.scrape(skip_existing=skip_existing)
         tickers = Ticker.from_json(screener_scraper.get_stored_raw())
-        tickers = self._filter_by_symbols(tickers=tickers, symbols=symbols)
+        tickers = _filter_by_symbols(tickers=tickers, symbols=symbols)
         for ticker in tickers:
-            scraper = self.source.ticker(
+            scraper = self.source.ticker(  # type: ignore
                 exchange=ticker.reference, bearish_path=self.bearish_path
             )
             try:
@@ -85,14 +78,14 @@ class Scraper(BaseModel):
             except Exception as e:
                 logger.error(f"Fail {ticker.reference}. reason: {e}")
 
-    def create_db_json(self) -> list[dict]:
-        scraper = self._scraper()
+    def create_db_json(self) -> list[Dict[str, Any]]:
+        scraper = self._screener_scraper()
         if not scraper.get_stored_raw().exists():
-            return
+            return []
         tickers = Ticker.from_json(scraper.get_stored_raw())
         db_json = []
         for ticker in tickers:
-            ticker_scraper = self.source.ticker(
+            ticker_scraper = self.source.ticker(  # type: ignore
                 browser=None, exchange=ticker.reference, bearish_path=self.bearish_path
             )
             if not ticker_scraper.get_stored_raw().exists():

@@ -3,7 +3,7 @@ import copy
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from pydantic import (
     AliasChoices,
@@ -44,13 +44,15 @@ def is_date_format(date: str, format: str) -> bool:
         return False
 
 
-def all_final_format(data: dict) -> bool:
-    return all([is_date_format(date, FINAL_DATE_FORMAT) for date, _ in data.items()])
+def all_final_format(data: Dict[str, Any]) -> bool:
+    return all(is_date_format(date, FINAL_DATE_FORMAT) for date, _ in data.items())
 
 
-def clean_value(value: float | str | int | None) -> float:
+def clean_value(
+    value: Optional[Union[int, float, str]]
+) -> Optional[Union[int, float, str]]:
     if value is None:
-        return
+        return None
     if isinstance(value, str):
         value = (
             value.replace(" ", "")  # TODO: horrible
@@ -72,7 +74,7 @@ def clean_value(value: float | str | int | None) -> float:
         return value
 
 
-def _validate_date(v: dict) -> dict:
+def _validate_date(v: Dict[str, Any]) -> Dict[str, Any]:
     if (not v) or all_final_format(v):
         return v
     results = {}
@@ -82,8 +84,8 @@ def _validate_date(v: dict) -> dict:
     return results
 
 
-def _indentify_yearly_quarterly(data: dict) -> dict:
-    for key, _ in data.items():
+def _indentify_yearly_quarterly(data: Dict[str, Any]) -> Dict[str, Any]:
+    for key in data:
         if "quarterly" in key and key.replace("quarterly", "").strip() in data:
             data[key.replace("quarterly", "").strip()] = {
                 "yearly": data[key.replace("quarterly", "").strip()],
@@ -92,15 +94,15 @@ def _indentify_yearly_quarterly(data: dict) -> dict:
     return data
 
 
-def _create_yearly_quarterly(data: dict) -> dict:
+def _create_yearly_quarterly(data: Dict[str, Any]) -> Dict[str, Any]:
     if "yearly" not in data and "quarterly" not in data:
         return {"yearly": data, "quarterly": None}
     return data
 
 
 class Resolution(BaseTickerModel):
-    yearly: Optional[dict | str] = None
-    quarterly: Optional[dict | str] = None
+    yearly: Optional[Dict[str, Any]] = None
+    quarterly: Optional[Dict[str, Any]] = None
 
     @field_validator(
         "yearly",
@@ -108,7 +110,7 @@ class Resolution(BaseTickerModel):
         mode="before",
     )
     @classmethod
-    def date_field(cls, v: str | dict) -> str | dict:
+    def date_field(cls, v: Dict[str, Any]) -> Optional[Optional[Dict[str, Any]]]:
         return _validate_date(v)
 
 
@@ -146,7 +148,7 @@ class IncomeStatement(BaseTickerModel):
 
     @model_validator(mode="before")
     @classmethod
-    def identify_yearly_or_quarterly(cls, data: dict) -> dict:
+    def identify_yearly_or_quarterly(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         return _indentify_yearly_quarterly(data)
 
     @field_validator(
@@ -161,7 +163,7 @@ class IncomeStatement(BaseTickerModel):
         mode="before",
     )
     @classmethod
-    def date_field(cls, v: dict) -> dict:
+    def date_field(cls, v: Dict[str, Any]) -> Dict[str, Any]:
         if not v:
             return v
         return _create_yearly_quarterly(v)
@@ -187,7 +189,7 @@ class BalanceSheet(BaseTickerModel):
 
     @model_validator(mode="before")
     @classmethod
-    def identify_yearly_or_quarterly(cls, data: dict) -> dict:
+    def identify_yearly_or_quarterly(cls, data: Dict[str, Any]) -> Dict[str, Any]:
 
         return _indentify_yearly_quarterly(data)
 
@@ -200,7 +202,7 @@ class BalanceSheet(BaseTickerModel):
         mode="before",
     )
     @classmethod
-    def date_field(cls, v: dict) -> dict:
+    def date_field(cls, v: Dict[str, Any]) -> Dict[str, Any]:
         if not v:
             return v
         return _create_yearly_quarterly(v)
@@ -243,9 +245,11 @@ class Ratios(BaseTickerModel):
         mode="before",
     )
     @classmethod
-    def must_be_float(cls, v: Optional[float]) -> float:
+    def must_be_float(
+        cls, v: Optional[Union[str, float, int]]
+    ) -> Optional[Union[str, float, int]]:
         if not v:
-            return
+            return None
         return clean_value(v)
 
 
@@ -266,9 +270,11 @@ class Valuation(BaseTickerModel):
         mode="before",
     )
     @classmethod
-    def must_be_float(cls, v: Optional[str | float]) -> Optional[float]:
+    def must_be_float(
+        cls, v: Optional[Union[str, float, int]]
+    ) -> Optional[Union[str, float, int]]:
         if not v:
-            return
+            return None
         return clean_value(v)
 
 
@@ -312,22 +318,22 @@ class Fundamental(BaseTickerModel):
 
 
 class HistoricalData(BaseTickerModel):
-    price: Optional[dict | str] = Field(
+    price: Optional[Dict[str, Any]] = Field(
         default=None, validation_alias=AliasChoices("Price")
     )
-    open: Optional[dict | str] = Field(
+    open: Optional[Dict[str, Any]] = Field(
         default=None, validation_alias=AliasChoices("Open")
     )
-    high: Optional[dict | str] = Field(
+    high: Optional[Dict[str, Any]] = Field(
         default=None, validation_alias=AliasChoices("High")
     )
-    low: Optional[dict | str] = Field(
+    low: Optional[Dict[str, Any]] = Field(
         default=None, validation_alias=AliasChoices("Low")
     )
-    volume: Optional[dict | str] = Field(
+    volume: Optional[Dict[str, Any]] = Field(
         default=None, validation_alias=AliasChoices("Vol.")
     )
-    change: Optional[dict | str] = Field(
+    change: Optional[Dict[str, Any]] = Field(
         default=None, validation_alias=AliasChoices("Change %")
     )
 
@@ -341,7 +347,9 @@ class HistoricalData(BaseTickerModel):
         mode="before",
     )
     @classmethod
-    def date_field(cls, v: dict) -> dict:
+    def date_field(cls, v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        if not v:
+            return None
         return _validate_date(v)
 
 
@@ -370,24 +378,15 @@ class Ticker(BaseTickerModel):
         return value
 
     @classmethod
-    def from_record(cls, record: dict) -> "Ticker":
-        return cls(**unflatten_json(cls, record))
-
-    @classmethod
     def from_json(cls, path: Path) -> List["Ticker"]:
         records = json.loads(Path(path).read_text())
-        tickers = []
-        for record in records:
-            tickers.append(cls(**unflatten_json(cls, record)))
-        return tickers
+        return [cls(**unflatten_json(cls, record)) for record in records]
 
 
 def is_nested(schema: Type[BaseModel]) -> bool:
     return any(
-        [
-            field.annotation.__name__ in globals()
-            for _, field in schema.model_fields.items()
-        ]
+        field.annotation.__name__ in globals()  # type: ignore
+        for _, field in schema.model_fields.items()
     )
 
 
@@ -396,7 +395,7 @@ def merge(
 ) -> None:
     for name, field in schema.model_fields.items():
         if (
-            field.annotation.__name__ in globals()
+            field.annotation.__name__ in globals()  # type: ignore
             and isinstance(field.annotation, ModelMetaclass)
             and issubclass(field.annotation, BaseTickerModel)
         ):
@@ -409,14 +408,14 @@ def merge(
             pass
 
 
-def unflatten_json(schema: Type[BaseModel], data: dict) -> dict:
+def unflatten_json(schema: Type[BaseModel], data: Dict[str, Any]) -> Dict[str, Any]:
     if not is_nested(schema):
         return schema(**data).model_dump()
     copy_data = copy.deepcopy(data)
     original_data = {}
     for name, field in schema.model_fields.items():
         if (
-            field.annotation.__name__ in globals()
+            field.annotation.__name__ in globals()  # type: ignore
             and isinstance(field.annotation, ModelMetaclass)
             and issubclass(field.annotation, BaseTickerModel)
         ):

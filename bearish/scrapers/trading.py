@@ -1,7 +1,7 @@
 import re
 from enum import Enum
 from itertools import zip_longest
-from typing import List
+from typing import Any, Dict, List, Literal
 
 import pandas as pd
 import unidecode
@@ -10,7 +10,15 @@ from bs4.element import Tag
 from pydantic import Field, model_validator
 from selenium.webdriver.common.by import By
 
-from bearish.scrapers.base import BasePage, BaseSettings, BaseTickerPage, Locator
+from bearish.scrapers.base import (
+    BasePage,
+    BaseSettings,
+    BaseTickerPage,
+    CountryNameMixin,
+    Locator,
+    _get_country_name_per_enum,
+    move_from_left_to_right_border,
+)
 from bearish.scrapers.model import HistoricalData
 
 TRADING = "trading"
@@ -37,25 +45,33 @@ class TradingSettings(BaseSettings):
         by=By.XPATH,
         value='//*[@id="js-screener-container"]/div/div/div[2]/div/div/div[2]/div/table/tbody',
     )
-    pages_to_read: dict[str, Locator] = {
-        "overview": Locator(by=By.XPATH, value='//*[@id="overview"]/span[1]/span'),
-        "perfromance": Locator(
-            by=By.XPATH, value='//*[@id="performance"]/span[1]/span'
-        ),
-        "valuation": Locator(by=By.XPATH, value='//*[@id="valuation"]/span[1]/span'),
-        "dividends": Locator(by=By.XPATH, value='//*[@id="dividends"]/span[1]/span'),
-        "profitability": Locator(
-            by=By.XPATH, value='//*[@id="profitability"]/span[1]/span'
-        ),
-        "cash_flow": Locator(by=By.XPATH, value='//*[@id="cashFlow"]/span[1]/span'),
-        "income_statement": Locator(
-            by=By.XPATH, value='//*[@id="incomeStatement"]/span[1]/span'
-        ),
-        "balance_sheet": Locator(
-            by=By.XPATH, value='//*[@id="balanceSheet"]/span[1]/span'
-        ),
-        "technicals": Locator(by=By.XPATH, value='//*[@id="technicals"]/span[1]/span'),
-    }
+    pages_to_read: Dict[str, Locator] = Field(
+        default={
+            "overview": Locator(by=By.XPATH, value='//*[@id="overview"]/span[1]/span'),
+            "perfromance": Locator(
+                by=By.XPATH, value='//*[@id="performance"]/span[1]/span'
+            ),
+            "valuation": Locator(
+                by=By.XPATH, value='//*[@id="valuation"]/span[1]/span'
+            ),
+            "dividends": Locator(
+                by=By.XPATH, value='//*[@id="dividends"]/span[1]/span'
+            ),
+            "profitability": Locator(
+                by=By.XPATH, value='//*[@id="profitability"]/span[1]/span'
+            ),
+            "cash_flow": Locator(by=By.XPATH, value='//*[@id="cashFlow"]/span[1]/span'),
+            "income_statement": Locator(
+                by=By.XPATH, value='//*[@id="incomeStatement"]/span[1]/span'
+            ),
+            "balance_sheet": Locator(
+                by=By.XPATH, value='//*[@id="balanceSheet"]/span[1]/span'
+            ),
+            "technicals": Locator(
+                by=By.XPATH, value='//*[@id="technicals"]/span[1]/span'
+            ),
+        }
+    )
     candlesticks: Locator = Locator(
         by=By.XPATH,
         value='//*[@id="js-category-content"]/div[2]/div/section/div[1]/div[2]/span/span[2]/button[2]',
@@ -89,19 +105,21 @@ class TradingSettings(BaseSettings):
         by=By.XPATH,
         value='//*[@id="js-category-content"]/div[2]/div/section/div[1]/div[2]/div[3]/div/div[2]',
     )
-    suffixes: List[str] = [
-        # "/financials-overview/",
-        "/financials-income-statement/?statements-period=FY",
-        "/financials-balance-sheet/?statements-period=FY",
-        "/financials-cash-flow/?statements-period=FY",
-        "/financials-statistics-and-ratios/",
-        "/financials-dividends/",
-        "/financials-earnings/?earnings-period=FY&revenues-period=FY",
-        "/financials-revenue/",
-        "/news/",
-        "/technicals/",
-        "/forecast/",
-    ]
+    suffixes: List[str] = Field(
+        default=[
+            # "/financials-overview/",
+            "/financials-income-statement/?statements-period=FY",
+            "/financials-balance-sheet/?statements-period=FY",
+            "/financials-cash-flow/?statements-period=FY",
+            "/financials-statistics-and-ratios/",
+            "/financials-dividends/",
+            "/financials-earnings/?earnings-period=FY&revenues-period=FY",
+            "/financials-revenue/",
+            "/news/",
+            "/technicals/",
+            "/forecast/",
+        ]
+    )
 
 
 class TradingCountry(Enum):
@@ -116,7 +134,7 @@ class TradingCountry(Enum):
 def bs4_read_html(page_source: str) -> list[pd.DataFrame]:
     soup = BeautifulSoup(page_source, "html.parser")
     data = []
-    for tr in soup.find("table").find_all("tr"):
+    for tr in soup.find("table").find_all("tr"):  # type: ignore
         tds = tr.find_all("td")
         if not tds:
             row = [td.text for td in tr.find_all("th")] + ["name", "exchange"]
@@ -130,17 +148,17 @@ def bs4_read_html(page_source: str) -> list[pd.DataFrame]:
     return [pd.DataFrame(data[1:], columns=data[0])]
 
 
-class TradingScreenerScraper(BasePage):
-    country: TradingCountry
-    source: str = TRADING
+class TradingScreenerScraper(BasePage, CountryNameMixin):
+    country: Locator
+    source: Literal["trading", "investing", "yahoo"] = Field(default="trading")
     settings: TradingSettings = Field(default=TradingSettings())
 
     def _get_country_name(self) -> str:  # TODO: change to Enum/ literal
-        return self._get_country_name_per_enum(TradingCountry, self.country)
+        return _get_country_name_per_enum(TradingCountry, self.country)
 
     @model_validator(mode="before")
     @classmethod
-    def url_validator(cls, data: dict) -> dict:
+    def url_validator(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         data.update(
             {
                 "url": "https://www.tradingview.com/stock-screener/?aff_id=3037&source=StockTrader"
@@ -161,21 +179,21 @@ class TradingScreenerScraper(BasePage):
         return bs4_read_html(self.browser.page_source)
 
     def scroll_down_and_read_pages(self) -> None:
-        for _, locator in self.settings.pages_to_read.items():
+        for locator in self.settings.pages_to_read.values():
             self.click(locator)
             self.scroll_down_and_read(self.settings.screener_table)
 
-    def _preprocess_tables(self) -> pd.DataFrame:
-        return pd.concat([table[0] for table in self._tables], axis=1)
+    def _preprocess_tables(self) -> List[Dict[str, Any]]:
+        data = pd.concat([table[0] for table in self._tables], axis=1)
+        return data.to_dict(orient="records")  # type: ignore
 
-    def _custom_scrape(self) -> list[dict]:
+    def _custom_scrape(self) -> List[Dict[str, Any]]:
         self.full_screen()
         self.remove_popup()
         self.select_country()
         self.scroll_down_and_read_pages()
         data = self._preprocess_tables()
         self._encoding = "unicode"
-        data = data.to_dict(orient="records")
         for data_ in data:
             data_["reference"] = data_["exchange"]
         return data
@@ -189,19 +207,17 @@ def find_by_class(div: Tag, partial_text: str) -> list[str]:
 
 class TradingTickerScraper(BaseTickerPage):
     exchange: str
-    source: str = TRADING
+    source: Literal["trading", "investing", "yahoo"] = Field(default="trading")
     settings: TradingSettings = Field(default=TradingSettings())
 
-    def _preprocess_tables(self) -> dict:
+    def _preprocess_tables(self) -> Dict[str, Any]:
         results = {}
-        for table in self._tables:
-            results.update(table.to_dict())
+        for tables in self._tables:
+            for table in tables:
+                results.update(table.to_dict())
         return results
 
-    def _get_country_name(self) -> str:
-        ...
-
-    def _read_html(self) -> pd.DataFrame:
+    def _read_html(self) -> list[pd.DataFrame]:
         BeautifulSoup(unidecode.unidecode(self.browser.page_source), "html5lib")
         soup = BeautifulSoup(
             unidecode.unidecode(self.browser.page_source), "html5lib"
@@ -219,20 +235,17 @@ class TradingTickerScraper(BaseTickerPage):
                 c.get_text() for c in div.find_all("span", re.compile(r"\btitleText\b"))
             ]
             if values and title and titles:
-                full_data[title[0]] = {
-                    date: value
-                    for date, value in reversed(
-                        list(zip_longest(reversed(titles[0]), reversed(values)))
-                    )
-                }
-        return pd.DataFrame(full_data)
+                full_data[title[0]] = dict(
+                    reversed(list(zip_longest(reversed(titles[0]), reversed(values))))
+                )
+        return [pd.DataFrame(full_data)]
 
-    def _custom_scrape(self) -> dict:
+    def _custom_scrape(self) -> Dict[str, Any]:
         return self.read_pages()
 
     @model_validator(mode="before")
     @classmethod
-    def url_validator(cls, data: dict) -> dict:
+    def url_validator(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         return data | {
             "url": f"https://www.tradingview.com/symbols/{data['exchange']}",
             "exchange": data["exchange"],
@@ -253,14 +266,14 @@ class TradingTickerScraper(BaseTickerPage):
             high.read(),
             open.read(),
             close.read(),
-        )  # noqa : E731
+        )  # : E731
         canvas_element = self.get_element(self.settings.canvas)
         x_offset_start = (
             1
             if not self.update
             else int(canvas_element._element.size["width"] * 11 / 12)
         )
-        results = self.move_from_left_to_right_border(
+        results = move_from_left_to_right_border(
             canvas_element, read, x_offset_start=x_offset_start
         )
         data = {
@@ -271,7 +284,7 @@ class TradingTickerScraper(BaseTickerPage):
         }
         return HistoricalData(**data)
 
-    def read_pages(self) -> dict:
+    def read_pages(self) -> Dict[str, Any]:
         historical_data = self.read_historical()
         for suffix in self.settings.suffixes:
             url = self.url + suffix

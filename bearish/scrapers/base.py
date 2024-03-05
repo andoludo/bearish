@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from functools import cached_property, partial
 from pathlib import Path
-from typing import Callable, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Type, Union
 
 import pandas as pd
 import simplejson
@@ -15,6 +15,8 @@ from selenium.common import MoveTargetOutOfBoundsException, TimeoutException
 from selenium.webdriver import ActionChains, Chrome, Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.remote.webdriver import WebDriver as BaseWebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -32,17 +34,27 @@ class Locator(BaseModel):
     def __hash__(self) -> int:
         return hash(self.value)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Locator):
+            raise NotImplementedError
+        return self.value == other.value
+
 
 class BaseElement:
     def __init__(
         self,
         browser: Chrome,
         locator: Locator,
-        expected_condition_function: Callable = expected_conditions.presence_of_element_located,
+        expected_condition_function: Callable[
+            [tuple[str, str]],
+            Callable[
+                [BaseWebDriver | WebDriver | WebElement], Literal[False] | WebElement
+            ],
+        ] = expected_conditions.presence_of_element_located,
     ) -> None:
         self._browser = browser
         self._locator = locator
-        self._element = WebDriverWait(browser, 20).until(
+        self._element: WebElement = WebDriverWait(browser, 20).until(
             expected_condition_function(locator.to_tuple())
         )
 
@@ -76,10 +88,17 @@ class BaseElement:
         ).perform()
 
     def width(self) -> int:
-        return self._element.rect["width"]
+        return int(self._element.rect["width"])
 
     def read(self) -> str:
         return self._element.text.strip()
+
+
+def move_by_x_offset_from_left_border(element: BaseElement, x_offset: int) -> bool:
+    right_border = x_offset > element.width()
+    if not right_border:
+        element.move_by_x_offset_from_left_border(x_offset)
+    return right_border
 
 
 def init_chrome(load_strategy_none: bool = False, headless: bool = False) -> Chrome:
@@ -98,17 +117,11 @@ def bearish_path_fun() -> Path:
     return bearish_path
 
 
-class Sources(Enum):
-    trading_view: str = "trading"
-    investing: str = "investing"
-    yahoo: str = "yahoo"
-
-
 class BaseSettings(BaseModel):
     ...
 
 
-def clean_dict(data: dict) -> dict:
+def clean_dict(data: Dict[str, Any]) -> Dict[str, Any]:
     cleaned_data = {}
     for name, value in data.items():
         if isinstance(value, dict):
@@ -118,18 +131,84 @@ def clean_dict(data: dict) -> dict:
     return cleaned_data
 
 
+def _replace_values(
+    tables: list[pd.DataFrame], replace_values: Dict[str, str]
+) -> list[pd.DataFrame]:
+    def find_and_replace(
+        element: float | str | int, replace_values: Dict[str, str]
+    ) -> float | str | int:
+        for old_value, new_value in replace_values.items():
+            if element == old_value:
+                return new_value
+        return element
+
+    new_tables = []
+    if not replace_values:
+        return tables
+    for table in tables:
+        table_ = table.applymap(  # type: ignore
+            partial(find_and_replace, replace_values=replace_values)
+        )
+        new_tables.append(table_)
+    return new_tables
+
+
+def move_from_left_to_right_border(
+    element: BaseElement,
+    action: Callable[[], Tuple[str, str, str, str, str]],
+    x_offset_start: int = 1,
+) -> List[Tuple[str, str, str, str, str]]:
+    x_offset = x_offset_start
+    actions = []
+    right_border = False
+    while not right_border:
+        try:
+            right_border = move_by_x_offset_from_left_border(element, x_offset=x_offset)
+            if not right_border:
+                actions.append(action())
+        except (MoveTargetOutOfBoundsException, TimeoutException):
+            break
+        x_offset += 1
+    return actions
+
+
+def _get_country_name_per_enum(enum: Type[Enum], country: Locator | int) -> str:
+    return next(
+        k
+        for k, v in enum.__dict__.items()
+        if isinstance(v, enum) and v.value == country
+    )
+
+
+def _clean(
+    data: List[Dict[str, Any]] | Dict[str, Any]
+) -> List[Dict[str, Any]] | Dict[str, Any]:
+    if isinstance(data, list):
+        return [clean_dict(data_) for data_ in data]
+    else:
+        return clean_dict(data)
+
+
+class CountryNameMixin:
+    @abc.abstractmethod
+    def _get_country_name(self) -> str:
+        ...
+
+    @computed_field  # type: ignore
+    @cached_property
+    def folder_path(self) -> Path:
+        folder_path = self.folder_path
+        return folder_path / self._get_country_name()
+
+
 class BasePage(BaseModel):
     url: str
-    source: Sources
+    source: Literal["trading", "investing", "yahoo"]
     settings: BaseSettings
-    browser: Optional[Union[Chrome, WebDriver]] = Field(
-        default_factory=init_chrome, description=""
-    )
-    bearish_path: Optional[Path] = Field(
-        default_factory=bearish_path_fun, description=""
-    )
+    browser: WebDriver = Field(default_factory=init_chrome, description="")
+    bearish_path: Path = Field(default_factory=bearish_path_fun, description="")
     model_config = ConfigDict(arbitrary_types_allowed=True, use_enum_values=True)
-    _tables = PrivateAttr(default_factory=lambda: [])
+    _tables = PrivateAttr(default_factory=list)
     _skip_existing = PrivateAttr(default=True)
     _encoding = PrivateAttr(default=None)
 
@@ -159,32 +238,6 @@ class BasePage(BaseModel):
     def get_element(self, locator: Locator) -> BaseElement:
         return BaseElement(self.browser, locator)
 
-    def move_by_x_offset_from_left_border(
-        self, element: BaseElement, x_offset: int
-    ) -> bool:
-        right_border = x_offset > element.width()
-        if not right_border:
-            element.move_by_x_offset_from_left_border(x_offset)
-        return right_border
-
-    def move_from_left_to_right_border(
-        self, element: BaseElement, action: Callable, x_offset_start: int = 1
-    ) -> list:
-        x_offset = x_offset_start
-        actions = []
-        right_border = False
-        while not right_border:
-            try:
-                right_border = self.move_by_x_offset_from_left_border(
-                    element, x_offset=x_offset
-                )
-                if not right_border:
-                    actions.append(action())
-            except (MoveTargetOutOfBoundsException, TimeoutException):
-                break
-            x_offset += 1
-        return actions
-
     def write(self, locator: Locator, value: str) -> None:
         BaseElement(self.browser, locator).write(value)
 
@@ -195,46 +248,33 @@ class BasePage(BaseModel):
         self.scroll_down(locator)
         self.read_current_page()
 
-    def _read_html(self) -> pd.DataFrame:
+    def _read_html(self) -> list[pd.DataFrame]:
         return pd.read_html(self.browser.page_source)
 
-    def read_current_page(self, pause: int = 1, replace_values: dict = None) -> None:
+    def read_current_page(
+        self, pause: int = 1, replace_values: Optional[Dict[str, str]] = None
+    ) -> None:
         self.pause(pause)
         tables = self._read_html()
-        new_tables = self._replace_values(tables, replace_values=replace_values or {})
+        new_tables = _replace_values(tables, replace_values=replace_values or {})
         self._tables.append(new_tables)
 
-    def _replace_values(
-        self, tables: list[pd.DataFrame], replace_values: dict
-    ) -> list[pd.DataFrame]:
-        def find_and_replace(
-            element: float | str | int, replace_values: dict
-        ) -> float | str | int:
-            for old_value, new_value in replace_values.items():
-                if element == old_value:
-                    return new_value
-            return element
-
-        new_tables = []
-        if not replace_values:
-            return tables
-        for table in tables:
-            table = table.applymap(
-                partial(find_and_replace, replace_values=replace_values)
-            )
-            new_tables.append(table)
-        return new_tables
-
     @abc.abstractmethod
-    def _preprocess_tables(self) -> dict:  # TODO: anti-pattern needs to be changed
+    def _preprocess_tables(
+        self,
+    ) -> Union[
+        List[Dict[str, Any]], Dict[str, Any]
+    ]:  # TODO: anti-pattern needs to be changed
         ...
 
     @abc.abstractmethod
-    def _custom_scrape(self) -> dict | list[dict]:  # anti pattern -> code is wrong
+    def _custom_scrape(
+        self,
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:  # anti pattern -> code is wrong
         ...
 
     def _exist_files_in_folder(self) -> bool:
-        return (
+        return bool(
             self.folder_path.exists()
             and self.folder_path.is_dir()
             and len(list(self.folder_path.iterdir()))
@@ -248,46 +288,34 @@ class BasePage(BaseModel):
 
     def scrape(
         self, skip_existing: bool = True
-    ) -> Optional[dict | list[dict]]:  # anti pattern -> code is wrong
+    ) -> Optional[
+        Dict[str, Any] | list[Dict[str, Any]]
+    ]:  # anti pattern -> code is wrong
         self._skip_existing = skip_existing
         if self._skip_existing and self._exist_files_in_folder():
-            return
+            return None
         self.go()
         records = self._custom_scrape()
         self.to_json(data=records)
         return records
 
-    def _get_country_name_per_enum(self, enum: Type[Enum], country: str | int) -> str:
-        return [
-            k
-            for k, v in enum.__dict__.items()
-            if isinstance(v, enum) and v.value == country
-        ][0]
-
-    @abc.abstractmethod
-    def _get_country_name(self) -> str:
-        ...
-
-    @computed_field
+    @computed_field  # type: ignore
     @cached_property
     def folder_path(self) -> Path:
-        source = self.source if isinstance(self.source, str) else self.source.value
+
         path = (
             self.bearish_path
-            / source
-            / type(self).__name__.lower().replace(source, "").replace("scraper", "")
+            / self.source
+            / type(self)
+            .__name__.lower()
+            .replace(self.source, "")
+            .replace("scraper", "")
         )
-
-        if hasattr(self, "country"):
-
-            path = path / self._get_country_name()
-        elif hasattr(self, "exchange"):
+        if hasattr(self, "exchange"):
             path = path / self.exchange
-        else:
-            pass
         return path
 
-    @computed_field
+    @computed_field  # type: ignore
     @cached_property
     def path(self) -> Path:
         file_name = f"{datetime.now().strftime('%Y_%m_%d_%H_%M')}.json"
@@ -301,11 +329,11 @@ class BasePage(BaseModel):
         )  # * means all if need specific format then *.csv
         return Path(max(list_of_files, key=os.path.getctime))
 
-    def to_json(self, data: dict | list) -> None:
+    def to_json(self, data: Dict[str, Any] | List[Dict[str, Any]]) -> None:
         self.path.touch(exist_ok=True)
         with self.path.open(mode="w") as f:
             simplejson.dump(
-                self._clean(data), f, indent=4, ignore_nan=True, encoding=self._encoding
+                _clean(data), f, indent=4, ignore_nan=True, encoding=self._encoding
             )
 
     def wait_until_ready(self, locator: Locator) -> BaseElement:
@@ -317,15 +345,6 @@ class BasePage(BaseModel):
 
     def close(self) -> None:
         self.browser.close()
-
-    def _clean(self, data: list | dict) -> list | dict:
-        if isinstance(data, list):
-            cleaned_data = []
-            for data_ in data:
-                cleaned_data.append(clean_dict(data_))
-            return cleaned_data
-        else:
-            return clean_dict(data)
 
 
 class BaseTickerPage(BasePage):
