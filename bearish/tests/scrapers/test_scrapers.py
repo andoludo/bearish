@@ -13,7 +13,7 @@ def test_investing_main_scraper() -> None:
 
 
 def test_investing_main_scraper_france() -> None:
-    scraper = Scraper(source=DataSource.investing, country="belgium")
+    scraper = Scraper(source=DataSource.investing, country="france")
     scraper.scrape(skip_existing=False)
 
 

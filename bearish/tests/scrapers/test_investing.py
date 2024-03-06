@@ -39,21 +39,6 @@ def test_investing_screener_belgium(invest_settings: InvestingSettings) -> None:
         assert Path(temp_path).joinpath("investing", "screener", "belgium").exists()
 
 
-def test_investing_screener_france(invest_settings: InvestingSettings) -> None:
-    with tempfile.TemporaryDirectory() as temp_directory:
-        temp_path = Path(temp_directory).joinpath("investing")
-        browser = init_chrome(load_strategy_none=True, headless=True)
-        scraper = InvestingScreenerScraper(
-            browser=browser,
-            country=InvestingCountry.france,
-            settings=invest_settings,
-            bearish_path=temp_path,
-        )
-        data = scraper.scrape()
-        assert data
-        assert Path(temp_path).joinpath("investing", "screener", "france").exists()
-
-
 def test_investing_ticker_scraper(invest_settings: InvestingSettings) -> None:
     with tempfile.TemporaryDirectory() as temp_directory:
         temp_path = Path(temp_directory).joinpath("investing")

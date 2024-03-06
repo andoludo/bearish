@@ -94,7 +94,7 @@ class InvestingScreenerScraper(BasePage, CountryNameMixin):
     @classmethod
     def url_validator(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         return data | {
-            "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country'].value}|"
+            "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country']}|"
             f"sector::a|industry::a|equityType::"
             "a|exchange::14|eq_pe_ratio::-670.36,370.54%3Ceq_market_cap;1",
             "country": data["country"],

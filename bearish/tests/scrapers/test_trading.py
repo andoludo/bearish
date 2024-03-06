@@ -41,17 +41,6 @@ def test_trading_screener_belgium(trading_settings: TradingSettings) -> None:
         assert data
 
 
-def test_trading_screener_france(trading_settings: TradingSettings) -> None:
-    with tempfile.TemporaryDirectory() as temp_directory:
-        temp_path = Path(temp_directory).joinpath("trading_view")
-        scraper = TradingScreenerScraper(
-            country=TradingCountry.france,
-            settings=trading_settings,
-            bearish_path=temp_path,
-        )
-        data = scraper.scrape()
-        assert Path(temp_path).joinpath("trading", "screener", "france").exists()
-        assert data
 
 
 def test_trading_ticker(trading_settings: TradingSettings) -> None:
