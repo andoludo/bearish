@@ -296,7 +296,7 @@ class BasePage(BaseModel):
 
         if hasattr(self, "country"):
 
-            path = path / self._get_country_name()
+            path = path / self._get_country_name()  # type: ignore
         elif hasattr(self, "exchange"):
             path = path / self.exchange
         else:
