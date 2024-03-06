@@ -19,11 +19,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-
 from bearish.scrapers.model import HistoricalData
-
-
-from bearish.scrapers.settings import TradingCountry, InvestingCountry
+from bearish.scrapers.settings import InvestingCountry, TradingCountry
 from bearish.scrapers.type import Locator
 
 
@@ -159,7 +156,9 @@ def move_from_left_to_right_border(
     return actions
 
 
-def _get_country_name_per_enum(enum: Type[TradingCountry] | Type[InvestingCountry], country: Locator | int) -> str:
+def _get_country_name_per_enum(
+    enum: Type[TradingCountry] | Type[InvestingCountry], country: Locator | int
+) -> str:
     return next(
         k
         for k, v in enum.__dict__.items()
@@ -180,7 +179,6 @@ class CountryNameMixin:
     @abc.abstractmethod
     def _get_country_name(self) -> str:
         ...
-
 
 
 class BasePage(BaseModel):

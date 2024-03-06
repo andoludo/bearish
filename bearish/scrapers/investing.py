@@ -20,9 +20,9 @@ from bearish.scrapers.base import (
     _get_country_name_per_enum,
     init_chrome,
 )
-from bearish.scrapers.type import Locator
 from bearish.scrapers.model import HistoricalData
 from bearish.scrapers.settings import InvestingCountry
+from bearish.scrapers.type import Locator
 
 COLUMNS_LENGTH = 2
 

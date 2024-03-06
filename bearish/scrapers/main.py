@@ -6,16 +6,10 @@ from typing import Any, Dict, Literal, Optional, Type, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 from bearish.scrapers.base import BasePage, bearish_path_fun
-from bearish.scrapers.investing import (
-    InvestingScreenerScraper,
-    InvestingTickerScraper,
-)
+from bearish.scrapers.investing import InvestingScreenerScraper, InvestingTickerScraper
 from bearish.scrapers.model import Ticker, merge, unflatten_json
-from bearish.scrapers.trading import (
-    TradingScreenerScraper,
-    TradingTickerScraper,
-)
-from bearish.scrapers.settings import TradingCountry, InvestingCountry
+from bearish.scrapers.settings import InvestingCountry, TradingCountry
+from bearish.scrapers.trading import TradingScreenerScraper, TradingTickerScraper
 
 logger = logging.getLogger(__name__)
 
