@@ -5,13 +5,13 @@ from pathlib import Path
 import pytest
 from selenium.webdriver.common.by import By
 
-from bearish.scrapers.base import Locator
+from bearish.scrapers.type import Locator
 from bearish.scrapers.trading import (
-    TradingCountry,
     TradingScreenerScraper,
     TradingSettings,
     TradingTickerScraper,
 )
+from bearish.scrapers.settings import TradingCountry
 
 logger = logging.getLogger(__name__)
 
