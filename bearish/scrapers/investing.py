@@ -1,5 +1,4 @@
 import contextlib
-from enum import Enum
 from functools import partial
 from typing import Any, Dict, List, Literal
 
@@ -18,11 +17,12 @@ from bearish.scrapers.base import (
     BaseSettings,
     BaseTickerPage,
     CountryNameMixin,
-    Locator,
     _get_country_name_per_enum,
     init_chrome,
 )
+from bearish.scrapers.type import Locator
 from bearish.scrapers.model import HistoricalData
+from bearish.scrapers.settings import InvestingCountry
 
 COLUMNS_LENGTH = 2
 
@@ -76,13 +76,6 @@ class InvestingSettings(BaseSettings):
             f"https://www.investing.com/equities/{exchange}" + suffix
             for suffix in self.suffixes
         ]
-
-
-class InvestingCountry(Enum):
-    germany: int = 17
-    france: int = 22
-    belgium: int = 34
-    usa: int = 5
 
 
 class InvestingScreenerScraper(BasePage, CountryNameMixin):

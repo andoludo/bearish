@@ -7,16 +7,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from bearish.scrapers.base import BasePage, bearish_path_fun
 from bearish.scrapers.investing import (
-    InvestingCountry,
     InvestingScreenerScraper,
     InvestingTickerScraper,
 )
 from bearish.scrapers.model import Ticker, merge, unflatten_json
 from bearish.scrapers.trading import (
-    TradingCountry,
     TradingScreenerScraper,
     TradingTickerScraper,
 )
+from bearish.scrapers.settings import TradingCountry, InvestingCountry
 
 logger = logging.getLogger(__name__)
 

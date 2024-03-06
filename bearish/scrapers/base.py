@@ -3,7 +3,6 @@ import glob
 import os
 import time
 from datetime import datetime
-from enum import Enum
 from functools import cached_property, partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Type, Union
@@ -20,24 +19,12 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
+
 from bearish.scrapers.model import HistoricalData
 
 
-class Locator(BaseModel):
-    by: str
-    value: str
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    def to_tuple(self) -> Tuple[str, str]:
-        return (self.by, self.value)
-
-    def __hash__(self) -> int:
-        return hash(self.value)
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Locator):
-            raise NotImplementedError
-        return self.value == other.value
+from bearish.scrapers.settings import TradingCountry, InvestingCountry
+from bearish.scrapers.type import Locator
 
 
 class BaseElement:
@@ -172,11 +159,11 @@ def move_from_left_to_right_border(
     return actions
 
 
-def _get_country_name_per_enum(enum: Type[Enum], country: Locator | int) -> str:
+def _get_country_name_per_enum(enum: Type[TradingCountry] | Type[InvestingCountry], country: Locator | int) -> str:
     return next(
         k
         for k, v in enum.__dict__.items()
-        if isinstance(v, enum) and v.value == country
+        if isinstance(v, (Locator, int)) and v == country
     )
 
 
@@ -194,11 +181,6 @@ class CountryNameMixin:
     def _get_country_name(self) -> str:
         ...
 
-    @computed_field  # type: ignore
-    @cached_property
-    def folder_path(self) -> Path:
-        folder_path = self.folder_path
-        return folder_path / self._get_country_name()
 
 
 class BasePage(BaseModel):
@@ -311,8 +293,14 @@ class BasePage(BaseModel):
             .replace(self.source, "")
             .replace("scraper", "")
         )
-        if hasattr(self, "exchange"):
+
+        if hasattr(self, "country"):
+
+            path = path / self._get_country_name()
+        elif hasattr(self, "exchange"):
             path = path / self.exchange
+        else:
+            pass
         return path
 
     @computed_field  # type: ignore

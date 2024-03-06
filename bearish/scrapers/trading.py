@@ -1,5 +1,4 @@
 import re
-from enum import Enum
 from itertools import zip_longest
 from typing import Any, Dict, List, Literal
 
@@ -15,11 +14,12 @@ from bearish.scrapers.base import (
     BaseSettings,
     BaseTickerPage,
     CountryNameMixin,
-    Locator,
     _get_country_name_per_enum,
     move_from_left_to_right_border,
 )
+from bearish.scrapers.type import Locator
 from bearish.scrapers.model import HistoricalData
+from bearish.scrapers.settings import TradingCountry
 
 TRADING = "trading"
 
@@ -119,15 +119,6 @@ class TradingSettings(BaseSettings):
             "/technicals/",
             "/forecast/",
         ]
-    )
-
-
-class TradingCountry(Enum):
-    germany: Locator = Locator(by=By.XPATH, value='//*[@id="source-item-2-0-5"]/div')
-    belgium: Locator = Locator(by=By.XPATH, value='//*[@id="source-item-2-0-1"]/div')
-    france: Locator = Locator(by=By.XPATH, value='//*[@id="source-item-2-0-10"]/div')
-    us: Locator = Locator(
-        by=By.XPATH, value='//*[@id="source-item-1-0-0"]/div/div[2]/div[2]'
     )
 
 

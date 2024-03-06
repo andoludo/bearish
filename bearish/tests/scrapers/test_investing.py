@@ -6,11 +6,11 @@ import pytest
 
 from bearish.scrapers.base import init_chrome
 from bearish.scrapers.investing import (
-    InvestingCountry,
     InvestingScreenerScraper,
     InvestingSettings,
     InvestingTickerScraper,
 )
+from bearish.scrapers.settings import InvestingCountry
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def invest_settings() -> InvestingSettings:
 def test_investing_screener_belgium(invest_settings: InvestingSettings) -> None:
     with tempfile.TemporaryDirectory() as temp_directory:
         temp_path = Path(temp_directory).joinpath("investing")
-        browser = init_chrome(load_strategy_none=True, headless=False)
+        browser = init_chrome(load_strategy_none=True, headless=True)
         scraper = InvestingScreenerScraper(
             browser=browser,
             country=InvestingCountry.belgium,
@@ -42,7 +42,7 @@ def test_investing_screener_belgium(invest_settings: InvestingSettings) -> None:
 def test_investing_screener_france(invest_settings: InvestingSettings) -> None:
     with tempfile.TemporaryDirectory() as temp_directory:
         temp_path = Path(temp_directory).joinpath("investing")
-        browser = init_chrome(load_strategy_none=True, headless=False)
+        browser = init_chrome(load_strategy_none=True, headless=True)
         scraper = InvestingScreenerScraper(
             browser=browser,
             country=InvestingCountry.france,
@@ -60,7 +60,7 @@ def test_investing_ticker_scraper(invest_settings: InvestingSettings) -> None:
         scraper = InvestingTickerScraper(
             exchange="ucb",
             settings=invest_settings,
-            browser=init_chrome(load_strategy_none=True, headless=False),
+            browser=init_chrome(load_strategy_none=True, headless=True),
             bearish_path=temp_path,
         )
         data = scraper.scrape()
