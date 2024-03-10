@@ -23,7 +23,7 @@ def test_investing_main_scraper(invest_settings: InvestingSettings) -> None:
         scraper.scrape(skip_existing=False, symbols=["UCB"], first_page_only=True)
         assert Path(temp_path).joinpath("investing", "screener", "belgium").exists()
         assert Path(temp_path).joinpath("investing", "ticker", "ucb").exists()
-        db_json = scraper.create_db_json()
+        db_json = scraper.create_db_json(symbols=["UCB"])
         assert len(db_json) == 1
         assert "historical" in db_json[0]
 
