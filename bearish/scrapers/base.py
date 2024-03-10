@@ -9,17 +9,17 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Type, Un
 
 import pandas as pd
 import simplejson
+import undetected_chromedriver as uc  # type: ignore
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, computed_field
 from selenium.common import MoveTargetOutOfBoundsException, TimeoutException
 from selenium.webdriver import ActionChains, Chrome, Keys
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webdriver import WebDriver as BaseWebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from bearish.scrapers.model import HistoricalData
+from bearish.scrapers.model import HistoricalData, _clean
 from bearish.scrapers.settings import InvestingCountry, TradingCountry
 from bearish.scrapers.type import Locator
 
@@ -85,13 +85,11 @@ def move_by_x_offset_from_left_border(element: BaseElement, x_offset: int) -> bo
     return right_border
 
 
-def init_chrome(load_strategy_none: bool = False, headless: bool = False) -> Chrome:
-    option = Options()
+def init_chrome(headless: bool = True) -> uc.Chrome:
+    options = {}
     if headless:
-        option.add_argument("--headless")
-    if load_strategy_none:
-        option.page_load_strategy = "none"
-    return Chrome(options=option)
+        options.update({"headless": True})
+    return uc.Chrome(use_subprocess=False, version_main=121, **options)
 
 
 def bearish_path_fun() -> Path:
@@ -103,16 +101,6 @@ def bearish_path_fun() -> Path:
 
 class BaseSettings(BaseModel):
     ...
-
-
-def clean_dict(data: Dict[str, Any]) -> Dict[str, Any]:
-    cleaned_data = {}
-    for name, value in data.items():
-        if isinstance(value, dict):
-            cleaned_data[str(name)] = clean_dict(value)
-        else:
-            cleaned_data[str(name)] = value
-    return cleaned_data
 
 
 def _replace_values(
@@ -166,15 +154,6 @@ def _get_country_name_per_enum(
     )
 
 
-def _clean(
-    data: List[Dict[str, Any]] | Dict[str, Any]
-) -> List[Dict[str, Any]] | Dict[str, Any]:
-    if isinstance(data, list):
-        return [clean_dict(data_) for data_ in data]
-    else:
-        return clean_dict(data)
-
-
 class CountryNameMixin:
     @abc.abstractmethod
     def _get_country_name(self) -> str:
@@ -187,6 +166,7 @@ class BasePage(BaseModel):
     settings: BaseSettings
     browser: WebDriver = Field(default_factory=init_chrome, description="")
     bearish_path: Path = Field(default_factory=bearish_path_fun, description="")
+    first_page_only: Optional[bool] = False
     model_config = ConfigDict(arbitrary_types_allowed=True, use_enum_values=True)
     _tables = PrivateAttr(default_factory=list)
     _skip_existing = PrivateAttr(default=True)

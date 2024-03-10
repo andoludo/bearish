@@ -3,7 +3,7 @@ import copy
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 from pydantic import (
     AliasChoices,
@@ -358,7 +358,7 @@ class Ticker(BaseTickerModel):
         default=None, validation_alias=AliasChoices("Name", "name")
     )
     symbol: Optional[str] = Field(default=None, validation_alias=AliasChoices("Symbol"))
-    source: Optional[str] = None
+    source: Literal["trading", "investing", "yahoo"]
     sector: Optional[str] = Field(default=None, validation_alias=AliasChoices("Sector"))
     reference: Optional[str] = None
     industry: Optional[str] = Field(
@@ -378,9 +378,19 @@ class Ticker(BaseTickerModel):
         return value
 
     @classmethod
-    def from_json(cls, path: Path) -> List["Ticker"]:
+    def from_json(
+        cls, path: Path, source: Literal["trading", "investing", "yahoo"]
+    ) -> List["Ticker"]:
         records = json.loads(Path(path).read_text())
-        return [cls(**unflatten_json(cls, record)) for record in records]
+        return [cls.from_record(record, source) for record in records]
+
+    @classmethod
+    def from_record(
+        cls,
+        record: Dict[str, Any] | list[Dict[str, Any]],
+        source: Literal["trading", "investing", "yahoo"],
+    ) -> "Ticker":
+        return cls(**(unflatten_json(cls, _clean(record) | {"source": source})))  # type: ignore
 
 
 def is_nested(schema: Type[BaseModel]) -> bool:
@@ -422,3 +432,22 @@ def unflatten_json(schema: Type[BaseModel], data: Dict[str, Any]) -> Dict[str, A
             original_data[name] = unflatten_json(field.annotation, data)
     copy_data.update(original_data)
     return schema(**copy_data).model_dump()
+
+
+def _clean(
+    data: List[Dict[str, Any]] | Dict[str, Any]
+) -> List[Dict[str, Any]] | Dict[str, Any]:
+    if isinstance(data, list):
+        return [clean_dict(data_) for data_ in data]
+    else:
+        return clean_dict(data)
+
+
+def clean_dict(data: Dict[str, Any]) -> Dict[str, Any]:
+    cleaned_data = {}
+    for name, value in data.items():
+        if isinstance(value, dict):
+            cleaned_data[str(name)] = clean_dict(value)
+        else:
+            cleaned_data[str(name)] = value
+    return cleaned_data
