@@ -112,7 +112,8 @@ class InvestingScreenerScraper(BasePage, CountryNameMixin):
         }
 
     def click_one_trust_button(self) -> None:
-        self.click(self.settings.one_trust_button)
+        with contextlib.suppress(TimeoutException):
+            self.click(self.settings.one_trust_button)
 
     def _preprocess_tables(self) -> List[Dict[str, Any]]:
         dataframe = pd.concat([table[-1] for table in self._tables])
