@@ -70,7 +70,7 @@ class Scraper(BaseModel):
         screener_scraper = self._screener_scraper(first_page_only=first_page_only)
         screener_scraper.scrape(skip_existing=skip_existing)
         tickers = Ticker.from_json(
-            screener_scraper.get_stored_raw(), source=self.source.screener.source
+            screener_scraper.get_stored_raw(), source=screener_scraper.source
         )
         tickers = _filter_by_symbols(tickers=tickers, symbols=symbols)
         for ticker in tickers:
@@ -91,9 +91,7 @@ class Scraper(BaseModel):
         scraper = self._screener_scraper()
         if not scraper.get_stored_raw().exists():
             return []
-        tickers = Ticker.from_json(
-            scraper.get_stored_raw(), source=self.source.ticker.source
-        )
+        tickers = Ticker.from_json(scraper.get_stored_raw(), source=scraper.source)
         db_json = []
         tickers = _filter_by_symbols(tickers=tickers, symbols=symbols)
         for ticker in tickers:

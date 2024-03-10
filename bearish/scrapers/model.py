@@ -358,7 +358,7 @@ class Ticker(BaseTickerModel):
         default=None, validation_alias=AliasChoices("Name", "name")
     )
     symbol: Optional[str] = Field(default=None, validation_alias=AliasChoices("Symbol"))
-    source: Literal["trading", "investing", "yahoo"]
+    source: Optional[Literal["trading", "investing", "yahoo"]] = None
     sector: Optional[str] = Field(default=None, validation_alias=AliasChoices("Sector"))
     reference: Optional[str] = None
     industry: Optional[str] = Field(
