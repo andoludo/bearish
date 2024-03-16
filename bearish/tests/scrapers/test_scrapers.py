@@ -10,7 +10,7 @@ from bearish.scrapers.main import DataSource, Scraper
 
 logger = logging.getLogger(__name__)
 
-
+@pytest.mark.local_only
 def test_investing_main_scraper(invest_settings: InvestingSettings) -> None:
     with tempfile.TemporaryDirectory() as temp_directory:
         temp_path = Path(temp_directory).joinpath("investing", "scraper")
@@ -27,7 +27,7 @@ def test_investing_main_scraper(invest_settings: InvestingSettings) -> None:
         assert len(db_json) == 1
         assert "historical" in db_json[0]
 
-
+@pytest.mark.local_only
 def test_investing_db_json_update(
     update_invest_settings: UpdateInvestingSettings,
 ) -> None:
