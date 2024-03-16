@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from bearish.scrapers.investing import InvestingSettings, UpdateInvestingSettings
+
 
 @pytest.fixture(scope="session")
 def screener_investing() -> Path:
@@ -39,3 +41,21 @@ def investing_record(investing_records: list[dict]) -> dict:
 @pytest.fixture(scope="session")
 def trading_record(trading_records: list[dict]) -> dict:
     return trading_records[0]
+
+
+@pytest.fixture
+def invest_settings() -> InvestingSettings:
+    return InvestingSettings(
+        suffixes=[
+            "-income-statement",
+        ]
+    )
+
+
+@pytest.fixture
+def update_invest_settings() -> UpdateInvestingSettings:
+    return UpdateInvestingSettings(
+        suffixes=[
+            "-income-statement",
+        ]
+    )

@@ -5,13 +5,13 @@ from pathlib import Path
 import pytest
 from selenium.webdriver.common.by import By
 
-from bearish.scrapers.type import Locator
+from bearish.scrapers.settings import TradingCountry
 from bearish.scrapers.trading import (
     TradingScreenerScraper,
     TradingSettings,
     TradingTickerScraper,
 )
-from bearish.scrapers.settings import TradingCountry
+from bearish.scrapers.type import Locator
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,6 @@ def test_trading_screener_belgium(trading_settings: TradingSettings) -> None:
         data = scraper.scrape()
         assert Path(temp_path).joinpath("trading", "screener", "belgium").exists()
         assert data
-
-
 
 
 def test_trading_ticker(trading_settings: TradingSettings) -> None:

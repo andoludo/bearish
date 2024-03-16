@@ -1,4 +1,5 @@
 import contextlib
+import datetime
 from functools import partial
 from typing import Any, Dict, List, Literal
 
@@ -20,9 +21,11 @@ from bearish.scrapers.base import (
     _get_country_name_per_enum,
     init_chrome,
 )
-from bearish.scrapers.type import Locator
 from bearish.scrapers.model import HistoricalData
 from bearish.scrapers.settings import InvestingCountry
+from bearish.scrapers.type import Locator
+
+ONE_PAGE = 3
 
 COLUMNS_LENGTH = 2
 
@@ -78,12 +81,20 @@ class InvestingSettings(BaseSettings):
         ]
 
 
+class UpdateInvestingSettings(InvestingSettings):
+    start_date: str = Field(
+        default_factory=lambda: (
+            datetime.date.today() - datetime.timedelta(days=1)
+        ).strftime("%d-%m-%Y")
+    )
+
+
 class InvestingScreenerScraper(BasePage, CountryNameMixin):
     country: int
     settings: InvestingSettings = Field(default=InvestingSettings())
     source: Literal["trading", "investing", "yahoo"] = "investing"
     browser: WebDriver = Field(
-        default_factory=lambda: init_chrome(load_strategy_none=True, headless=True),
+        default_factory=lambda: init_chrome(headless=True),
         description="",
     )
 
@@ -101,7 +112,8 @@ class InvestingScreenerScraper(BasePage, CountryNameMixin):
         }
 
     def click_one_trust_button(self) -> None:
-        self.click(self.settings.one_trust_button)
+        with contextlib.suppress(TimeoutException):
+            self.click(self.settings.one_trust_button)
 
     def _preprocess_tables(self) -> List[Dict[str, Any]]:
         dataframe = pd.concat([table[-1] for table in self._tables])
@@ -133,6 +145,8 @@ class InvestingScreenerScraper(BasePage, CountryNameMixin):
             except (ElementClickInterceptedException, TimeoutException):
                 break
             page_number += 1
+            if (page_number == ONE_PAGE) and self.first_page_only:
+                break
 
     def _custom_scrape(self) -> list[dict[str, Any]]:
         self.click_one_trust_button()
@@ -145,10 +159,6 @@ class InvestingTickerScraper(BaseTickerPage):
     exchange: str
     source: Literal["trading", "investing", "yahoo"] = "investing"
     settings: InvestingSettings = Field(default=InvestingSettings())
-    browser: WebDriver = Field(
-        default_factory=lambda: init_chrome(load_strategy_none=True, headless=False),
-        description="",
-    )
 
     @model_validator(mode="before")
     @classmethod

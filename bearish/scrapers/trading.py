@@ -17,9 +17,9 @@ from bearish.scrapers.base import (
     _get_country_name_per_enum,
     move_from_left_to_right_border,
 )
-from bearish.scrapers.type import Locator
 from bearish.scrapers.model import HistoricalData
 from bearish.scrapers.settings import TradingCountry
+from bearish.scrapers.type import Locator
 
 TRADING = "trading"
 
