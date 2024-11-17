@@ -1,5 +1,7 @@
 import contextlib
+import threading
 from functools import partial
+from time import sleep
 from typing import Any, Dict, List, Literal
 
 import pandas as pd
@@ -29,7 +31,12 @@ COLUMNS_LENGTH = 2
 
 class InvestingSettings(BaseSettings):
     pause: int = 5
-    one_trust_button: Locator = Locator(by=By.ID, value="onetrust-button-group")
+    one_trust_button: Locator = Locator(by=By.XPATH, value='//*[@id=":R1am:"]/div/div[2]/svg')
+    screener_table: Locator = Locator(
+        by=By.XPATH,
+        value='//*[@id="screenerTableWrapper"]/table',
+    )
+    next_screener_page: Locator = Locator( by = By.XPATH, value = '//*[@id="__next"]/div[2]/div[3]/div[2]/div[3]/div/button[2]')
     date_picker: Locator = Locator(
         by=By.XPATH,
         value='//*[@id="__next"]/div[2]/div[2]/div[2]/div[1]/div[2]/div[2]/div[2]/div[2]/div',
@@ -94,14 +101,16 @@ class InvestingScreenerScraper(BasePage, CountryNameMixin):
     @classmethod
     def url_validator(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         return data | {
-            "url": f"https://www.investing.com/stock-screener/?sp=country::{data['country']}|"
-            f"sector::a|industry::a|equityType::"
-            "a|exchange::14|eq_pe_ratio::-670.36,370.54%3Ceq_market_cap;1",
-            "country": data["country"],
+            "url": f"https://www.investing.com/stock-screener"
         }
 
     def click_one_trust_button(self) -> None:
-        self.click(self.settings.one_trust_button)
+        while True:
+            try:
+                self.click(self.settings.one_trust_button)
+            except:
+                pass
+            sleep(3)
 
     def _preprocess_tables(self) -> List[Dict[str, Any]]:
         dataframe = pd.concat([table[-1] for table in self._tables])
@@ -135,8 +144,14 @@ class InvestingScreenerScraper(BasePage, CountryNameMixin):
             page_number += 1
 
     def _custom_scrape(self) -> list[dict[str, Any]]:
-        self.click_one_trust_button()
-        self.read_current_page(pause=self.settings.pause)
+        # popup_thread = threading.Thread(target=self.click_one_trust_button)
+        # popup_thread.daemon = True  # Allows the thread to close with the main program
+        # popup_thread.start()
+        # self.read_current_page(pause=self.settings.pause)
+        table = self.get_element(self.settings.screener_table)
+        pd.read_html(table._element.get_attribute("outerHTML"))
+        self.click(self.settings.next_screener_page)
+        # self.click(self.settings.one_trust_button)
         self.read_next_pages()
         return self._preprocess_tables()
 
