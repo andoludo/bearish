@@ -1,7 +1,11 @@
+from datetime import datetime
 from math import isnan
 from typing import Any, Optional, Annotated
 
+import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, BeforeValidator
+
+from bearish.models.financials import BaseFinancials
 
 
 def to_string(value: Any) -> Optional[str]:
@@ -11,9 +15,10 @@ def to_string(value: Any) -> Optional[str]:
 
 
 class BaseBearishModel(BaseModel):
-    model_config = ConfigDict(extra="forbid",populate_by_name=True)
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
-class BaseComponent(BaseBearishModel):
+
+class BaseComponent(BaseFinancials):
     symbol: str = Field(
         description="Unique ticker symbol identifying the company on the stock exchange"
     )
@@ -53,6 +58,7 @@ class BaseComponent(BaseBearishModel):
             description="Market type or classification for the company's listing, such as 'Main Market'",
         ),
     ]
+
 
 class Equity(BaseComponent):
 
@@ -158,41 +164,56 @@ class Equity(BaseComponent):
         ),
     ]
 
+
 class Crypto(BaseComponent):
-    cryptocurrency: Annotated[
-        str,
-        BeforeValidator(to_string)
-    ]
+    cryptocurrency: Annotated[str, BeforeValidator(to_string)]
+
 
 class Currency(BaseComponent):
-    base_currency: Annotated[
-        str,
-        BeforeValidator(to_string)
-    ]
-    quote_currency: Annotated[
-        str,
-        BeforeValidator(to_string)
-    ]
+    base_currency: Annotated[str, BeforeValidator(to_string)]
+    quote_currency: Annotated[str, BeforeValidator(to_string)]
+
 
 class Etf(BaseComponent):
     category_group: Annotated[
         Optional[str],
         BeforeValidator(to_string),
-        Field(
-            default=None
-        ),
+        Field(default=None),
     ]
     category: Annotated[
         Optional[str],
         BeforeValidator(to_string),
-        Field(
-            default=None
-        ),
+        Field(default=None),
     ]
     family: Annotated[
         Optional[str],
         BeforeValidator(to_string),
-        Field(
-            default=None
-        ),
+        Field(default=None),
     ]
+
+def to_float(value: Any) -> float:
+    return float(value)
+
+
+def to_datetime(value: Any) -> datetime:
+    if isinstance(value, str):
+        return datetime.strptime(value, "%Y-%m-%d")
+    elif isinstance(value, pd.Timestamp):
+        if value.tz is not None:
+            value = value.tz_convert(None)
+        return value.to_pydatetime()
+    elif isinstance(value, datetime):
+        return value
+    else:
+        raise ValueError(f"Invalid datetime value: {value}")
+
+
+
+class CandleStick(BaseFinancials):
+    open: Annotated[float, BeforeValidator(to_float)]
+    high: Annotated[float, BeforeValidator(to_float)]
+    low: Annotated[float, BeforeValidator(to_float)]
+    close: Annotated[float, BeforeValidator(to_float)]
+    volume: Annotated[float, BeforeValidator(to_float)]
+    dividends: Annotated[Optional[float], BeforeValidator(to_float), Field(None)]
+    stock_splits: Annotated[Optional[float], BeforeValidator(to_float), Field(None)]

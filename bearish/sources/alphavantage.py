@@ -1,12 +1,34 @@
-from typing import List
+import logging
+import os
+from typing import List, Optional, ClassVar
 
+import pandas as pd
+from alpha_vantage.fundamentaldata import FundamentalData
+from alpha_vantage.timeseries import TimeSeries
+from pydantic import BaseModel
+
+from bearish.models.base import Equity, CandleStick
 from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
-from bearish.sources.base import BaseFinancialsComponentSource
+from bearish.sources.base import (
+    AbstractSource,
+    Assets,
+    Financials,
+)
+
+logger = logging.getLogger(__name__)
 
 
-class AlphaVantageBase(BaseFinancialsComponentSource):
+class AlphaVantageBase(BaseModel):
     __source__ = "AlphaVantage"
+    fundamentals: ClassVar[FundamentalData] = FundamentalData(
+        key=os.environ["ALPHAVANTAGE_API_KEY"]
+    )
+    timeseries: ClassVar[TimeSeries] = TimeSeries(
+        key=os.environ["ALPHAVANTAGE_API_KEY"]
+    )
 
+
+class AlphaVantageBaseFinancials(AlphaVantageBase):
     @classmethod
     def from_ticker(cls, ticker: str) -> List["AlphaVantageBase"]:
         ...
@@ -23,7 +45,46 @@ class AlphaVantageBase(BaseFinancialsComponentSource):
         ]
 
 
-class AlphaVantageFinancialMetrics(AlphaVantageBase, FinancialMetrics):
+class AlphaVantageEquity(AlphaVantageBase, Equity):
+    __alias__ = {
+        "Symbol": "symbol",  # Unique ticker symbol
+        "Name": "name",  # Full name of the company
+        "Description": "summary",  # Brief summary of the company's operations
+        "Currency": "currency",  # Currency code
+        "Exchange": "exchange",  # Stock exchange abbreviation
+        "AssetType": "market",  # Closest match to market classification
+        "Sector": "sector",  # Broad sector classification
+        "Industry": "industry_group",  # Closest match to industry grouping
+        "Country": "country",  # Headquarters location
+        "region": "city",  # Aggregates state, city, and zipcode
+        "currency": "currency",  # Aggregates state, city, and zipcode
+        "OfficialSite": "website",  # URL of the company's official website
+    }
+
+    @classmethod
+    def from_tickers(cls, tickers: List[str]) -> List["AlphaVantageEquity"]:
+        equities = []
+        for ticker in tickers:
+            data, _ = cls.timeseries.get_symbol_search(ticker)
+            data = data.rename(
+                columns={c: c.split(".")[-1].strip() for c in data.columns}
+            )
+            records = data.to_dict(orient="records")
+            for record in records:
+                try:
+                    overview, _ = cls.fundamentals.get_company_overview(
+                        record["symbol"]
+                    )
+                except Exception as e:
+                    logger.exception(
+                        f"Failed to fetch company overview for {record['symbol']}. Reason: {e}",
+                    )
+                    continue
+                equities.append((overview | record))
+        return [AlphaVantageEquity.model_validate(equity) for equity in equities]
+
+
+class AlphaVantageFinancialMetrics(AlphaVantageBaseFinancials, FinancialMetrics):
     __alias__ = {
         "Symbol": "symbol",
         "EBITDA": "ebitda",
@@ -38,8 +99,13 @@ class AlphaVantageFinancialMetrics(AlphaVantageBase, FinancialMetrics):
         "ProfitMargin": "profit_margin",
     }
 
+    @classmethod
+    def from_ticker(cls, ticker: str) -> List["AlphaVantageFinancialMetrics"]:
+        company_overview, _ = cls.fundamentals.get_company_overview(ticker)
+        return AlphaVantageFinancialMetrics.from_json(company_overview)
 
-class AlphaVantageBalanceSheet(AlphaVantageBase, BalanceSheet):
+
+class AlphaVantageBalanceSheet(AlphaVantageBaseFinancials, BalanceSheet):
     __alias__ = {
         "symbol": "symbol",
         "fiscalDateEnding": "date",
@@ -71,8 +137,18 @@ class AlphaVantageBalanceSheet(AlphaVantageBase, BalanceSheet):
         "commonStockSharesOutstanding": "common_stock_shares_outstanding",
     }
 
+    @classmethod
+    def from_ticker(cls, ticker: str) -> List["AlphaVantageBalanceSheet"]:
+        data_annual, _ = cls.fundamentals.get_balance_sheet_annual(ticker)
+        data_quarterly, _ = cls.fundamentals.get_balance_sheet_quarterly(ticker)
+        data_to_add = data_quarterly[
+            ~data_quarterly["fiscalDateEnding"].isin(data_annual["fiscalDateEnding"])
+        ]
+        data_combined = pd.concat([data_annual, data_to_add], ignore_index=True)
+        return AlphaVantageBalanceSheet.from_dataframe(ticker, data_combined)
 
-class AlphaVantageCashFlow(AlphaVantageBase, CashFlow):
+
+class AlphaVantageCashFlow(AlphaVantageBaseFinancials, CashFlow):
     __alias__ = {
         "symbol": "symbol",
         "fiscalDateEnding": "date",
@@ -92,3 +168,44 @@ class AlphaVantageCashFlow(AlphaVantageBase, CashFlow):
         "changeInCashAndCashEquivalents": "changes_in_cash",
         "netIncome": "net_income_from_continuing_operations",
     }
+
+    @classmethod
+    def from_ticker(cls, ticker: str) -> List["AlphaVantageCashFlow"]:
+        data, _ = cls.fundamentals.get_cash_flow_annual(ticker)
+        return AlphaVantageCashFlow.from_dataframe(ticker, data)
+
+
+class AlphaVantageCandleStick(AlphaVantageBase, CandleStick):
+    __alias__ = {
+        "1. open": "open",
+        "2. high": "high",
+        "3. low": "low",
+        "4. close": "close",
+        "5. volume": "volume",
+        "2. Symbol": "symbol"
+    }
+    @classmethod
+    def from_ticker(cls, ticker: str, type: str) -> List["AlphaVantageCandleStick"]:
+        type = "full" if type == "full" else "compact"
+        time_series, metadata = cls.timeseries.get_daily(ticker, outputsize=type)
+
+        return [
+            AlphaVantageCandleStick(**(v | {"date": k} | metadata))
+            for k, v in time_series.items()
+        ]
+
+
+class AlphaVantageSource(AbstractSource):
+    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
+        equities = AlphaVantageEquity.from_tickers(filters)
+        return Assets(equities=equities)
+
+    def read_financials(self, ticker: str) -> Financials:
+        return Financials(
+            financial_metrics=[AlphaVantageFinancialMetrics.from_ticker(ticker)],
+            balance_sheets=AlphaVantageBalanceSheet.from_ticker(ticker),
+            cash_flows=AlphaVantageCashFlow.from_ticker(ticker),
+        )
+
+    def read_series(self, ticker: str, type: str) -> List[CandleStick]:
+        return AlphaVantageCandleStick.from_ticker(ticker, type)

@@ -5,10 +5,10 @@ import pytest
 import requests_mock
 
 from bearish.database.crud import BearishDb
-from bearish.equities import EquityQuery, DailyOhlcv
-from bearish.models.base import Equity
-from bearish.financials import Financials
-from bearish.main import Bearish
+from bearish.main import Bearish, AssetQuery
+from bearish.sources.financedatabase import FinanceDatabaseSource, RAW_EQUITIES_DATA_URL, RAW_CRYPTO_DATA_URL, \
+    RAW_CURRENCY_DATA_URL, RAW_ETF_DATA_URL
+from bearish.sources.yfinance import yFinanceSource
 
 
 @pytest.fixture(scope="session")
@@ -17,33 +17,47 @@ def bearish_db() -> BearishDb:
         return BearishDb(database_path=file.name)
 
 
-@pytest.fixture(scope="session")
-def bearish_init(bearish_db: BearishDb) -> Bearish:
+
+
+def test_update_asset_yfinance(bearish_db: BearishDb):
+    bearish = Bearish(bearish_db=bearish_db, sources=[yFinanceSource()])
+    bearish.write_assets(filters=["AAPL"])
+    assets = bearish.read_assets(AssetQuery(symbols=["AAPL"]))
+    assert assets
+
+def test_update_asset_financedatabase(bearish_db: BearishDb):
     with requests_mock.Mocker() as req:
-        url = "http://test.com"
         req.get(
-            url, text=Path(__file__).parent.joinpath("data/equities.csv").read_text()
+            RAW_EQUITIES_DATA_URL, text=Path(__file__).parent.joinpath("data/equities.csv").read_text()
         )
-        equity_query = EquityQuery(countries=["China"], exchanges=["SHZ"])
-        bearish = Bearish(equities_query=equity_query, bearish_db=bearish_db)
-        bearish.initialize(url)
-        return bearish
+        req.get(
+            RAW_CRYPTO_DATA_URL, text=Path(__file__).parent.joinpath("data/cryptos.csv").read_text()
+        )
+        req.get(
+            RAW_CURRENCY_DATA_URL, text=Path(__file__).parent.joinpath("data/currencies.csv").read_text()
+        )
+        req.get(
+            RAW_ETF_DATA_URL, text=Path(__file__).parent.joinpath("data/etfs.csv").read_text()
+        )
+        bearish = Bearish(bearish_db=bearish_db, sources=[FinanceDatabaseSource()])
+        bearish.write_assets()
+        assets = bearish.read_assets(AssetQuery(symbols=["AAVE-INR"]))
+        assets_multi = bearish.read_assets(AssetQuery(symbols=["000006.SZ", "AAVE-KRW"]))
+        assert assets.cryptos
+        assert assets_multi.equities
+        assert assets_multi.cryptos
 
 
-def test_bearish_init(bearish_init: None, bearish_db: BearishDb):
-    equity_query = EquityQuery(countries=["China"], exchanges=["SHZ"])
-    equities = bearish_db.read_equities(equity_query)
-    assert equities
-    assert all(isinstance(eq, Equity) for eq in equities)
-
-
-def test_bearish_update(bearish_init: None, bearish_db: BearishDb):
-    equity_query = EquityQuery(symbols=["000002.SZ"])
-    bearish = Bearish(equities_query=equity_query, bearish_db=bearish_db)
-    bearish.update("full")
-    series = bearish.read_series(months=1)
-    financials = bearish.read_financials()
-    assert series
+def test_update_financials(bearish_db: BearishDb):
+    bearish = Bearish(bearish_db=bearish_db, sources=[yFinanceSource()])
+    bearish.write_financials("AAPL")
+    financials = bearish.read_financials(AssetQuery(symbols=["AAPL"]))
     assert financials
-    assert all(isinstance(serie, DailyOhlcv) for serie in series)
-    assert all(isinstance(financial, Financials) for financial in financials)
+
+
+def test_update_series(bearish_db: BearishDb):
+    bearish = Bearish(bearish_db=bearish_db, sources=[yFinanceSource()])
+    bearish.write_series("AAPL", "full")
+    series = bearish.read_series(AssetQuery(symbols=["AAPL"]))
+    assert series
+    assert len(series) > 1

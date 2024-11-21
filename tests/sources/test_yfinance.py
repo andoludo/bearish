@@ -1,4 +1,5 @@
-from bearish.sources.yfinance import YfinanceFinancialMetrics, yFinanceBalanceSheet, yFinanceCashFlow, yFinanceSource
+from bearish.sources.yfinance import YfinanceFinancialMetrics, yFinanceBalanceSheet, yFinanceCashFlow, yFinanceSource, \
+    YfinanceEquity
 
 
 def test_yfinance():
@@ -19,5 +20,13 @@ def test_cashflow():
     assert all(isinstance(result, yFinanceCashFlow) for result in results)
 
 
-def test_yFinanceSource():
-    yFinanceSource().update_financials("AAPL")
+
+def test_get_ticker():
+    tickers = ['MSFT', 'AAPL', 'GOOG']
+    equities = YfinanceEquity.from_tickers(tickers)
+    assert len(equities) == len(tickers)
+
+def test_yFinanceSource_update_assets():
+    tickers = ['MSFT', 'AAPL', 'GOOG']
+    assets = yFinanceSource().read_assets(filters=tickers)
+    assert len(assets.equities) == len(tickers)

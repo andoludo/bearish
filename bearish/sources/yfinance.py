@@ -2,20 +2,19 @@ from datetime import date
 from typing import List, Optional
 
 import yfinance as yf
-from pydantic import Field
+from pydantic import BaseModel
 
-from bearish.models.base import Equity, Crypto, Etf, Currency
+from bearish.models.base import Equity, CandleStick
 from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
 from bearish.sources.base import (
-    BaseFinancialsComponentSource,
     AbstractSource,
-    BaseFinancialsSource, AbstractAssetsSource,
+    Assets,
+    Financials,
 )
-
-
-class YfinanceFinancialBase(BaseFinancialsComponentSource):
+class YfinanceBase(BaseModel):
     __source__ = "Yfinance"
 
+class YfinanceFinancialBase(YfinanceBase):
     @classmethod
     def _from_ticker(cls, ticker: str, attribute: str):
         ticker_ = yf.Ticker(ticker)
@@ -26,6 +25,32 @@ class YfinanceFinancialBase(BaseFinancialsComponentSource):
             cls.model_validate((data_ | {"symbol": ticker}))
             for data_ in data.to_dict(orient="records")
         ]
+
+
+class YfinanceEquityBase(YfinanceBase):
+    @classmethod
+    def from_tickers(cls, tickers: List[str]):
+        tickers_ = yf.Tickers(" ".join(tickers))
+        return [cls.model_validate(tickers_.tickers[ticker].info) for ticker in tickers]
+
+
+class YfinanceEquity(YfinanceEquityBase, Equity):
+    __alias__ = {
+        "symbol": "symbol",
+        "longName": "name",
+        "longBusinessSummary": "summary",
+        "currency": "currency",
+        "exchange": "exchange",
+        "quoteType": "market",  # Closest matching field to market classification
+        "sectorDisp": "sector",  # 'sectorDisp' seems like the descriptive sector field
+        "sector": "industry_group",  # Assuming industry group maps broadly to sector
+        "industryDisp": "industry",  # 'industryDisp' matches the detailed industry description
+        "country": "country",
+        "state": "state",
+        "city": "city",
+        "zip": "zipcode",
+        "website": "website",
+    }
 
 
 class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
@@ -122,32 +147,34 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
     def from_ticker(cls, ticker: str) -> "yFinanceCashFlow":
         return cls._from_ticker(ticker, "cashflow")
 
-
-class yFinanceFinancialsSource(BaseFinancialsSource):
-    def financial_metrics(self, ticker: str) -> List[FinancialMetrics]:
-        return YfinanceFinancialMetrics.from_ticker(ticker)
-
-    def balance_sheets(self, ticker: str) -> List[BalanceSheet]:
-        return yFinanceBalanceSheet.from_ticker(ticker)
-
-    def cash_flows(self, ticker: str) -> List[CashFlow]:
-        return yFinanceCashFlow.from_ticker(ticker)
-
-class yFinanceAssetSource(AbstractAssetsSource):
-    def equities(self, filters: Optional[List[str]] = None) -> List[Equity]:
-        return []
-
-    def cryptos(self, filters: Optional[List[str]] = None) -> List[Crypto]:
-        return []
-
-
-    def etfs(self, filters: Optional[List[str]] = None) -> List[Etf]:
-        return []
-
-
-    def currencies(self, filters: Optional[List[str]] = None) -> List[Currency]:
-        return []
+class yFinanceCandleStick(YfinanceBase, CandleStick):
+    __alias__ = {
+        "Open": "open",
+        "High": "high",
+        "Low": "low",
+        "Close": "close",
+        "Volume": "volume",
+        "symbol": "symbol",
+        "Date": "date",
+    }
 
 class yFinanceSource(AbstractSource):
-    assets:yFinanceAssetSource = Field(default_factory=yFinanceAssetSource)
-    financials: yFinanceFinancialsSource = Field(default_factory=yFinanceFinancialsSource)
+    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
+        equities = YfinanceEquity.from_tickers(filters)
+        return Assets(equities=equities)
+
+    def read_financials(self, ticker: str) -> Financials:
+        return Financials(
+            financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker),
+            balance_sheets=yFinanceBalanceSheet.from_ticker(ticker),
+            cash_flows=yFinanceCashFlow.from_ticker(ticker),
+        )
+
+    def read_series(self, ticker: str, type: str) -> List[CandleStick]:
+        type = "max" if type == "full" else "5d"
+        ticker_ = yf.Ticker(ticker)
+        data = ticker_.history(period=type)
+        records = data.reset_index().to_dict(orient="records")
+        return [
+            yFinanceCandleStick(**(record | {"symbol": ticker})) for record in records
+        ]

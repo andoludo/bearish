@@ -1,0 +1,38 @@
+symbol,name,currency,summary,category_group,category,family,exchange,market
+^ACWI,ISHARES TRUST,USD,,,,,NIM,us_market
+^ADFI-IV,NFIELD DYNAMIC FIXED INCOME ETF,USD,,,,,ASE,us_market
+^ADRE,INVESCO ACTIVELY M,USD,,,,,NIM,us_market
+^ARB-EU,ALTSHARES MERGER ARBITRAGE ETF,USD,,,,,ASE,us_market
+^ARB-IV,ALTSHARES MERGER ARBITRAGE ETF,USD,,,,,ASE,us_market
+^ARB-NV,ALTSHARES MERGER ARBITRAGE ETF,USD,,,,,ASE,us_market
+^ARB-TC,ALTSHARES MERGER ARBITRAGE ETF,USD,,,,,ASE,us_market
+^ASET,FLEXSHARES TRUST,USD,,,,,NIM,us_market
+^BICK,FIRST TR BICK INDE,USD,,,,,NIM,us_market
+^BND,VANGUARD BD IDX FD,USD,,,,Vanguard Asset Management,NIM,us_market
+^BNDX,VANGUARD CHARLOTTE,USD,,,,Vanguard Asset Management,NIM,us_market
+^CDC,VICTORY PTF II,USD,,,,,NIM,us_market
+^CID,VICTORY PTF II,USD,,,,,NIM,us_market
+^DRIV,Global X Autonomous  Electric V,USD,,,,,NIM,us_market
+^EBLU-EU,ECOFIN GLOBAL WATER ESG FUND Es,USD,,,,,ASE,us_market
+^EBLU-NV,ECOFIN GLOBAL WATER ESG FUND Ne,USD,,,,,ASE,us_market
+^EBLU-TC,ECOFIN GLOBAL WATER ESG FUND To,USD,,,,,ASE,us_market
+^EVLMC,EATON VANCE NEXTSH,USD,,,,,NIM,us_market
+^FIXD,FIRST TR ETF VIII,USD,,,,,NIM,us_market
+^IDLB,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^IPKW,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^LDSF,FIRST TR ETF VIII,USD,,,,,NIM,us_market
+^NXTG,FIRST TR EXCHGE FD,USD,,,,,NIM,us_market
+^ONEQ,FIDELITY COMMWLTH,USD,,,,,NIM,us_market
+^PNQI,INVESCO EXCHG TRAD,USD,,,,Invesco Investment Management,NIM,us_market
+^PRFZ,INVESCO EXCHG TRAD,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCC,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCD,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCE,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCF,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCI,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCT,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^PSCU,INVESCO EXCH TRDII,USD,,,,Invesco Investment Management,NIM,us_market
+^QABA,FIRST TR NSQ ABA F,USD,,,,,NIM,us_market
+^REIT,ALPS ETF TRUST,USD,,,,,DJI,us_market
+^SLVO,CREDIT SUISSE NASS,USD,,,,Credit Suisse Asset Management,NIM,us_market
+^SPQQ,SIREN ETF TR,USD,,,,,NIM,us_market

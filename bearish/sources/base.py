@@ -1,58 +1,42 @@
 import abc
-from typing import List, Optional
+from datetime import datetime
+from typing import List, Optional, Any, Annotated
 
-from pydantic import BaseModel, ConfigDict
+import pandas as pd
+from pydantic import BaseModel, ConfigDict, Field, BeforeValidator
 
-from bearish.models.base import Equity, Crypto, Etf, Currency
+from bearish.models.base import Equity, Crypto, Etf, Currency, CandleStick
 from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
 
 
-class BaseFinancialsComponentSource(abc.ABC, BaseModel):
-    @classmethod
-    @abc.abstractmethod
-    def from_ticker(cls, ticker: str) -> List["BaseFinancialsComponentSource"]:
-        ...
+
+class Financials(BaseModel):
+    financial_metrics: List[FinancialMetrics] = Field(default_factory=list)
+    balance_sheets: List[BalanceSheet] = Field(default_factory=list)
+    cash_flows: List[CashFlow] = Field(default_factory=list)
 
 
-class BaseFinancialsSource(abc.ABC, BaseModel):
-    @abc.abstractmethod
-    def financial_metrics(self, ticker: str) -> List[FinancialMetrics]:
-        ...
-
-    @abc.abstractmethod
-    def balance_sheets(self, ticker: str) -> List[BalanceSheet]:
-        ...
-
-    @abc.abstractmethod
-    def cash_flows(self, ticker: str) -> List[CashFlow]:
-        ...
+class Assets(BaseModel):
+    equities: List[Equity] = Field(default_factory=list)
+    cryptos: List[Crypto] = Field(default_factory=list)
+    etfs: List[Etf] = Field(default_factory=list)
+    currencies: List[Currency] = Field(default_factory=list)
 
 
-class AbstractAssetsSource(abc.ABC):
-    @abc.abstractmethod
-    def equities(self, filters: Optional[List[str]] = None) -> List[Equity]:
-        ...
 
-    @abc.abstractmethod
-    def cryptos(self, filters: Optional[List[str]] = None) -> List[Crypto]:
-        ...
-
-    @abc.abstractmethod
-    def etfs(self, filters: Optional[List[str]] = None) -> List[Etf]:
-        ...
-
-    @abc.abstractmethod
-    def currencies(self, filters: Optional[List[str]] = None) -> List[Currency]:
-        ...
 
 
 class AbstractSource(abc.ABC, BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    assets: AbstractAssetsSource
-    financials: BaseFinancialsSource
 
-    def update_financials(self, ticker: str):
-        financial_metrics = self.financials.financial_metrics(ticker)
-        balance_sheets = self.financials.balance_sheets(ticker)
-        cash_flows = self.financials.cash_flows(ticker)
-        a = 12
+    @abc.abstractmethod
+    def read_financials(self, ticker: str)-> Financials:...
+
+
+    @abc.abstractmethod
+    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:...
+
+    @abc.abstractmethod
+    def read_series(self, ticker: str, type: str) -> List[CandleStick]:...
+
+

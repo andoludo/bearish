@@ -260,36 +260,36 @@ def combine_duplicates(data: pd.DataFrame) -> pd.Series:
 
         return new_data
     return data.T[column]
-
-class Financials(BaseFinancials):
-    date: datetime
-    symbol: str
-
-class ManyFinancials(BaseModel):
-    financials: List[Financials]
-
-    @classmethod
-    def from_yfinance(cls, equity: "Equity") ->"ManyFinancials":
-        ticker = yf.Ticker(equity.symbol)
-        data = pd.concat(
-            [
-                ticker.incomestmt.T,
-                ticker.balancesheet.T,
-                ticker.cashflow.T,
-                ticker.financials.T,
-                ticker.quarterly_balancesheet.T
-            ],
-            axis=1,
-        )
-        data_ = pd.DataFrame([equity.symbol] * len(data), columns=["symbol"], index=data.index)
-        data = pd.concat([data, data_], axis=1)
-        data = data.T.groupby(data.columns).apply(combine_duplicates).T
-        data = data.reset_index(names="date")
-        records = data.to_dict(orient="records")
-        return  cls(financials=[Financials(**record) for record in records])
-
-    def write(self, database: "BearishDb"):
-        database.write_financials(self.financials)
+#
+# class Financials(BaseFinancials):
+#     date: datetime
+#     symbol: str
+#
+# class ManyFinancials(BaseModel):
+#     financials: List[Financials]
+#
+#     @classmethod
+#     def from_yfinance(cls, equity: "Equity") ->"ManyFinancials":
+#         ticker = yf.Ticker(equity.symbol)
+#         data = pd.concat(
+#             [
+#                 ticker.incomestmt.T,
+#                 ticker.balancesheet.T,
+#                 ticker.cashflow.T,
+#                 ticker.financials.T,
+#                 ticker.quarterly_balancesheet.T
+#             ],
+#             axis=1,
+#         )
+#         data_ = pd.DataFrame([equity.symbol] * len(data), columns=["symbol"], index=data.index)
+#         data = pd.concat([data, data_], axis=1)
+#         data = data.T.groupby(data.columns).apply(combine_duplicates).T
+#         data = data.reset_index(names="date")
+#         records = data.to_dict(orient="records")
+#         return  cls(financials=[Financials(**record) for record in records])
+#
+#     def write(self, database: "BearishDb"):
+#         database.write_financials(self.financials)
 
 if __name__ == "__main__":
     from bearish.database.crud import BearishDb

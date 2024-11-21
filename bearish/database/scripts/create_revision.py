@@ -17,5 +17,5 @@ def create_revision(database_url: str, message:str) -> None:
 
 
 if __name__ == "__main__":
-    message = "Adding dividends"
+    message = "Candlesticks table"
     create_revision(DATABASE_URL, message)

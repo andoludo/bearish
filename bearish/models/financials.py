@@ -36,13 +36,18 @@ class BaseFinancials(BaseModel):
     def _validate(cls, metrics: Dict[str, Any]) -> Dict[str, Any]:
         if not cls.__source__:
             raise ValueError("No source specified for financial metrics")
+        default_keys = {field:field for field in cls.model_fields}
+        default_keys.pop("date", None)
+        alias = cls.__alias__.copy()
+        alias = {**alias,**default_keys}
+
         created_at = date.today()
         return (
             {"date": metrics.get("date", created_at)}
             | {
-                cls.__alias__.get(key, key): value
+                alias.get(key, key): value
                 for key, value in metrics.items()
-                if key in cls.__alias__
+                if key in alias
             }
             | {
                 "created_at": created_at,
