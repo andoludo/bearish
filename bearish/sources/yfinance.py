@@ -1,7 +1,7 @@
 from datetime import date
 from typing import List, Optional
 
-import yfinance as yf
+import yfinance as yf  # type: ignore
 from pydantic import BaseModel
 
 from bearish.models.base import Equity, CandleStick
@@ -11,25 +11,28 @@ from bearish.sources.base import (
     Assets,
     Financials,
 )
+
+
 class YfinanceBase(BaseModel):
     __source__ = "Yfinance"
 
+
 class YfinanceFinancialBase(YfinanceBase):
     @classmethod
-    def _from_ticker(cls, ticker: str, attribute: str):
+    def _from_ticker(cls, ticker: str, attribute: str) -> List["YfinanceFinancialBase"]:
         ticker_ = yf.Ticker(ticker)
         data = getattr(ticker_, attribute).T
         data.index = [date(index.year, index.month, index.day) for index in data.index]
-        data.reset_index(names=["date"], inplace=True)
+        data = data.reset_index(names=["date"])
         return [
-            cls.model_validate((data_ | {"symbol": ticker}))
+            cls.model_validate(data_ | {"symbol": ticker})
             for data_ in data.to_dict(orient="records")
         ]
 
 
 class YfinanceEquityBase(YfinanceBase):
     @classmethod
-    def from_tickers(cls, tickers: List[str]):
+    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEquityBase"]:
         tickers_ = yf.Tickers(" ".join(tickers))
         return [cls.model_validate(tickers_.tickers[ticker].info) for ticker in tickers]
 
@@ -71,11 +74,11 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str):
-        return cls._from_ticker(ticker, "financials")
+    def from_ticker(cls, ticker: str) -> List["YfinanceFinancialMetrics"]:
+        return cls._from_ticker(ticker, "financials")  # type: ignore
 
 
-class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
+class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):  # noqa: N801
     __alias__ = {
         "symbol": "symbol",
         "Treasury Shares Number": "treasury_stock",
@@ -118,11 +121,11 @@ class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str):
-        return cls._from_ticker(ticker, "balance_sheet")
+    def from_ticker(cls, ticker: str) -> List["yFinanceBalanceSheet"]:
+        return cls._from_ticker(ticker, "balance_sheet")  # type: ignore
 
 
-class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
+class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):  # noqa: N801
     __alias__ = {
         "symbol": "symbol",
         "Operating Cash Flow": "operating_cash_flow",
@@ -144,10 +147,11 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str) -> "yFinanceCashFlow":
-        return cls._from_ticker(ticker, "cashflow")
+    def from_ticker(cls, ticker: str) -> List["yFinanceCashFlow"]:
+        return cls._from_ticker(ticker, "cashflow")  # type: ignore
 
-class yFinanceCandleStick(YfinanceBase, CandleStick):
+
+class yFinanceCandleStick(YfinanceBase, CandleStick):  # noqa: N801
     __alias__ = {
         "Open": "open",
         "High": "high",
@@ -158,9 +162,10 @@ class yFinanceCandleStick(YfinanceBase, CandleStick):
         "Date": "date",
     }
 
-class yFinanceSource(AbstractSource):
+
+class yFinanceSource(AbstractSource):  # noqa: N801
     def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
-        equities = YfinanceEquity.from_tickers(filters)
+        equities = YfinanceEquity.from_tickers(filters)  # type: ignore
         return Assets(equities=equities)
 
     def read_financials(self, ticker: str) -> Financials:

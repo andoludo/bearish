@@ -8,7 +8,8 @@ from sqlalchemy import pool
 from alembic import context
 from sqlmodel import SQLModel
 
-from bearish.database.schemas import * # noqa: F403, F401
+from bearish.database.schemas import *  # noqa: F403
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -29,6 +30,7 @@ target_metadata = SQLModel.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -46,7 +48,6 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-
     )
 
     with context.begin_transaction():
@@ -61,7 +62,7 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = os.getenv("DATABASE_URL")
+    configuration["sqlalchemy.url"] = os.getenv("DATABASE_URL")  # type: ignore
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -69,7 +70,9 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata,render_as_batch=True)
+        context.configure(
+            connection=connection, target_metadata=target_metadata, render_as_batch=True
+        )
 
         with context.begin_transaction():
             context.run_migrations()

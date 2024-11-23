@@ -1,13 +1,10 @@
 import abc
-from datetime import datetime
-from typing import List, Optional, Any, Annotated
+from typing import List, Optional
 
-import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, BeforeValidator
+from pydantic import BaseModel, ConfigDict, Field
 
 from bearish.models.base import Equity, Crypto, Etf, Currency, CandleStick
 from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
-
 
 
 class Financials(BaseModel):
@@ -23,20 +20,17 @@ class Assets(BaseModel):
     currencies: List[Currency] = Field(default_factory=list)
 
 
-
-
-
-class AbstractSource(abc.ABC, BaseModel):
+class AbstractSource(BaseModel, abc.ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @abc.abstractmethod
-    def read_financials(self, ticker: str)-> Financials:...
-
-
-    @abc.abstractmethod
-    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:...
+    def read_financials(self, ticker: str) -> Financials:
+        ...
 
     @abc.abstractmethod
-    def read_series(self, ticker: str, type: str) -> List[CandleStick]:...
+    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
+        ...
 
-
+    @abc.abstractmethod
+    def read_series(self, ticker: str, type: str) -> List[CandleStick]:
+        ...

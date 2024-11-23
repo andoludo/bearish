@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date
+import datetime
 from typing import Optional, Dict, Any, Annotated
 
 from pydantic import (
@@ -11,7 +12,7 @@ from pydantic import (
 )
 
 
-def to_float(value: Any) -> Optional[float]:
+def to_float(value: Any) -> Optional[float]:  # noqa: ANN401
     if value == "None":
         return None
     return float(value)
@@ -19,27 +20,27 @@ def to_float(value: Any) -> Optional[float]:
 
 class BaseFinancials(BaseModel):
     __alias__: Dict[str, str] = {}
-    __source__: Optional[str] = None
+    __source__: str
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
-    date: date
-    created_at: date
+    date: datetime.date
+    created_at: datetime.date
     symbol: str
     source: str
 
     @field_validator("date", mode="before")
-    def _date_validator(cls, value: str | date) -> date:
+    def _date_validator(cls, value: str | datetime.date) -> datetime.date:  # noqa: N805
         if isinstance(value, str):
-            return datetime.strptime(value, "%Y-%m-%d").date()
+            return datetime.datetime.strptime(value, "%Y-%m-%d").date()
         return value
 
     @model_validator(mode="before")
-    def _validate(cls, metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate(cls, metrics: Dict[str, Any]) -> Dict[str, Any]:  # noqa: N805
         if not cls.__source__:
             raise ValueError("No source specified for financial metrics")
-        default_keys = {field:field for field in cls.model_fields}
+        default_keys = {field: field for field in cls.model_fields}
         default_keys.pop("date", None)
         alias = cls.__alias__.copy()
-        alias = {**alias,**default_keys}
+        alias = {**alias, **default_keys}
 
         created_at = date.today()
         return (
@@ -267,80 +268,97 @@ class CashFlow(BaseFinancials):
     operating_cash_flow: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Cash flow generated from operating activities")
+        Field(
+            default=None, description="Cash flow generated from operating activities"
+        ),
     ]
     change_in_operating_liabilities: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Changes in operating liabilities"
-    )]
+        Field(default=None, description="Changes in operating liabilities"),
+    ]
     change_in_working_capital: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Changes in working capital from operating activities")
+        Field(
+            default=None,
+            description="Changes in working capital from operating activities",
+        ),
     ]
     change_in_other_working_capital: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Changes in other working capital from operating activities")
+        Field(
+            default=None,
+            description="Changes in other working capital from operating activities",
+        ),
     ]
     change_in_receivables: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Changes in accounts receivable balance")
+        Field(default=None, description="Changes in accounts receivable balance"),
     ]
     change_in_inventory: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Changes in inventory levels")
+        Field(default=None, description="Changes in inventory levels"),
     ]
     depreciation_amortization_depletion: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Total depreciation, depletion, and amortization expenses")
+        Field(
+            default=None,
+            description="Total depreciation, depletion, and amortization expenses",
+        ),
     ]
     capital_expenditure: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Capital expenditures for fixed assets")
+        Field(default=None, description="Capital expenditures for fixed assets"),
     ]
     cash_flow_from_investing_activities: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Cash flow generated or used in investing activities")
+        Field(
+            default=None,
+            description="Cash flow generated or used in investing activities",
+        ),
     ]
     financing_cash_flow: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Cash flow generated or used in financing activities")
+        Field(
+            default=None,
+            description="Cash flow generated or used in financing activities",
+        ),
     ]
     repurchase_of_capital_stock: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Payments made for repurchase of common stock")
+        Field(default=None, description="Payments made for repurchase of common stock"),
     ]
     cash_dividends_paid: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Cash dividends paid to shareholders")
+        Field(default=None, description="Cash dividends paid to shareholders"),
     ]
     common_stock_dividend_paid: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Dividends paid on common stock")
+        Field(default=None, description="Dividends paid on common stock"),
     ]
     proceeds_from_issuance_of_common_stock: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Proceeds from issuance of common stock")
+        Field(default=None, description="Proceeds from issuance of common stock"),
     ]
     changes_in_cash: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Net changes in cash and cash equivalents")
+        Field(default=None, description="Net changes in cash and cash equivalents"),
     ]
     net_income_from_continuing_operations: Annotated[
         Optional[float],
         BeforeValidator(to_float),
-        Field(default=None, description="Net income from continuing operations")
+        Field(default=None, description="Net income from continuing operations"),
     ]

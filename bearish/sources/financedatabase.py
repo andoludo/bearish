@@ -2,7 +2,7 @@ from io import StringIO
 from typing import Optional, List, Type
 
 import pandas as pd
-import requests
+import requests  # type: ignore
 from pydantic import BaseModel, Field
 
 from bearish.models.base import CandleStick, Equity, Crypto, Currency, Etf
@@ -73,7 +73,7 @@ class FinanceDatabaseSource(AbstractSource):
         )
         for field in sources.model_fields:
             url_source = getattr(sources, field)
-            response = requests.get(url_source.url)
+            response = requests.get(url_source.url, timeout=10)
             if not response.ok:
                 raise Exception(f"Failed to download data from {url_source.url}")
             data = pd.read_csv(StringIO(response.text))
@@ -92,7 +92,7 @@ class FinanceDatabaseSource(AbstractSource):
         data: pd.DataFrame,
         financedatabaseclass: Type[FinanceDatabaseBase],
         filters: Optional[list[str]] = None,
-    ) -> "Equities":
+    ) -> List[FinanceDatabaseBase]:
         if filters:
             data = data.dropna(subset=filters)
         equities_mapping = [equity.to_dict() for _, equity in data.iterrows()]

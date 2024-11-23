@@ -13,41 +13,53 @@ class BaseBearishTable(SQLModel):
     symbol: str = Field(index=True)
     source: str = Field(index=True)
 
+
 class BaseTable(BaseBearishTable):
     __table_args__ = {"sqlite_autoincrement": True}  # noqa: RUF012
     id: Optional[int] = Field(default=None, primary_key=True)
 
+
+class BaseBearishTableTest(BaseTable, table=True):
+    ...
+
+
 class BaseFinancials(BaseBearishTable):
     date: datetime = Field(primary_key=True, index=True)
 
-class EquityORM(BaseTable, Equity, table=True):
+
+class EquityORM(BaseTable, Equity, table=True):  # type: ignore
     __tablename__ = "equity"
     country: str = Field(index=True)
 
-class CryptoORM(BaseTable, Crypto, table=True):
+
+class CryptoORM(BaseTable, Crypto, table=True):  # type: ignore
     __tablename__ = "crypto"
     cryptocurrency: str = Field(index=True)
 
-class CurrencyORM(BaseTable,Currency, table=True):
+
+class CurrencyORM(BaseTable, Currency, table=True):  # type: ignore
     __tablename__ = "currency"
     base_currency: str = Field(index=True)
 
-class EtfORM(BaseTable,Etf, table=True):
+
+class EtfORM(BaseTable, Etf, table=True):  # type: ignore
     __tablename__ = "etf"
 
 
-class CandleStickORM(SQLModel, CandleStick, table=True):
+class CandleStickORM(SQLModel, CandleStick, table=True):  # type: ignore
     __tablename__ = "candlestick"
     date: datetime = Field(primary_key=True, index=True)
     symbol: str = Field(primary_key=True, index=True)
     source: str = Field(primary_key=True, index=True)
 
-class FinancialMetricsORM(BaseFinancials, FinancialMetrics, table=True):
+
+class FinancialMetricsORM(BaseFinancials, FinancialMetrics, table=True):  # type: ignore
     __tablename__ = "financialmetrics"
 
 
-class BalanceSheetORM(BaseFinancials, BalanceSheet, table=True):
+class BalanceSheetORM(BaseFinancials, BalanceSheet, table=True):  # type: ignore
     __tablename__ = "balancesheet"
 
-class CashFlowORM(BaseFinancials, CashFlow, table=True):
+
+class CashFlowORM(BaseFinancials, CashFlow, table=True):  # type: ignore
     __tablename__ = "cashflow"

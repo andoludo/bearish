@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, BeforeValidator
 from bearish.models.financials import BaseFinancials
 
 
-def to_string(value: Any) -> Optional[str]:
+def to_string(value: Any) -> Optional[str]:  # noqa: ANN401
     if value is None or (isinstance(value, float) and isnan(value)):
         return None
     return str(value)
@@ -191,11 +191,12 @@ class Etf(BaseComponent):
         Field(default=None),
     ]
 
-def to_float(value: Any) -> float:
+
+def to_float(value: Any) -> float:  # noqa: ANN401
     return float(value)
 
 
-def to_datetime(value: Any) -> datetime:
+def to_datetime(value: Any) -> datetime:  # noqa: ANN401
     if isinstance(value, str):
         return datetime.strptime(value, "%Y-%m-%d")
     elif isinstance(value, pd.Timestamp):
@@ -206,7 +207,6 @@ def to_datetime(value: Any) -> datetime:
         return value
     else:
         raise ValueError(f"Invalid datetime value: {value}")
-
 
 
 class CandleStick(BaseFinancials):

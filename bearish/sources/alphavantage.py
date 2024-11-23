@@ -1,10 +1,10 @@
 import logging
 import os
-from typing import List, Optional, ClassVar
+from typing import List, Optional, ClassVar, cast, Any, Dict
 
 import pandas as pd
-from alpha_vantage.fundamentaldata import FundamentalData
-from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.fundamentaldata import FundamentalData  # type: ignore
+from alpha_vantage.timeseries import TimeSeries  # type: ignore
 from pydantic import BaseModel
 
 from bearish.models.base import Equity, CandleStick
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class AlphaVantageBase(BaseModel):
-    __source__ = "AlphaVantage"
+    __source__: str = "AlphaVantage"
     fundamentals: ClassVar[FundamentalData] = FundamentalData(
         key=os.environ["ALPHAVANTAGE_API_KEY"]
     )
@@ -30,17 +30,15 @@ class AlphaVantageBase(BaseModel):
 
 class AlphaVantageBaseFinancials(AlphaVantageBase):
     @classmethod
-    def from_ticker(cls, ticker: str) -> List["AlphaVantageBase"]:
-        ...
-
-    @classmethod
-    def from_json(cls, data) -> "AlphaVantageBase":
+    def from_json(cls, data: Dict[str, Any]) -> "AlphaVantageBaseFinancials":
         return cls.model_validate(data)
 
     @classmethod
-    def from_dataframe(cls, ticker, data) -> List["AlphaVantageBase"]:
+    def from_dataframe(
+        cls, ticker: str, data: pd.DataFrame
+    ) -> List["AlphaVantageBaseFinancials"]:
         return [
-            cls.model_validate((bs | {"symbol": ticker}))
+            cls.model_validate(bs | {"symbol": ticker})
             for bs in data.to_dict(orient="records")
         ]
 
@@ -62,8 +60,11 @@ class AlphaVantageEquity(AlphaVantageBase, Equity):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> List["AlphaVantageEquity"]:
+    def from_tickers(
+        cls, tickers: Optional[List[str]] = None
+    ) -> List["AlphaVantageEquity"]:
         equities = []
+        tickers = tickers or []
         for ticker in tickers:
             data, _ = cls.timeseries.get_symbol_search(ticker)
             data = data.rename(
@@ -80,7 +81,7 @@ class AlphaVantageEquity(AlphaVantageBase, Equity):
                         f"Failed to fetch company overview for {record['symbol']}. Reason: {e}",
                     )
                     continue
-                equities.append((overview | record))
+                equities.append(overview | record)
         return [AlphaVantageEquity.model_validate(equity) for equity in equities]
 
 
@@ -102,7 +103,7 @@ class AlphaVantageFinancialMetrics(AlphaVantageBaseFinancials, FinancialMetrics)
     @classmethod
     def from_ticker(cls, ticker: str) -> List["AlphaVantageFinancialMetrics"]:
         company_overview, _ = cls.fundamentals.get_company_overview(ticker)
-        return AlphaVantageFinancialMetrics.from_json(company_overview)
+        return AlphaVantageFinancialMetrics.from_json(company_overview)  # type: ignore
 
 
 class AlphaVantageBalanceSheet(AlphaVantageBaseFinancials, BalanceSheet):
@@ -145,7 +146,7 @@ class AlphaVantageBalanceSheet(AlphaVantageBaseFinancials, BalanceSheet):
             ~data_quarterly["fiscalDateEnding"].isin(data_annual["fiscalDateEnding"])
         ]
         data_combined = pd.concat([data_annual, data_to_add], ignore_index=True)
-        return AlphaVantageBalanceSheet.from_dataframe(ticker, data_combined)
+        return AlphaVantageBalanceSheet.from_dataframe(ticker, data_combined)  # type: ignore
 
 
 class AlphaVantageCashFlow(AlphaVantageBaseFinancials, CashFlow):
@@ -172,7 +173,7 @@ class AlphaVantageCashFlow(AlphaVantageBaseFinancials, CashFlow):
     @classmethod
     def from_ticker(cls, ticker: str) -> List["AlphaVantageCashFlow"]:
         data, _ = cls.fundamentals.get_cash_flow_annual(ticker)
-        return AlphaVantageCashFlow.from_dataframe(ticker, data)
+        return AlphaVantageCashFlow.from_dataframe(ticker, data)  # type: ignore
 
 
 class AlphaVantageCandleStick(AlphaVantageBase, CandleStick):
@@ -182,15 +183,16 @@ class AlphaVantageCandleStick(AlphaVantageBase, CandleStick):
         "3. low": "low",
         "4. close": "close",
         "5. volume": "volume",
-        "2. Symbol": "symbol"
+        "2. Symbol": "symbol",
     }
+
     @classmethod
-    def from_ticker(cls, ticker: str, type: str) -> List["AlphaVantageCandleStick"]:
+    def from_ticker(cls, ticker: str, type: str) -> List["CandleStick"]:
         type = "full" if type == "full" else "compact"
         time_series, metadata = cls.timeseries.get_daily(ticker, outputsize=type)
 
         return [
-            AlphaVantageCandleStick(**(v | {"date": k} | metadata))
+            cast(CandleStick, AlphaVantageCandleStick(**(v | {"date": k} | metadata)))
             for k, v in time_series.items()
         ]
 

@@ -14,6 +14,7 @@ from bearish.sources.alphavantage import (
     AlphaVantageSource,
     AlphaVantageBase,
 )
+from tests.conftest import FakeFundamentalData, FakeTimeSeries
 
 
 @pytest.mark.skip("check later")
@@ -65,18 +66,23 @@ def test_alpha_vantage_fundamental_data():
     earnings_quarterly_path.write_bytes(pickle.dumps(earnings_quarterly))
 
 
-def test_financials():
-    company_overview_path = Path(__file__).parent / "company_overview.json"
+@pytest.fixture
+def root_path() -> Path:
+    return Path(__file__).parents[1].joinpath("data", "sources", "alphavantage")
+
+
+def test_financials(root_path: Path):
+    company_overview_path = root_path / "company_overview.json"
     company_overview = json.loads(company_overview_path.read_text())
     result = AlphaVantageFinancialMetrics.from_json(company_overview[0])
     assert result
     assert isinstance(result, AlphaVantageFinancialMetrics)
 
 
-def test_balance_sheet():
-    balance_sheet_annual_path = Path(__file__).parent / "balance_sheet_annual.pkl"
+def test_balance_sheet(root_path: Path):
+    balance_sheet_annual_path = root_path / "balance_sheet_annual.pkl"
     balance_sheet_annual = pickle.loads(balance_sheet_annual_path.read_bytes())
-    balance_sheet_quarterly_path = Path(__file__).parent / "balance_sheet_quarterly.pkl"
+    balance_sheet_quarterly_path = root_path / "balance_sheet_quarterly.pkl"
     balance_sheet_quarterly = pickle.loads(balance_sheet_quarterly_path.read_bytes())
     results_annual = AlphaVantageBalanceSheet.from_dataframe(
         "AAPL", balance_sheet_annual[0]
@@ -105,49 +111,12 @@ def test_balance_sheet():
     )
 
 
-def test_cash_flow():
-    cash_flow_annual_path = Path(__file__).parent / "cash_flow_annual.pkl"
+def test_cash_flow(root_path: Path):
+    cash_flow_annual_path = root_path / "cash_flow_annual.pkl"
     cash_flow_annual = pickle.loads(cash_flow_annual_path.read_bytes())
     results = AlphaVantageCashFlow.from_dataframe("AAPL", cash_flow_annual[0])
     assert results
     assert all(isinstance(result, AlphaVantageCashFlow) for result in results)
-
-
-class FakeFundamentalData:
-    def get_company_overview(self, ticker):
-        overview_path = Path(__file__).parent / "company_overview.json"
-        return json.loads(overview_path.read_text())
-
-    def get_balance_sheet_annual(self, ticker):
-        path = Path(__file__).parent / "balance_sheet_annual.pkl"
-        return pickle.loads(path.read_bytes())
-
-    def get_balance_sheet_quarterly(self, ticker):
-        path = Path(__file__).parent / "balance_sheet_quarterly.pkl"
-        return pickle.loads(path.read_bytes())
-
-    def get_cash_flow_annual(self, ticker):
-        path = Path(__file__).parent / "cash_flow_annual.pkl"
-        return pickle.loads(path.read_bytes())
-
-
-class FakeTimeSeries:
-    def get_symbol_search(self, ticker):
-        # data = TimeSeries(
-        #     key=os.environ["ALPHAVANTAGE_API_KEY"]
-        # ).get_symbol_search("AAPL")
-        # balance_sheet_annual_path = Path(__file__).parent / "symbol_search.pkl"
-        # balance_sheet_annual_path.write_bytes(pickle.dumps(data))
-        symbol_search_path = Path(__file__).parent / "symbol_search.pkl"
-        return pickle.loads(symbol_search_path.read_bytes())
-
-    def get_daily(self, ticker, outputsize: str = "full"):
-        # data = TimeSeries(
-        #     key=os.environ["ALPHAVANTAGE_API_KEY"]
-        # ).get_daily("AAPL",outputsize=outputsize)
-        path = Path(__file__).parent / "daily_series.pkl"
-        # path.write_bytes(pickle.dumps(data))
-        return pickle.loads(path.read_bytes())
 
 
 def test_alphavantage_read_assets():
