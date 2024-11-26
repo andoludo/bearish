@@ -17,9 +17,11 @@ sqlmodel = "^0.0.22"
 alpha-vantage = "^3.0.0"
 python-dotenv = "^1.0.1"
 yfinance = "^0.2.48"
+typer = "^0.13.1"
 
 
-
+[tool.poetry.scripts]
+trano = "bearish.main:app"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"

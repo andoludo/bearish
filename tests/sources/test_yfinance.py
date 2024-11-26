@@ -33,5 +33,23 @@ def test_get_ticker():
 
 def test_yFinanceSource_update_assets():
     tickers = ["MSFT", "AAPL", "GOOG"]
-    assets = yFinanceSource().read_assets(filters=tickers)
+    assets = yFinanceSource()._read_assets(keywords=tickers)
     assert len(assets.equities) == len(tickers)
+
+
+def test_yFinanceSource_update_non_existent_assets():
+    tickers = ["IDONOTEXISRS", "AAPL", "GOOG"]
+    assets = yFinanceSource()._read_assets(keywords=tickers)
+    assert len(assets.equities) == len(tickers) - 1
+
+
+def test_yFinanceSource_no_country():
+    tickers = ["ML.PA"]
+    assets = yFinanceSource()._read_assets(keywords=tickers)
+    assert len(assets.equities) == len(tickers) - 1
+
+import yfinance as yf
+def test_yfinance_etf():
+    ticker = "XAIX.F"
+    results = yf.Ticker(ticker)
+    a = 12

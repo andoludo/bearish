@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, TYPE_CHECKING, Type, Union
 
 from dateutil.relativedelta import relativedelta  # type: ignore
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import create_engine, Engine, insert
 from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
@@ -20,7 +20,6 @@ from bearish.database.schemas import (
     CandleStickORM,
 )
 from bearish.database.scripts.upgrade import upgrade
-from bearish.database.settings import DATABASE_PATH
 from bearish.models.base import CandleStick
 from bearish.models.financials import FinancialMetrics, CashFlow, BalanceSheet
 from bearish.sources.base import Assets, Financials
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
 
 class BearishDb(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    database_path: Path = Field(default=Path(DATABASE_PATH))
+    database_path: Path
 
     @cached_property
     def _engine(self) -> Engine:
@@ -73,6 +72,8 @@ class BearishDb(BaseModel):
         series: Union[List[CashFlow], List[FinancialMetrics], List[BalanceSheet]],
         table: Type[SQLModel],
     ) -> None:
+        if not series:
+            return None
         with Session(self._engine) as session:
             stmt = (
                 insert(table)

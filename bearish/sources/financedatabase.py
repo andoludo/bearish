@@ -50,7 +50,7 @@ class FinanceDatabaseUrlSources(BaseModel):
 
 
 class FinanceDatabaseSource(AbstractSource):
-    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
+    def _read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
         sources = FinanceDatabaseUrlSources(
             equity=UrlSource(
                 url=RAW_EQUITIES_DATA_URL,
@@ -60,7 +60,7 @@ class FinanceDatabaseSource(AbstractSource):
             crypto=UrlSource(
                 url=RAW_CRYPTO_DATA_URL,
                 type_class=FinanceDatabaseCrypto,
-                filters=["symbol"],
+                filters=["symbol", "cryptocurrency"],
             ),
             currency=UrlSource(
                 url=RAW_CURRENCY_DATA_URL,
@@ -101,7 +101,7 @@ class FinanceDatabaseSource(AbstractSource):
             for equity_mapping in equities_mapping
         ]
 
-    def read_financials(self, ticker: str) -> Financials:
+    def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
     def read_series(self, ticker: str, type: str) -> List[CandleStick]:

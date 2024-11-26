@@ -1,19 +1,18 @@
-"""First revision
+"""Symbol and source as primary keys
 
-Revision ID: afee4b3b6728
-Revises:
-Create Date: 2024-11-20 15:43:37.319386
+Revision ID: 0350512cfb61
+Revises: 
+Create Date: 2024-11-24 22:19:29.778528
 
 """
-from typing import Union
-from collections.abc import Sequence
+from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 import sqlmodel
 
 # revision identifiers, used by Alembic.
-revision: str = "afee4b3b6728"
+revision: str = "0350512cfb61"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -57,7 +56,7 @@ def upgrade() -> None:
         sa.Column(
             "cash_and_cash_equivalents_at_carrying_value", sa.Float(), nullable=True
         ),
-        sa.PrimaryKeyConstraint("date"),
+        sa.PrimaryKeyConstraint("date", "symbol", "source"),
     )
     with op.batch_alter_table("balancesheet", schema=None) as batch_op:
         batch_op.create_index(
@@ -68,6 +67,46 @@ def upgrade() -> None:
         )
         batch_op.create_index(
             batch_op.f("ix_balancesheet_symbol"), ["symbol"], unique=False
+        )
+
+    op.create_table(
+        "basebearishtabletest",
+        sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sqlite_autoincrement=True,
+    )
+    with op.batch_alter_table("basebearishtabletest", schema=None) as batch_op:
+        batch_op.create_index(
+            batch_op.f("ix_basebearishtabletest_source"), ["source"], unique=False
+        )
+        batch_op.create_index(
+            batch_op.f("ix_basebearishtabletest_symbol"), ["symbol"], unique=False
+        )
+
+    op.create_table(
+        "candlestick",
+        sa.Column("date", sa.DateTime(), nullable=False),
+        sa.Column("created_at", sa.Date(), nullable=False),
+        sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("open", sa.Float(), nullable=False),
+        sa.Column("high", sa.Float(), nullable=False),
+        sa.Column("low", sa.Float(), nullable=False),
+        sa.Column("close", sa.Float(), nullable=False),
+        sa.Column("volume", sa.Float(), nullable=False),
+        sa.Column("dividends", sa.Float(), nullable=True),
+        sa.Column("stock_splits", sa.Float(), nullable=True),
+        sa.PrimaryKeyConstraint("date", "symbol", "source"),
+    )
+    with op.batch_alter_table("candlestick", schema=None) as batch_op:
+        batch_op.create_index(batch_op.f("ix_candlestick_date"), ["date"], unique=False)
+        batch_op.create_index(
+            batch_op.f("ix_candlestick_source"), ["source"], unique=False
+        )
+        batch_op.create_index(
+            batch_op.f("ix_candlestick_symbol"), ["symbol"], unique=False
         )
 
     op.create_table(
@@ -92,7 +131,7 @@ def upgrade() -> None:
         sa.Column("proceeds_from_issuance_of_common_stock", sa.Float(), nullable=True),
         sa.Column("changes_in_cash", sa.Float(), nullable=True),
         sa.Column("net_income_from_continuing_operations", sa.Float(), nullable=True),
-        sa.PrimaryKeyConstraint("date"),
+        sa.PrimaryKeyConstraint("date", "symbol", "source"),
     )
     with op.batch_alter_table("cashflow", schema=None) as batch_op:
         batch_op.create_index(batch_op.f("ix_cashflow_date"), ["date"], unique=False)
@@ -138,7 +177,7 @@ def upgrade() -> None:
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("market", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("base_currency", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("quote_currency", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("quote_currency", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sqlite_autoincrement=True,
@@ -155,26 +194,6 @@ def upgrade() -> None:
         )
 
     op.create_table(
-        "daily_ohlcv",
-        sa.Column("open", sa.Float(), nullable=False),
-        sa.Column("high", sa.Float(), nullable=False),
-        sa.Column("low", sa.Float(), nullable=False),
-        sa.Column("close", sa.Float(), nullable=False),
-        sa.Column("volume", sa.Float(), nullable=False),
-        sa.Column("dividends", sa.Float(), nullable=True),
-        sa.Column("stock_splits", sa.Float(), nullable=True),
-        sa.Column("date", sa.DateTime(), nullable=False),
-        sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("timezone", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.PrimaryKeyConstraint("date", "symbol"),
-    )
-    with op.batch_alter_table("daily_ohlcv", schema=None) as batch_op:
-        batch_op.create_index(batch_op.f("ix_daily_ohlcv_date"), ["date"], unique=False)
-        batch_op.create_index(
-            batch_op.f("ix_daily_ohlcv_symbol"), ["symbol"], unique=False
-        )
-
-    op.create_table(
         "equity",
         sa.Column("date", sa.Date(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
@@ -188,7 +207,7 @@ def upgrade() -> None:
         sa.Column("sector", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("industry_group", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("industry", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("country", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("country", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("state", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("city", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("zipcode", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
@@ -253,7 +272,7 @@ def upgrade() -> None:
         sa.Column("cost_of_revenue", sa.Float(), nullable=True),
         sa.Column("tax_provision", sa.Float(), nullable=True),
         sa.Column("tax_rate", sa.Float(), nullable=True),
-        sa.PrimaryKeyConstraint("date"),
+        sa.PrimaryKeyConstraint("date", "symbol", "source"),
     )
     with op.batch_alter_table("financialmetrics", schema=None) as batch_op:
         batch_op.create_index(
@@ -288,11 +307,6 @@ def downgrade() -> None:
         batch_op.drop_index(batch_op.f("ix_equity_country"))
 
     op.drop_table("equity")
-    with op.batch_alter_table("daily_ohlcv", schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f("ix_daily_ohlcv_symbol"))
-        batch_op.drop_index(batch_op.f("ix_daily_ohlcv_date"))
-
-    op.drop_table("daily_ohlcv")
     with op.batch_alter_table("currency", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_currency_symbol"))
         batch_op.drop_index(batch_op.f("ix_currency_source"))
@@ -311,6 +325,17 @@ def downgrade() -> None:
         batch_op.drop_index(batch_op.f("ix_cashflow_date"))
 
     op.drop_table("cashflow")
+    with op.batch_alter_table("candlestick", schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f("ix_candlestick_symbol"))
+        batch_op.drop_index(batch_op.f("ix_candlestick_source"))
+        batch_op.drop_index(batch_op.f("ix_candlestick_date"))
+
+    op.drop_table("candlestick")
+    with op.batch_alter_table("basebearishtabletest", schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f("ix_basebearishtabletest_symbol"))
+        batch_op.drop_index(batch_op.f("ix_basebearishtabletest_source"))
+
+    op.drop_table("basebearishtabletest")
     with op.batch_alter_table("balancesheet", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_balancesheet_symbol"))
         batch_op.drop_index(batch_op.f("ix_balancesheet_source"))

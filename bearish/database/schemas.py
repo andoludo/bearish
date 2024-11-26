@@ -23,13 +23,15 @@ class BaseBearishTableTest(BaseTable, table=True):
     ...
 
 
-class BaseFinancials(BaseBearishTable):
+class BaseFinancials(SQLModel):
     date: datetime = Field(primary_key=True, index=True)
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, index=True)
 
 
 class EquityORM(BaseTable, Equity, table=True):  # type: ignore
     __tablename__ = "equity"
-    country: str = Field(index=True)
+    country: Optional[str] = Field(default=None, index=True)
 
 
 class CryptoORM(BaseTable, Crypto, table=True):  # type: ignore

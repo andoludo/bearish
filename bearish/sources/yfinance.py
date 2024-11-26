@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from typing import List, Optional
 
@@ -11,6 +12,8 @@ from bearish.sources.base import (
     Assets,
     Financials,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class YfinanceBase(BaseModel):
@@ -33,8 +36,16 @@ class YfinanceFinancialBase(YfinanceBase):
 class YfinanceEquityBase(YfinanceBase):
     @classmethod
     def from_tickers(cls, tickers: List[str]) -> List["YfinanceEquityBase"]:
+        equities = []
         tickers_ = yf.Tickers(" ".join(tickers))
-        return [cls.model_validate(tickers_.tickers[ticker].info) for ticker in tickers]
+        found_tickers = tickers_.tickers
+        for ticker in tickers:
+            if found_tickers.get(ticker):
+                try:
+                    equities.append(cls.model_validate(found_tickers[ticker].info))
+                except Exception as e:
+                    logger.error(f"Error reading {ticker}: {e}")
+        return equities
 
 
 class YfinanceEquity(YfinanceEquityBase, Equity):
@@ -44,7 +55,6 @@ class YfinanceEquity(YfinanceEquityBase, Equity):
         "longBusinessSummary": "summary",
         "currency": "currency",
         "exchange": "exchange",
-        "quoteType": "market",  # Closest matching field to market classification
         "sectorDisp": "sector",  # 'sectorDisp' seems like the descriptive sector field
         "sector": "industry_group",  # Assuming industry group maps broadly to sector
         "industryDisp": "industry",  # 'industryDisp' matches the detailed industry description
@@ -164,11 +174,13 @@ class yFinanceCandleStick(YfinanceBase, CandleStick):  # noqa: N801
 
 
 class yFinanceSource(AbstractSource):  # noqa: N801
-    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
-        equities = YfinanceEquity.from_tickers(filters)  # type: ignore
+    def _read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
+        if keywords is None:
+            return Assets()
+        equities = YfinanceEquity.from_tickers(keywords)
         return Assets(equities=equities)
 
-    def read_financials(self, ticker: str) -> Financials:
+    def _read_financials(self, ticker: str) -> Financials:
         return Financials(
             financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker),
             balance_sheets=yFinanceBalanceSheet.from_ticker(ticker),

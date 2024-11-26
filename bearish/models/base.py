@@ -11,6 +11,8 @@ from bearish.models.financials import BaseFinancials
 def to_string(value: Any) -> Optional[str]:  # noqa: ANN401
     if value is None or (isinstance(value, float) and isnan(value)):
         return None
+    if value == "None":
+        return None
     return str(value)
 
 
@@ -170,8 +172,12 @@ class Crypto(BaseComponent):
 
 
 class Currency(BaseComponent):
-    base_currency: Annotated[str, BeforeValidator(to_string)]
-    quote_currency: Annotated[str, BeforeValidator(to_string)]
+    base_currency: Annotated[
+        Optional[str], BeforeValidator(to_string), Field(default=None)
+    ]
+    quote_currency: Annotated[
+        Optional[str], BeforeValidator(to_string), Field(default=None)
+    ]
 
 
 class Etf(BaseComponent):

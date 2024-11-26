@@ -123,7 +123,14 @@ def test_alphavantage_read_assets():
     tickers = ["AAPL"]
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    assets = AlphaVantageSource().read_assets(filters=tickers)
+    assets = AlphaVantageSource()._read_assets(keywords=tickers)
+    assert assets
+
+
+# @pytest.mark.skip("check later")
+def test_alphavantage_read_assets_integration():
+    tickers = ["ML"]
+    assets = AlphaVantageSource()._read_assets(keywords=tickers)
     assert assets
 
 
@@ -131,7 +138,7 @@ def test_alphavantage_read_financials():
     ticker = "AAPL"
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    financials = AlphaVantageSource().read_financials(ticker)
+    financials = AlphaVantageSource()._read_financials(ticker)
     assert financials
 
 

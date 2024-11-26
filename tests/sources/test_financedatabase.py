@@ -31,7 +31,7 @@ def test_read_assets() -> None:
             RAW_ETF_DATA_URL,
             text=Path(__file__).parents[1].joinpath("data/etfs.csv").read_text(),
         )
-        assets = FinanceDatabaseSource().read_assets()
+        assets = FinanceDatabaseSource()._read_assets()
         assert assets
         assert all(isinstance(equity, Equity) for equity in assets.equities)
         assert all(isinstance(crypto, Crypto) for crypto in assets.cryptos)

@@ -16,5 +16,5 @@ def create_revision(database_url: str, message: str) -> None:
 
 
 if __name__ == "__main__":
-    message = "Candlesticks table"
+    message = "Symbol and source as primary keys"
     create_revision(DATABASE_URL, message)

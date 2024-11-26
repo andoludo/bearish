@@ -60,11 +60,8 @@ class AlphaVantageEquity(AlphaVantageBase, Equity):
     }
 
     @classmethod
-    def from_tickers(
-        cls, tickers: Optional[List[str]] = None
-    ) -> List["AlphaVantageEquity"]:
+    def from_tickers(cls, tickers: List[str]) -> List["AlphaVantageEquity"]:
         equities = []
-        tickers = tickers or []
         for ticker in tickers:
             data, _ = cls.timeseries.get_symbol_search(ticker)
             data = data.rename(
@@ -78,7 +75,8 @@ class AlphaVantageEquity(AlphaVantageBase, Equity):
                     )
                 except Exception as e:
                     logger.exception(
-                        f"Failed to fetch company overview for {record['symbol']}. Reason: {e}",
+                        f"Failed to fetch company overview for {record['symbol']} "
+                        f"for source :{cls.__source__}. Reason: {e}",
                     )
                     continue
                 equities.append(overview | record)
@@ -198,11 +196,13 @@ class AlphaVantageCandleStick(AlphaVantageBase, CandleStick):
 
 
 class AlphaVantageSource(AbstractSource):
-    def read_assets(self, filters: Optional[List[str]] = None) -> Assets:
-        equities = AlphaVantageEquity.from_tickers(filters)
+    def _read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
+        if keywords is None:
+            return Assets()
+        equities = AlphaVantageEquity.from_tickers(keywords)
         return Assets(equities=equities)
 
-    def read_financials(self, ticker: str) -> Financials:
+    def _read_financials(self, ticker: str) -> Financials:
         return Financials(
             financial_metrics=[AlphaVantageFinancialMetrics.from_ticker(ticker)],
             balance_sheets=AlphaVantageBalanceSheet.from_ticker(ticker),
