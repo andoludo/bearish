@@ -1,17 +1,24 @@
 import logging
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Dict, Any, Callable
 
+import pandas as pd
 import yfinance as yf  # type: ignore
 from pydantic import BaseModel
 
-from bearish.models.base import Equity, CandleStick
-from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
+from bearish.models.assets.etfs import Etf
+from bearish.models.query.query import AssetQuery
+from bearish.models.assets.equity import Equity
+from bearish.models.financials.balance_sheet import BalanceSheet
+from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.price.price import Price
+
 from bearish.sources.base import (
     AbstractSource,
-    Assets,
-    Financials,
 )
+from bearish.models.financials.base import Financials
+from bearish.models.assets.assets import Assets
 
 logger = logging.getLogger(__name__)
 
@@ -33,22 +40,23 @@ class YfinanceFinancialBase(YfinanceBase):
         ]
 
 
-class YfinanceEquityBase(YfinanceBase):
+class YfinanceAssetBase(YfinanceBase):
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEquityBase"]:
+    def _from_tickers(cls, tickers: List[str], function: Callable) -> List["YfinanceAssetBase"]:
         equities = []
         tickers_ = yf.Tickers(" ".join(tickers))
         found_tickers = tickers_.tickers
         for ticker in tickers:
             if found_tickers.get(ticker):
                 try:
-                    equities.append(cls.model_validate(found_tickers[ticker].info))
+                    equities.append(cls.model_validate(function(ticker, found_tickers[ticker])))
                 except Exception as e:
                     logger.error(f"Error reading {ticker}: {e}")
+                    print(f"Error reading {ticker}: {e}")
         return equities
 
 
-class YfinanceEquity(YfinanceEquityBase, Equity):
+class YfinanceEquity(YfinanceAssetBase, Equity):
     __alias__ = {
         "symbol": "symbol",
         "longName": "name",
@@ -56,14 +64,105 @@ class YfinanceEquity(YfinanceEquityBase, Equity):
         "currency": "currency",
         "exchange": "exchange",
         "sectorDisp": "sector",  # 'sectorDisp' seems like the descriptive sector field
-        "sector": "industry_group",  # Assuming industry group maps broadly to sector
         "industryDisp": "industry",  # 'industryDisp' matches the detailed industry description
+        "sector": "sector",
+        "industry": "industry",
+        "industryKey": "industry_group",
         "country": "country",
         "state": "state",
         "city": "city",
         "zip": "zipcode",
         "website": "website",
+        "marketCap": "market_capitalization",
+        "sharesOutstanding": "shares_outstanding",
+        "floatShares": "float_shares",
+        "sharesShort": "short_shares",
+        "bookValue": "book_value",
+        "priceToBook": "price_to_book",
+        "trailingPE": "trailing_price_to_earnings",
+        "forwardPE": "forward_price_to_earnings",
+        "dividendYield": "dividend_yield",
+        "dividendRate": "dividend_rate",
+        "trailingEps": "trailing_earnings_per_share",
+        "forwardEps": "forward_earnings_per_share",
+        "returnOnEquity": "return_on_equity",
+        "operatingMargins": "operating_margins",
+        "grossMargins": "gross_margins",
+        "revenueGrowth": "revenue_growth",
+        "revenuePerShare": "revenue_per_share",
+        "quickRatio": "quick_ratio",
+        "currentRatio": "current_ratio",
+        "earningsGrowth": "earning_growth",
+        "trailingPegRatio": "trailing_peg_ratio",
+        "priceToSalesTrailing12Months": "trailing_price_to_sales",
+        "returnOnAssets": "return_on_assets",
+        "shortRatio": "short_ratio",
+        "timeZone": "timezone",
+        "isin": "isin",
+        "cusip": "cusip",
+        "figi": "figi",
+        "compositeFigi": "composite_figi",
+        "shareclassFigi": "shareclass_figi",
     }
+    @classmethod
+    def from_tickers(cls, tickers: List[str]):
+        return cls._from_tickers(tickers, lambda ticker, x: x.info)
+
+
+def to_funds_data_dict(data: pd.DataFrame, ticker: str)->Dict[str, Any]:
+    data_dict = {}
+    data_dict.update(data.to_dict().get(ticker, {}))
+    return data_dict
+
+def _get_etf(ticker: str, results: yf.Ticker):
+    etf = {}
+    etf.update(to_funds_data_dict(results.funds_data.fund_operations,ticker))
+    etf.update(to_funds_data_dict(results.funds_data.equity_holdings,ticker))
+    etf.update(results.funds_data.fund_overview)
+    etf.update({"Sector Weightings": results.funds_data.sector_weightings})
+    etf.update({'Holding Percent': results.funds_data.top_holdings.to_dict().get('Holding Percent', {})})
+    etf.update({"summary": results.funds_data.description})
+    etf.update({"isin":results.isin})
+    etf.update(results.info)
+    return etf
+class YfinanceEtf(YfinanceAssetBase, Etf):
+    __alias__ = {
+        "symbol": "symbol",
+        "Annual Report Expense Ratio": "annual_report_expense_ratio",
+        "Annual Holdings Turnover": "annual_holdings_turnover",
+        "Total Net Assets": "total_net_assets",
+        "Price/Earnings": "price_to_earnings",
+        "Price/Book": "price_to_book",
+        "Price/Sales": "price_to_sales",
+        "Price/Cashflow": "price_to_cashflow",
+        "Median Market Cap": "median_market_cap",
+        "3 Year Earnings Growth": "three_year_earnings_growth",
+        "categoryName": "category",
+        "family": "fund_family",
+        "legalType": "legal_type",
+        "Sector Weightings": "sector_weightings",
+        "Holding Percent": "holding_percent",
+        "summary": "long_business_summary",
+        "isin": "isin",
+        "longBusinessSummary": "long_business_summary",
+        "trailingPE": "trailing_pe",
+        "yield": "yield_",
+        "navPrice": "nav_price",
+        "currency": "currency",
+        "category": "category",
+        "ytdReturn": "ytd_return",
+        "beta3Year": "beta_3_year",
+        "fundFamily": "fund_family",
+        "fundInceptionDate": "fund_inception_date",
+        "threeYearAverageReturn": "three_year_average_return",
+        "exchange": "exchange",
+        "quoteType": "quote_type",
+        "shortName": "short_name",
+        "longName": "long_name",
+    }
+    @classmethod
+    def from_tickers(cls, tickers: List[str]):
+        return cls._from_tickers(tickers, _get_etf)
 
 
 class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
@@ -161,7 +260,7 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):  # noqa: N801
         return cls._from_ticker(ticker, "cashflow")  # type: ignore
 
 
-class yFinanceCandleStick(YfinanceBase, CandleStick):  # noqa: N801
+class yFinancePrice(YfinanceBase, Price):  # noqa: N801
     __alias__ = {
         "Open": "open",
         "High": "high",
@@ -174,10 +273,12 @@ class yFinanceCandleStick(YfinanceBase, CandleStick):  # noqa: N801
 
 
 class yFinanceSource(AbstractSource):  # noqa: N801
-    def _read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
-        if keywords is None:
+    def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
+        if query is None:
             return Assets()
-        equities = YfinanceEquity.from_tickers(keywords)
+        if not query.symbols:
+            raise ValueError(f"Source {self.__source__} requires at least one symbol.")
+        equities = YfinanceEquity.from_tickers(query.symbols)
         return Assets(equities=equities)
 
     def _read_financials(self, ticker: str) -> Financials:
@@ -187,11 +288,9 @@ class yFinanceSource(AbstractSource):  # noqa: N801
             cash_flows=yFinanceCashFlow.from_ticker(ticker),
         )
 
-    def read_series(self, ticker: str, type: str) -> List[CandleStick]:
+    def read_series(self, ticker: str, type: str) -> List[Price]:
         type = "max" if type == "full" else "5d"
         ticker_ = yf.Ticker(ticker)
         data = ticker_.history(period=type)
         records = data.reset_index().to_dict(orient="records")
-        return [
-            yFinanceCandleStick(**(record | {"symbol": ticker})) for record in records
-        ]
+        return [yFinancePrice(**(record | {"symbol": ticker})) for record in records]

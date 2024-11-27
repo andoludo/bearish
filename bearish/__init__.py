@@ -1,10 +1,10 @@
 from dotenv import load_dotenv
 import logging.config
 
-load_dotenv()
+
 LOGGING_CONFIG = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": True,
     "formatters": {
         "standard": {
             "format": "%(asctime)s [%(levelname)s] %(name)s: [%(funcName)s] %(message)s"
@@ -35,3 +35,4 @@ LOGGING_CONFIG = {
 
 
 logging.config.dictConfig(LOGGING_CONFIG)
+load_dotenv()

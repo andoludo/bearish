@@ -1,0 +1,14 @@
+name,tag,symbol,id,currency,status
+Bitcoin,bitcoin,BTC,1057391,USD,available
+Ethereum,ethereum,ETH,1061443,USD,available
+Binance Coin,binance-coin,BNB,1061448,USD,available
+Tether,tether,USDT,1061453,USD,available
+Cardano,cardano,ADA,1062537,USD,available
+Polkadot,polkadot-new,DOT,1165465,USD,available
+XRP,xrp,XRP,1057392,USD,available
+Uniswap,uniswap,UNI,1167226,USD,available
+Litecoin,litecoin,LTC,1061445,USD,available
+Chainlink,chainlink,LINK,1061794,USD,available
+THETA,theta,THETA,1062054,USD,available
+USD Coin,usd-coin,USDC,1114630,USD,available
+Bitcoin Cash,bitcoin-cash,BCH,1061410,USD,available

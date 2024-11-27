@@ -7,13 +7,17 @@ from alpha_vantage.fundamentaldata import FundamentalData  # type: ignore
 from alpha_vantage.timeseries import TimeSeries  # type: ignore
 from pydantic import BaseModel
 
-from bearish.models.base import Equity, CandleStick
-from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
+from bearish.models.assets.equity import Equity
+from bearish.models.financials.balance_sheet import BalanceSheet
+from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.price.price import Price
+
 from bearish.sources.base import (
     AbstractSource,
-    Assets,
-    Financials,
 )
+from bearish.models.financials.base import Financials
+from bearish.models.assets.assets import Assets
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +178,7 @@ class AlphaVantageCashFlow(AlphaVantageBaseFinancials, CashFlow):
         return AlphaVantageCashFlow.from_dataframe(ticker, data)  # type: ignore
 
 
-class AlphaVantageCandleStick(AlphaVantageBase, CandleStick):
+class AlphaVantagePrice(AlphaVantageBase, Price):
     __alias__ = {
         "1. open": "open",
         "2. high": "high",
@@ -185,12 +189,12 @@ class AlphaVantageCandleStick(AlphaVantageBase, CandleStick):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str, type: str) -> List["CandleStick"]:
+    def from_ticker(cls, ticker: str, type: str) -> List["Price"]:
         type = "full" if type == "full" else "compact"
         time_series, metadata = cls.timeseries.get_daily(ticker, outputsize=type)
 
         return [
-            cast(CandleStick, AlphaVantageCandleStick(**(v | {"date": k} | metadata)))
+            cast(Price, AlphaVantagePrice(**(v | {"date": k} | metadata)))
             for k, v in time_series.items()
         ]
 
@@ -209,5 +213,5 @@ class AlphaVantageSource(AbstractSource):
             cash_flows=AlphaVantageCashFlow.from_ticker(ticker),
         )
 
-    def read_series(self, ticker: str, type: str) -> List[CandleStick]:
-        return AlphaVantageCandleStick.from_ticker(ticker, type)
+    def read_series(self, ticker: str, type: str) -> List[Price]:
+        return AlphaVantagePrice.from_ticker(ticker, type)

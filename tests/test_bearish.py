@@ -5,7 +5,8 @@ import pytest
 import requests_mock
 
 from bearish.database.crud import BearishDb
-from bearish.main import Bearish, AssetQuery
+from bearish.main import Bearish
+from bearish.models.query.query import AssetQuery
 from bearish.sources.alphavantage import AlphaVantageBase, AlphaVantageSource
 from bearish.sources.financedatabase import (
     FinanceDatabaseSource,
@@ -146,3 +147,7 @@ def test_real_db_series():
     bearish = Bearish(path=Path("/home/aan/Documents/bearish/bearish.db"))
     assets = bearish.read_assets(AssetQuery(exchanges=["BRU"]))
     bearish.write_many_series([asset.symbol for asset in assets.equities], "full")
+
+def test_write_assets(bearish_db: BearishDb):
+    bearish = Bearish(path=bearish_db.database_path)
+    bearish.write_assets(AssetQuery(countries=["Belgium"]))

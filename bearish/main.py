@@ -3,30 +3,25 @@ from pathlib import Path
 from typing import Optional, List, Any
 
 import typer
-from pydantic import BaseModel, Field, ConfigDict, model_validator, PrivateAttr
+from pydantic import (
+    BaseModel,
+    Field,
+    ConfigDict,
+    PrivateAttr,
+)
 
 from bearish.database.crud import BearishDb
-from bearish.models.base import CandleStick
-from bearish.sources.alphavantage import AlphaVantageSource
-from bearish.sources.base import AbstractSource, Assets, Financials
+from bearish.models.assets.assets import Assets
+from bearish.models.financials.base import Financials
+from bearish.models.price.price import Price
+from bearish.models.query.query import AssetQuery
+from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
+from bearish.sources.investpy import InvestPySource
 from bearish.sources.yfinance import yFinanceSource
 
 logger = logging.getLogger(__name__)
 app = typer.Typer()
-
-
-class AssetQuery(BaseModel):
-    exchanges: List[str] = Field(default_factory=list)
-    countries: List[str] = Field(default_factory=list)
-    symbols: List[str] = Field(default_factory=list)
-    markets: List[str] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def validate_query(self) -> "AssetQuery":
-        if all(not getattr(self, field) for field in self.model_fields):
-            raise ValueError("At least one query parameter must be provided")
-        return self
 
 
 class Bearish(BaseModel):
@@ -35,25 +30,26 @@ class Bearish(BaseModel):
     _bearish_db: BearishDb = PrivateAttr()
     sources: List[AbstractSource] = Field(
         default_factory=lambda: [
-            yFinanceSource(),
             FinanceDatabaseSource(),
-            AlphaVantageSource(),
+            InvestPySource(),
+            yFinanceSource()
         ]
     )
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
         self._bearish_db = BearishDb(database_path=self.path)
 
-    def write_assets(self, keywords: Optional[List[str]] = None) -> None:
-        assets = Assets()
+    def write_assets(self, query: Optional[AssetQuery] = None) -> None:
         for source in self.sources:
+            if query:
+                cached_assets = self.read_assets(AssetQuery(countries=query.countries))
+                query.update_symbols(cached_assets.symbols())
             logger.info(f"Fetching assets from source {type(source).__name__}")
-            assets_ = source.read_assets(keywords)
+            assets_ = source.read_assets(query)
             if assets_.is_empty():
                 logger.warning(f"No assets found from {type(source).__name__}")
                 continue
-            assets.add(assets_)
-        self._bearish_db.write_assets(assets)
+            self._bearish_db.write_assets(assets_)
 
     def read_assets(self, assets_query: AssetQuery) -> Assets:
         return self._bearish_db.read_assets(assets_query)
@@ -61,7 +57,7 @@ class Bearish(BaseModel):
     def read_financials(self, assets_query: AssetQuery) -> Financials:
         return self._bearish_db.read_financials(assets_query)
 
-    def read_series(self, assets_query: AssetQuery) -> List[CandleStick]:
+    def read_series(self, assets_query: AssetQuery) -> List[Price]:
         return self._bearish_db.read_series(assets_query)
 
     def read_financials_from_many_sources(self, ticker: str) -> Financials:
@@ -89,7 +85,6 @@ class Bearish(BaseModel):
         for ticker in tickers:
             self.write_series(ticker, type)
 
-
     def write_series(self, ticker: str, type: str) -> None:
         series = []
         for source in self.sources:
@@ -103,14 +98,13 @@ class Bearish(BaseModel):
             self._bearish_db.write_series(series)
 
 
-
 @app.command()
-def assets(path: Path, keywords: Optional[List[str]] = None) -> None:
+def assets(path: Path, countries: List[str]) -> None:
     logger.info(
-        f"Writing assets to database with keywords: {keywords}",
+        f"Writing assets to database for countries: {countries}",
     )
     bearish = Bearish(path=path)
-    bearish.write_assets(keywords)
+    bearish.write_assets(AssetQuery(countries=countries))
 
 
 if __name__ == "__main__":

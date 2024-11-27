@@ -3,10 +3,14 @@ from typing import Optional
 
 from sqlmodel import SQLModel, Field
 
-
-from bearish.models.base import Equity, Crypto, Currency, Etf, CandleStick
-
-from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
+from bearish.models.assets.equity import Equity
+from bearish.models.assets.crypto import Crypto
+from bearish.models.assets.currency import Currency
+from bearish.models.assets.etfs import Etf
+from bearish.models.financials.balance_sheet import BalanceSheet
+from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.price.price import Price
 
 
 class BaseBearishTable(SQLModel):
@@ -36,7 +40,7 @@ class EquityORM(BaseTable, Equity, table=True):  # type: ignore
 
 class CryptoORM(BaseTable, Crypto, table=True):  # type: ignore
     __tablename__ = "crypto"
-    cryptocurrency: str = Field(index=True)
+    cryptocurrency: Optional[str] = Field(default=None,index=True)
 
 
 class CurrencyORM(BaseTable, Currency, table=True):  # type: ignore
@@ -48,8 +52,8 @@ class EtfORM(BaseTable, Etf, table=True):  # type: ignore
     __tablename__ = "etf"
 
 
-class CandleStickORM(SQLModel, CandleStick, table=True):  # type: ignore
-    __tablename__ = "candlestick"
+class PriceORM(SQLModel, Price, table=True):  # type: ignore
+    __tablename__ = "price"
     date: datetime = Field(primary_key=True, index=True)
     symbol: str = Field(primary_key=True, index=True)
     source: str = Field(primary_key=True, index=True)

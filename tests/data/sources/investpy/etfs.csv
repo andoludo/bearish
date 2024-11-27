@@ -1,0 +1,53 @@
+country,name,full_name,symbol,tag,id,isin,asset_class,currency,stock_exchange,def_stock_exchange
+australia,Australian High Interest Cash,Australian High Interest Cash,AAA,betashares-aus-high-interest-cash,38946,AU000000AAA3,other,AUD,Sydney,True
+australia,VanEck Vectors MSCI International Sustainable Equi,VanEck Vectors MSCI International Sustainable Equity,ESGI,vaneck-vectors-msci-intl-sstnbl-eq,1072346,AU0000001356,equity,AUD,Sydney,True
+australia,BetaShares Australian Equities Strong Bear Hedge,BetaShares Australian Equities Strong Bear Hedge,BBOZ,betashares-australian-equities-stro,959566,AU00000BBOZ2,equity,AUD,Sydney,True
+australia,BetaShares Gold Bullion,BetaShares Gold Bullion Currency Hedged,QAU,betashares-gold,37457,AU000000QAU7,commodity,AUD,Sydney,True
+australia,Vanguard Australian Shares,Vanguard Australian Shares,VAS,vanguard-aus.-shares-index,38967,AU000000VAS1,equity,AUD,Sydney,True
+australia,Betashares Active Australian Hybrids,Betashares Active Australian Hybrids,HBRD,betashares-active-aust-hybrids,1055270,AU00000HBRD9,bond,AUD,Sydney,True
+australia,Montgomery Global Equities Fund,Montgomery Global Equities Fund,MOGL,montgomery-global-eqt-fd,1057219,AU00000MOGL8,equity,AUD,Sydney,True
+australia,iShares S&P/ASX Dividend Opportunities,iShares S&P/ASX Dividend Opportunities,IHD,ishares-s-p-asx-high-dividend,38954,AU000000IHD5,equity,AUD,Sydney,True
+australia,VanEck Vectors FTSE Global Infrastructure,VanEck Vectors FTSE Global Infrastructure,IFRA,vaneck-vectors-ftse-global-infrastr,1050173,AU00000IFRA4,equity,AUD,Sydney,True
+australia,WCM Quality Global Growth,WCM Quality Global Growth,WCMQ,wcm-quality-global-growth,1096101,AU0000018103,equity,AUD,Sydney,True
+australia,Vanguard Australian Government Bond,Vanguard Australian Government Bond,VGB,vanguard-aus.-govt-bond-index,38968,AU000000VGB4,bond,AUD,Sydney,True
+australia,Betashares U.S. Equities Strong Bear Currency Hedg,Betashares U.S. Equities Strong Bear Currency Hedged,BBUS,betashares-us-equities-strong-bear,959570,AU00000BBUS4,equity,AUD,Sydney,True
+australia,Ishares Core S&P/Asx 200,Ishares Core S&P/Asx 200,IOZ,ishares-msci-aus200,47715,AU000000IOZ4,equity,AUD,Sydney,True
+australia,ANZ SP ASX 300 High Yield Plus,ANZ S&P/ASX 300 High Yield Plus,ZYAU,anz-sp-asx-300-high-yield-plus,956402,AU00000ZYAU3,equity,AUD,Sydney,True
+australia,BetaShares Australian Top 20 Equity Yield Maximise,BetaShares Australian Top 20 Equity Yield Maximiser,YMAX,betashares-australian-top-20-equity,953165,AU00000YMAX5,equity,AUD,Sydney,True
+australia,VanEck Vectors Australian Equal Weight,VanEck Vectors Australian Equal Weight,MVW,market-vectors-australian-equal-wei,953173,AU000000MVW8,equity,AUD,Sydney,True
+australia,VanEck Vectors MSCI World ex Australia Quality Hed,VanEck Vectors MSCI World ex Australia Quality (Hedged) ETF,QHAL,vaneckvectors-msciworld-x-au-q-hdgd,1128756,AU0000041204,equity,AUD,Sydney,True
+australia,Vanguard Australian Property Securities,Vanguard Australian Property Securities,VAP,vanguard-aus.-prop.-securities,47720,AU000000VAP7,equity,AUD,Sydney,True
+australia,Magellan Global Equities,Magellan Global Equities,MHG,magellan-global-equities,962166,AU000000MHG0,equity,AUD,Sydney,True
+australia,Perth Mint Gold,Perth Mint Gold,PMGOLD,perth-mint-gold,1117955,AU000PMGOLD8,commodity,AUD,Sydney,True
+australia,Vanguard Australian Shares High Yield,Vanguard Australian Shares High Yield,VHY,vanguard-aus.-shares-hyield,47721,AU000000VHY4,equity,AUD,Sydney,True
+australia,BetaShares Legg Mason Real Income,BetaShares Legg Mason Real Income,RINC,betashares-legg-mason-real-income,1072052,AU0000000630,equity,AUD,Sydney,True
+australia,ETFS Physical Gold,ETFS Physical Gold,GOLD,etfs-physical-gold-aus,47711,AU00000GOLD7,commodity,AUD,Sydney,True
+australia,Vanguard Australian Fixed Interest,Vanguard Australian Fixed Interest,VAF,vanguard-aus.-fixed-interest,38966,AU000000VAF8,other,AUD,Sydney,True
+australia,SPDR Dow Jones Global Real Estate,SPDR Dow Jones Global Real Estate,DJRE,spdr-dow-jones-global-real-estate-a,953177,AU00000DJRE9,equity,AUD,Sydney,True
+australia,Betashares Nasdaq 100,Betashares Nasdaq 100,NDQ,betashares-nasdaq-100,959569,AU000000NDQ6,equity,AUD,Sydney,True
+australia,AMP Capital Global Infrastructure Securities,AMP Capital Global Infrastructure Securities,GLIN,amp-capital-global-infrastructure-s,985878,AU00000GLIN8,equity,AUD,Sydney,True
+australia,BetaShares Australian Investment Grade Corporate B,BetaShares Australian Investment Grade Corporate Bond ETF,CRED,betashares-aus-inv-grd-corp-bd,1129410,AU0000008203,bond,AUD,Sydney,True
+australia,Betashares Australian Bank Senior Floating Rate Bo,Betashares Australian Bank Senior Floating Rate Bond,QPON,betashares-australian-bank-flt-rate,1031309,AU00000QPON6,bond,AUD,Sydney,True
+australia,BetaShares FTSE RAFI Australia 200,BetaShares FTSE RAFI Australia 200,QOZ,betashares-ftse-rafi-australia-200,953166,AU000000QOZ7,equity,AUD,Sydney,True
+australia,Fidelity Global Emerging Markets,Fidelity Global Emerging Markets,FEMX,fidelity-global-emerging-markets,1104657,AU0000027708,equity,AUD,Sydney,True
+australia,BetaShares US Dollar,BetaShares US Dollar,USD,betashares-us-dollar,37475,AU000000USD7,currency,AUD,Sydney,True
+australia,Vanguard MSCI Int Shares,Vanguard MSCI International Shares,VGS,vanguard-msci-int-shares,962173,AU000000VGS8,equity,AUD,Sydney,True
+australia,BetaShares Australia 200,BetaShares Australia 200,A200,betashares-australia-200,1077018,AU00000A2000,equity,AUD,Sydney,True
+australia,BetaShares FTSE 100,BetaShares FTSE 100 ETF,F100,betashares-ftse-100,1142244,AU0000051054,equity,AUD,Sydney,True
+australia,BetaShares Global Sustainability Leaders,BetaShares Global Sustainability Leaders,ETHI,betashares-global-sust-leaders,1031305,AU00000ETHI8,equity,AUD,Sydney,True
+australia,Betashares Global Cybersecurity,Betashares Global Cybersecurity,HACK,betashares-global-cybersecurity,1031301,AU00000HACK8,equity,AUD,Sydney,True
+australia,Vanguard MSCI Int Shares Hedged,Vanguard MSCI International Shares Hedged,VGAD,vanguard-msci-int-shares-hedged,962174,AU00000VGAD5,equity,AUD,Sydney,True
+australia,VanEck Vectors Australian Floating Rate,VanEck Vectors Australian Floating Rate,FLOT,vaneck-vect-aust-floating-rate,1031753,AU00000FLOT5,other,AUD,Sydney,True
+australia,VanEck Vectors MSCI World ex Australia Quality,VanEck Vectors MSCI World ex Australia Quality,QUAL,market-vectors-msci-world-ex-austra,953176,AU00000QUAL9,equity,AUD,Sydney,True
+australia,BetaShares Australian Dividend Harvester,BetaShares Australian Dividend Harvester,HVST,betashares-australian-div-harvester,959565,AU00000HVST1,equity,AUD,Sydney,True
+australia,Betashares Asia Technology Tigers,Betashares Asia Technology Tigers,ASIA,betashares-asia-technology-tigers,1096233,AU0000022063,equity,AUD,Sydney,True
+australia,Vanguard All World Ex US Shares,Vanguard All World Ex US Shares,VEU,vanguard-all-world-x-us-shares,47701,AU000000VEU9,equity,AUD,Sydney,True
+australia,iShares Edge MSCI World Multifactor,iShares Edge MSCI World Multifactor ETF,WDMF,ishares-edge-msci-world-multifactor,1094034,AU00000WDMF0,equity,AUD,Sydney,True
+australia,VanEck Vectors FTSE International Prop (Hdg),VanEck Vectors FTSE International Prop (Hdg),REIT,vaneck-vectors-ftse-intl-prop-hdg,1128883,AU0000041212,other,AUD,Sydney,True
+australia,BetaShares Global Banks,BetaShares Global Banks ETF Currency Hedged,BNKS,betashares-global-banks,1031295,AU00000BNKS0,equity,AUD,Sydney,True
+australia,Vanguard Int Fixed Interest,Vanguard International Fixed Interest Hedged,VIF,vanguard-int-fixed-interest,962172,AU000000VIF1,bond,AUD,Sydney,True
+australia,BetaShares Australian Sustainability Leaders,BetaShares Australian Sustainability Leaders,FAIR,betashares-australian-sust-leaders,1056186,AU00000FAIR4,equity,AUD,Sydney,True
+australia,SPDR S&P/ASX 200 Financials ex AREITS,SPDR S&P/ASX 200 Financials ex AREITS,OZF,spdr-s-p-asx200-financials-x-reit,38958,AU000000OZF0,equity,AUD,Sydney,True
+australia,BetaShares WisdomTree Japan,BetaShares WisdomTree Japan ETF - Currency Hedged,HJPN,betashares-wisdomtree-japan,1031297,AU00000HJPN5,equity,AUD,Sydney,True
+australia,Betashares Legg Mason Australian Bond,Betashares Legg Mason Australian Bond,BNDS,betashares-legg-mason-australian-b,1112806,AU0000026189,bond,AUD,Sydney,True
+australia,BetaShares Australian Small Companies Select Fund,BetaShares Australian Small Companies Select Fund,SMLL,betashares-au-small-comp-select-fnd,1013259,AU00000SMLL9,equity,AUD,Sydney,True

@@ -1,9 +1,13 @@
+from typing import Dict, Any
+
+import pandas as pd
+
 from bearish.sources.yfinance import (
     YfinanceFinancialMetrics,
     yFinanceBalanceSheet,
     yFinanceCashFlow,
     yFinanceSource,
-    YfinanceEquity,
+    YfinanceEquity, YfinanceEtf,
 )
 
 
@@ -49,7 +53,18 @@ def test_yFinanceSource_no_country():
     assert len(assets.equities) == len(tickers) - 1
 
 import yfinance as yf
+
+
+
 def test_yfinance_etf():
-    ticker = "XAIX.F"
-    results = yf.Ticker(ticker)
+    ticker = "SPY"
+    etf = YfinanceEtf.from_tickers([ticker])
     a = 12
+
+
+
+def test_yfinance_equity():
+    tickers = ["HO.PA", "GOOG"]
+    equities = YfinanceEquity.from_tickers(tickers)
+    assert equities
+    assert len(equities) == len(tickers)

@@ -1,65 +1,29 @@
 import abc
 import logging
-from typing import List, Optional
+from io import StringIO
+from typing import List, Optional, Type
 
-from pydantic import BaseModel, ConfigDict, Field, validate_call
+import pandas as pd
+import requests
+from pydantic import ConfigDict, validate_call, BaseModel, Field
 
-from bearish.models.base import Equity, Crypto, Etf, Currency, CandleStick
-from bearish.models.financials import FinancialMetrics, BalanceSheet, CashFlow
+from bearish.models.query.query import AssetQuery
+from bearish.models.assets.assets import Assets
+from bearish.models.base import SourceBase, DataSourceBase
+
+from bearish.models.financials.base import Financials
+from bearish.models.price.price import Price
 
 logger = logging.getLogger(__name__)
 
 
-class Financials(BaseModel):
-    financial_metrics: List[FinancialMetrics] = Field(default_factory=list)
-    balance_sheets: List[BalanceSheet] = Field(default_factory=list)
-    cash_flows: List[CashFlow] = Field(default_factory=list)
-
-    def add(self, financials: "Financials") -> None:
-        self.financial_metrics.extend(financials.financial_metrics)
-        self.balance_sheets.extend(financials.balance_sheets)
-        self.cash_flows.extend(financials.cash_flows)
-
-    def is_empty(self) -> bool:
-        return not any(
-            [
-                self.financial_metrics,
-                self.balance_sheets,
-                self.cash_flows,
-            ]
-        )
-
-
-class Assets(BaseModel):
-    equities: List[Equity] = Field(default_factory=list)
-    cryptos: List[Crypto] = Field(default_factory=list)
-    etfs: List[Etf] = Field(default_factory=list)
-    currencies: List[Currency] = Field(default_factory=list)
-
-    def is_empty(self) -> bool:
-        return not any(
-            [
-                self.equities,
-                self.cryptos,
-                self.etfs,
-                self.currencies,
-            ]
-        )
-
-    def add(self, assets: "Assets") -> None:
-        self.equities.extend(assets.equities)
-        self.cryptos.extend(assets.cryptos)
-        self.etfs.extend(assets.etfs)
-        self.currencies.extend(assets.currencies)
-
-
-class AbstractSource(BaseModel, abc.ABC):
+class AbstractSource(SourceBase, abc.ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @validate_call(validate_return=True)
-    def read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
+    def read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         try:
-            return self._read_assets(keywords)
+            return self._read_assets(query)
         except Exception as e:
             logger.error(f"Error reading assets from {type(self).__name__}: {e}")
             return Assets()
@@ -78,9 +42,68 @@ class AbstractSource(BaseModel, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def _read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
+    def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         ...
 
     @abc.abstractmethod
-    def read_series(self, ticker: str, type: str) -> List[CandleStick]:
+    def read_series(self, ticker: str, type: str) -> List[Price]:
         ...
+
+class UrlSource(BaseModel):
+    url: str
+    results: List[SourceBase] = Field(default_factory=list)
+    type_class: Type[SourceBase]
+    filters: Optional[List[str]] = None
+
+class UrlSources(BaseModel):
+    equity: UrlSource
+    crypto: UrlSource
+    currency: Optional[UrlSource] = Field(None)
+    etf: UrlSource
+
+    def to_assets(self) ->Assets:
+
+        return Assets(
+            equities=self.equity.results,
+            cryptos=self.crypto.results,
+            currencies=self.currency.results if self.currency else [],
+            etfs=self.etf.results,
+        )
+
+class DatabaseCsvSource(AbstractSource):
+    __url_sources__: UrlSources
+    def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
+        sources = self.__url_sources__
+        for field in sources.model_fields:
+            url_source = getattr(sources, field)
+            if url_source is None:
+                continue
+            response = requests.get(url_source.url, timeout=10)
+            if not response.ok:
+                raise Exception(f"Failed to download data from {url_source.url}")
+            data = pd.read_csv(StringIO(response.text))
+            url_source.results = self._from_dataframe(
+                data, url_source.type_class, url_source.filters
+            )
+        return sources.to_assets()
+
+    def _from_dataframe(
+        self,
+        data: pd.DataFrame,
+        databaseclass: Type[DataSourceBase],
+        filters: Optional[list[str]] = None,
+    ) -> List[DataSourceBase]:
+        if filters:
+            data = data.dropna(subset=filters)
+        equities_mapping = [equity.to_dict() for _, equity in data.iterrows()]
+        return [
+            databaseclass(**equity_mapping)
+            for equity_mapping in equities_mapping
+        ]
+
+    def _read_financials(self, ticker: str) -> Financials:
+        return Financials()
+
+    def read_series(self, ticker: str, type: str) -> List[Price]:
+        return []
+
