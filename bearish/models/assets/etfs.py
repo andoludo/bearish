@@ -12,11 +12,6 @@ class Etf(BaseComponent):
         BeforeValidator(to_string),
         Field(default=None),
     ]
-    category: Annotated[
-        Optional[str],
-        BeforeValidator(to_string),
-        Field(default=None),
-    ]
     family: Annotated[
         Optional[str],
         BeforeValidator(to_string),

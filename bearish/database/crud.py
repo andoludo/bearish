@@ -44,7 +44,7 @@ class BearishDb(BaseModel):
         return engine
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
-        self._engine
+        self._engine  # noqa: B018
 
     def write_assets(self, assets: Assets) -> None:
         with Session(self._engine) as session:
@@ -95,7 +95,7 @@ class BearishDb(BaseModel):
         start_date = end_date - relativedelta(month=months)
         with Session(self._engine) as session:
             query_ = select(PriceORM)
-            query_ = query_.where(PriceORM.symbol.in_(query.symbols)).where(  # type: ignore
+            query_ = query_.where(PriceORM.symbol.in_(query.symbols.all())).where(  # type: ignore
                 PriceORM.date.between(start_date, end_date)  # type: ignore
             )
             series = session.exec(query_).all()
@@ -148,15 +148,12 @@ class BearishDb(BaseModel):
         ],
         query: "AssetQuery",
     ) -> List[BaseModel]:
-        if query.symbols:
-            query_ = select(orm_table).where(orm_table.symbol.in_(query.symbols))  # type: ignore
+        if query.symbols.all():
+            query_ = select(orm_table).where(orm_table.symbol.in_(query.symbols.all()))  # type: ignore
         else:
             query_ = select(orm_table)
             if query.countries:
                 query_ = query_.where(orm_table.country.in_(query.countries))  # type: ignore
-            # if query.exchanges:
-            #     query_ = query_.where(orm_table.exchange.in_(query.exchanges))  # type: ignore
-            # if query.markets:
-            #     query_ = query_.where(orm_table.market.in_(query.markets))  # type: ignore
+
         assets = session.exec(query_).all()
         return [table.model_validate(asset) for asset in assets]

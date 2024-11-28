@@ -4,7 +4,7 @@ from io import StringIO
 from typing import List, Optional, Type
 
 import pandas as pd
-import requests
+import requests  # type: ignore
 from pydantic import ConfigDict, validate_call, BaseModel, Field
 
 from bearish.models.query.query import AssetQuery
@@ -49,11 +49,13 @@ class AbstractSource(SourceBase, abc.ABC):
     def read_series(self, ticker: str, type: str) -> List[Price]:
         ...
 
+
 class UrlSource(BaseModel):
     url: str
     results: List[SourceBase] = Field(default_factory=list)
     type_class: Type[SourceBase]
     filters: Optional[List[str]] = None
+
 
 class UrlSources(BaseModel):
     equity: UrlSource
@@ -61,7 +63,7 @@ class UrlSources(BaseModel):
     currency: Optional[UrlSource] = Field(None)
     etf: UrlSource
 
-    def to_assets(self) ->Assets:
+    def to_assets(self) -> Assets:
 
         return Assets(
             equities=self.equity.results,
@@ -70,8 +72,10 @@ class UrlSources(BaseModel):
             etfs=self.etf.results,
         )
 
+
 class DatabaseCsvSource(AbstractSource):
     __url_sources__: UrlSources
+
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         sources = self.__url_sources__
         for field in sources.model_fields:
@@ -96,14 +100,10 @@ class DatabaseCsvSource(AbstractSource):
         if filters:
             data = data.dropna(subset=filters)
         equities_mapping = [equity.to_dict() for _, equity in data.iterrows()]
-        return [
-            databaseclass(**equity_mapping)
-            for equity_mapping in equities_mapping
-        ]
+        return [databaseclass(**equity_mapping) for equity_mapping in equities_mapping]
 
     def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
     def read_series(self, ticker: str, type: str) -> List[Price]:
         return []
-

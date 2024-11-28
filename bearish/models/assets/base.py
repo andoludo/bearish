@@ -13,8 +13,8 @@ class BaseComponent(DataSourceBase):
     base_symbol: str = Field(
         description="Root symbol, primary ticker, or company identifier."
     )
-    modifier: Optional[str] = Field(None,
-        description="Suffix, modifier, attribute, or share class indicator."
+    modifier: Optional[str] = Field(
+        None, description="Suffix, modifier, attribute, or share class indicator."
     )
     name: Annotated[
         Optional[str],
@@ -65,11 +65,11 @@ class BaseComponent(DataSourceBase):
         BeforeValidator(format_capitalize),
         Field(None, description="Country where the company's headquarters is located"),
     ]
+
     @model_validator(mode="before")
-    def _validator(cls, value:Dict[str, Any])->Dict[str, Any]:
+    @classmethod
+    def _validator(cls, value: Dict[str, Any]) -> Dict[str, Any]:
         base_symbol, *modifier = value["symbol"].split(".")
         value["base_symbol"] = base_symbol
         value["modifier"] = modifier[0] if modifier else None
         return value
-
-

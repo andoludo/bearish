@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from alpha_vantage.fundamentaldata import FundamentalData
 
+from bearish.models.query.query import Symbols, AssetQuery
 from bearish.sources.alphavantage import (
     AlphaVantageFinancialMetrics,
     AlphaVantageBalanceSheet,
@@ -123,15 +124,21 @@ def test_alphavantage_read_assets():
     tickers = ["AAPL"]
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    assets = AlphaVantageSource()._read_assets(keywords=tickers)
+    assets = AlphaVantageSource()._read_assets(
+        AssetQuery(symbols=Symbols(equities=tickers))
+    )
     assert assets
+    assert not assets.is_empty()
 
 
-# @pytest.mark.skip("check later")
+@pytest.mark.integration
 def test_alphavantage_read_assets_integration():
     tickers = ["ML"]
-    assets = AlphaVantageSource()._read_assets(keywords=tickers)
+    assets = AlphaVantageSource()._read_assets(
+        AssetQuery(symbols=Symbols(equities=tickers))
+    )
     assert assets
+    assert not assets.is_empty()
 
 
 def test_alphavantage_read_financials():

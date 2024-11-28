@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 
+from sqlalchemy import JSON, Column
 from sqlmodel import SQLModel, Field
 
 from bearish.models.assets.equity import Equity
@@ -40,7 +41,7 @@ class EquityORM(BaseTable, Equity, table=True):  # type: ignore
 
 class CryptoORM(BaseTable, Crypto, table=True):  # type: ignore
     __tablename__ = "crypto"
-    cryptocurrency: Optional[str] = Field(default=None,index=True)
+    cryptocurrency: Optional[str] = Field(default=None, index=True)
 
 
 class CurrencyORM(BaseTable, Currency, table=True):  # type: ignore
@@ -50,6 +51,9 @@ class CurrencyORM(BaseTable, Currency, table=True):  # type: ignore
 
 class EtfORM(BaseTable, Etf, table=True):  # type: ignore
     __tablename__ = "etf"
+
+    holding_percent: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
+    sector_weightings: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
 
 
 class PriceORM(SQLModel, Price, table=True):  # type: ignore

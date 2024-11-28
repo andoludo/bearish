@@ -32,7 +32,7 @@ class Bearish(BaseModel):
         default_factory=lambda: [
             FinanceDatabaseSource(),
             InvestPySource(),
-            yFinanceSource()
+            yFinanceSource(),
         ]
     )
 
@@ -43,7 +43,7 @@ class Bearish(BaseModel):
         for source in self.sources:
             if query:
                 cached_assets = self.read_assets(AssetQuery(countries=query.countries))
-                query.update_symbols(cached_assets.symbols())
+                query.update_symbols(cached_assets)
             logger.info(f"Fetching assets from source {type(source).__name__}")
             assets_ = source.read_assets(query)
             if assets_.is_empty():

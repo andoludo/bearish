@@ -38,13 +38,15 @@ def to_string(value: Any) -> Optional[str]:  # noqa: ANN401
         return None
     return str(value)
 
+
 def format_capitalize(value: Any) -> Optional[str]:  # noqa: ANN401
     country = to_string(value)
     if country is None:
         return None
     return country.capitalize()
 
-def remove_duplicates(value: list[str]) -> list[str]:  # noqa: ANN401
+
+def remove_duplicates(value: list[str]) -> list[str]:
     if not value:
         return []
     return list(set(value))

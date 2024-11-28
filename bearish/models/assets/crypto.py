@@ -7,4 +7,8 @@ from bearish.utils.utils import to_string
 
 
 class Crypto(BaseComponent):
-    cryptocurrency: Annotated[Optional[str], BeforeValidator(to_string), Field(None, description="Name of the cryptocurrency")]
+    cryptocurrency: Annotated[
+        Optional[str],
+        BeforeValidator(to_string),
+        Field(None, description="Name of the cryptocurrency"),
+    ]

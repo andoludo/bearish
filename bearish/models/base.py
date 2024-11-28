@@ -1,7 +1,6 @@
-
 import datetime
 from datetime import date
-from typing import Dict, Any
+from typing import Dict, Any, ClassVar
 
 from pydantic import (
     BaseModel,
@@ -11,10 +10,18 @@ from pydantic import (
 )
 
 
+class BaseAssets(BaseModel):
+    equities: Any
+    cryptos: Any
+    etfs: Any
+    currencies: Any
+
+
 class SourceBase(BaseModel):
     __source__: str
-    __alias__: Dict[str, str] = {}
+    __alias__: ClassVar[Dict[str, str]] = {}
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
 
 class DataSourceBase(SourceBase):
 

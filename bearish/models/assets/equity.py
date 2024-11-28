@@ -33,7 +33,6 @@ class Equity(BaseComponent):
         ),
     ]
 
-
     state: Annotated[
         Optional[str],
         BeforeValidator(to_string),
@@ -78,7 +77,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="The total number of shares that a company has issued to investors, including those held by insiders",
+            description="The total number of shares that a company has issued to investors, "
+            "including those held by insiders",
         ),
     ]
     float_shares: Annotated[
@@ -86,7 +86,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="The portion of Shares Outstanding that is freely available for public trading on the open market",
+            description="The portion of Shares Outstanding that is freely available "
+            "for public trading on the open market",
         ),
     ]
     short_shares: Annotated[
@@ -94,7 +95,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="Refers to the number of shares of a company that have been sold short by investors but not yet repurchased or covered.",
+            description="Refers to the number of shares of a company that have been sold "
+            "short by investors but not yet repurchased or covered.",
         ),
     ]
     book_value: Annotated[
@@ -102,7 +104,10 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="Represents the net value of a company as recorded on its balance sheet. It reflects the amount shareholders would theoretically receive if all the company's assets were sold and all its liabilities were paid off",
+            description="Represents the net value of a company as recorded on "
+            "its balance sheet. It reflects the amount shareholders "
+            "would theoretically receive if all the company's assets "
+            "were sold and all its liabilities were paid off",
         ),
     ]
     price_to_book: Annotated[
@@ -150,7 +155,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="EPS (Earnings Per Share) is a measure of a company's profitability on a per-share basis, often used by investors to gauge financial performance",
+            description="EPS (Earnings Per Share) is a measure of a company's "
+            "profitability on a per-share basis, often used by investors to gauge financial performance",
         ),
     ]
     forward_earnings_per_share: Annotated[
@@ -158,7 +164,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="EPS (Earnings Per Share) is a measure of a company's profitability on a per-share basis, often used by investors to gauge financial performance",
+            description="EPS (Earnings Per Share) is a measure of a company's "
+            "profitability on a per-share basis, often used by investors to gauge financial performance",
         ),
     ]
     return_on_equity: Annotated[
@@ -206,7 +213,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="The Quick Ratio measures a company's ability to pay its short-term liabilities using its most liquid assets, excluding inventory",
+            description="The Quick Ratio measures a company's ability "
+            "to pay its short-term liabilities using its most liquid assets, excluding inventory",
         ),
     ]
     current_ratio: Annotated[
@@ -214,7 +222,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="The Current Ratio measures a company's ability to pay its short-term liabilities (due within a year) with its total current assets",
+            description="The Current Ratio measures a company's ability "
+            "to pay its short-term liabilities (due within a year) with its total current assets",
         ),
     ]
     earning_growth: Annotated[
@@ -254,7 +263,8 @@ class Equity(BaseComponent):
         BeforeValidator(to_float),
         Field(
             default=None,
-            description="It provides insight into how heavily shorted a stock is and the potential for a short squeeze.",
+            description="It provides insight into how heavily shorted "
+            "a stock is and the potential for a short squeeze.",
         ),
     ]
     timezone: Annotated[

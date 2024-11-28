@@ -12,6 +12,7 @@ from bearish.models.financials.balance_sheet import BalanceSheet
 from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
+from bearish.models.query.query import AssetQuery
 
 from bearish.sources.base import (
     AbstractSource,
@@ -61,6 +62,28 @@ class AlphaVantageEquity(AlphaVantageBase, Equity):
         "region": "city",  # Aggregates state, city, and zipcode
         "currency": "currency",  # Aggregates state, city, and zipcode
         "OfficialSite": "website",  # URL of the company's official website
+        "MarketCapitalization": "market_capitalization",
+        "Address": "state",  # Reverse association to state/city/zipcode
+        "SharesOutstanding": "shares_outstanding",
+        "BookValue": "book_value",
+        "PriceToBookRatio": "price_to_book",
+        "TrailingPE": "trailing_price_to_earnings",
+        "ForwardPE": "forward_price_to_earnings",
+        "DividendYield": "dividend_yield",
+        "DividendPerShare": "dividend_rate",
+        "DilutedEPSTTM": "trailing_earnings_per_share",
+        "EPS": "forward_earnings_per_share",  # Adjust as needed
+        "ReturnOnEquityTTM": "return_on_equity",
+        "OperatingMarginTTM": "operating_margins",
+        "GrossProfitTTM": "gross_margins",
+        "QuarterlyRevenueGrowthYOY": "revenue_growth",
+        "RevenuePerShareTTM": "revenue_per_share",
+        "PriceToSalesRatioTTM": "trailing_price_to_sales",
+        "QuarterlyEarningsGrowthYOY": "earning_growth",
+        "PEGRatio": "trailing_peg_ratio",
+        "ReturnOnAssetsTTM": "return_on_assets",
+        "Beta": "short_ratio",
+        "timezone": "timezone",
     }
 
     @classmethod
@@ -200,10 +223,10 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
 
 
 class AlphaVantageSource(AbstractSource):
-    def _read_assets(self, keywords: Optional[List[str]] = None) -> Assets:
-        if keywords is None:
+    def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
+        if query is None:
             return Assets()
-        equities = AlphaVantageEquity.from_tickers(keywords)
+        equities = AlphaVantageEquity.from_tickers(query.symbols.equities)
         return Assets(equities=equities)
 
     def _read_financials(self, ticker: str) -> Financials:

@@ -19,19 +19,31 @@ def test_read_assets() -> None:
     with requests_mock.Mocker() as req:
         req.get(
             RAW_EQUITIES_DATA_URL,
-            text=Path(__file__).parents[1].joinpath("data/sources/financedatabase/equities.csv").read_text(),
+            text=Path(__file__)
+            .parents[1]
+            .joinpath("data/sources/financedatabase/equities.csv")
+            .read_text(),
         )
         req.get(
             RAW_CRYPTO_DATA_URL,
-            text=Path(__file__).parents[1].joinpath("data/sources/financedatabase/cryptos.csv").read_text(),
+            text=Path(__file__)
+            .parents[1]
+            .joinpath("data/sources/financedatabase/cryptos.csv")
+            .read_text(),
         )
         req.get(
             RAW_CURRENCY_DATA_URL,
-            text=Path(__file__).parents[1].joinpath("data/sources/financedatabase/currencies.csv").read_text(),
+            text=Path(__file__)
+            .parents[1]
+            .joinpath("data/sources/financedatabase/currencies.csv")
+            .read_text(),
         )
         req.get(
             RAW_ETF_DATA_URL,
-            text=Path(__file__).parents[1].joinpath("data/sources/financedatabase/etfs.csv").read_text(),
+            text=Path(__file__)
+            .parents[1]
+            .joinpath("data/sources/financedatabase/etfs.csv")
+            .read_text(),
         )
         assets = FinanceDatabaseSource()._read_assets()
         assert assets

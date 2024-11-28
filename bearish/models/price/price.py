@@ -6,7 +6,6 @@ from bearish.models.base import DataSourceBase
 from bearish.utils.utils import to_float
 
 
-
 class Price(DataSourceBase):
     open: Annotated[float, BeforeValidator(to_float)]
     high: Annotated[float, BeforeValidator(to_float)]

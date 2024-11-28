@@ -42,14 +42,18 @@ class YfinanceFinancialBase(YfinanceBase):
 
 class YfinanceAssetBase(YfinanceBase):
     @classmethod
-    def _from_tickers(cls, tickers: List[str], function: Callable) -> List["YfinanceAssetBase"]:
+    def _from_tickers(
+        cls, tickers: List[str], function: Callable[[str, yf.Ticker], Dict[str, Any]]
+    ) -> List["YfinanceAssetBase"]:
         equities = []
         tickers_ = yf.Tickers(" ".join(tickers))
         found_tickers = tickers_.tickers
         for ticker in tickers:
             if found_tickers.get(ticker):
                 try:
-                    equities.append(cls.model_validate(function(ticker, found_tickers[ticker])))
+                    equities.append(
+                        cls.model_validate(function(ticker, found_tickers[ticker]))
+                    )
                 except Exception as e:
                     logger.error(f"Error reading {ticker}: {e}")
                     print(f"Error reading {ticker}: {e}")
@@ -104,27 +108,37 @@ class YfinanceEquity(YfinanceAssetBase, Equity):
         "compositeFigi": "composite_figi",
         "shareclassFigi": "shareclass_figi",
     }
+
     @classmethod
-    def from_tickers(cls, tickers: List[str]):
-        return cls._from_tickers(tickers, lambda ticker, x: x.info)
+    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEquity"]:
+        return cls._from_tickers(tickers, lambda ticker, x: x.info)  # type: ignore
 
 
-def to_funds_data_dict(data: pd.DataFrame, ticker: str)->Dict[str, Any]:
+def to_funds_data_dict(data: pd.DataFrame, ticker: str) -> Dict[str, Any]:
     data_dict = {}
     data_dict.update(data.to_dict().get(ticker, {}))
     return data_dict
 
-def _get_etf(ticker: str, results: yf.Ticker):
+
+def _get_etf(ticker: str, results: yf.Ticker) -> Dict[str, Any]:
     etf = {}
-    etf.update(to_funds_data_dict(results.funds_data.fund_operations,ticker))
-    etf.update(to_funds_data_dict(results.funds_data.equity_holdings,ticker))
+    etf.update(to_funds_data_dict(results.funds_data.fund_operations, ticker))
+    etf.update(to_funds_data_dict(results.funds_data.equity_holdings, ticker))
     etf.update(results.funds_data.fund_overview)
     etf.update({"Sector Weightings": results.funds_data.sector_weightings})
-    etf.update({'Holding Percent': results.funds_data.top_holdings.to_dict().get('Holding Percent', {})})
+    etf.update(
+        {
+            "Holding Percent": results.funds_data.top_holdings.to_dict().get(
+                "Holding Percent", {}
+            )
+        }
+    )
     etf.update({"summary": results.funds_data.description})
-    etf.update({"isin":results.isin})
+    etf.update({"isin": results.isin})
     etf.update(results.info)
     return etf
+
+
 class YfinanceEtf(YfinanceAssetBase, Etf):
     __alias__ = {
         "symbol": "symbol",
@@ -160,9 +174,10 @@ class YfinanceEtf(YfinanceAssetBase, Etf):
         "shortName": "short_name",
         "longName": "long_name",
     }
+
     @classmethod
-    def from_tickers(cls, tickers: List[str]):
-        return cls._from_tickers(tickers, _get_etf)
+    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEtf"]:
+        return cls._from_tickers(tickers, _get_etf)  # type: ignore
 
 
 class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
@@ -276,10 +291,12 @@ class yFinanceSource(AbstractSource):  # noqa: N801
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()
-        if not query.symbols:
-            raise ValueError(f"Source {self.__source__} requires at least one symbol.")
-        equities = YfinanceEquity.from_tickers(query.symbols)
-        return Assets(equities=equities)
+
+        if query.symbols.empty():
+            return Assets()
+        equities = YfinanceEquity.from_tickers(query.symbols.equities)
+        etfs = YfinanceEtf.from_tickers(query.symbols.etfs)
+        return Assets(equities=equities, etfs=etfs)
 
     def _read_financials(self, ticker: str) -> Financials:
         return Financials(

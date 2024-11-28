@@ -1,13 +1,11 @@
-from typing import Dict, Any
-
-import pandas as pd
-
+from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.yfinance import (
     YfinanceFinancialMetrics,
     yFinanceBalanceSheet,
     yFinanceCashFlow,
     yFinanceSource,
-    YfinanceEquity, YfinanceEtf,
+    YfinanceEquity,
+    YfinanceEtf,
 )
 
 
@@ -37,30 +35,40 @@ def test_get_ticker():
 
 def test_yFinanceSource_update_assets():
     tickers = ["MSFT", "AAPL", "GOOG"]
-    assets = yFinanceSource()._read_assets(keywords=tickers)
+    assets = yFinanceSource()._read_assets(
+        AssetQuery(symbols=Symbols(equities=tickers))
+    )
     assert len(assets.equities) == len(tickers)
 
 
 def test_yFinanceSource_update_non_existent_assets():
     tickers = ["IDONOTEXISRS", "AAPL", "GOOG"]
-    assets = yFinanceSource()._read_assets(keywords=tickers)
+    assets = yFinanceSource()._read_assets(
+        AssetQuery(symbols=Symbols(equities=tickers))
+    )
     assert len(assets.equities) == len(tickers) - 1
 
 
 def test_yFinanceSource_no_country():
     tickers = ["ML.PA"]
-    assets = yFinanceSource()._read_assets(keywords=tickers)
-    assert len(assets.equities) == len(tickers) - 1
+    assets = yFinanceSource()._read_assets(
+        AssetQuery(symbols=Symbols(equities=tickers))
+    )
+    assert len(assets.equities) == len(tickers)
 
-import yfinance as yf
 
+def test_yFinanceSource_with_etf():
+    assets = yFinanceSource()._read_assets(
+        AssetQuery(symbols=Symbols(equities=["MSFT"], etfs=["SPY"]))
+    )
+    assert assets.equities
+    assert assets.etfs
 
 
 def test_yfinance_etf():
     ticker = "SPY"
     etf = YfinanceEtf.from_tickers([ticker])
-    a = 12
-
+    assert etf
 
 
 def test_yfinance_equity():
