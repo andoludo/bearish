@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 class AlphaVantageBase(BaseModel):
     __source__: str = "AlphaVantage"
     fundamentals: ClassVar[FundamentalData] = FundamentalData(
-        key=os.environ.get("ALPHAVANTAGE_API_KEY")
+        key=os.environ.get("ALPHAVANTAGE_API_KEY", "DUMMY")
     )
     timeseries: ClassVar[TimeSeries] = TimeSeries(
-        key=os.environ.get("ALPHAVANTAGE_API_KEY")
+        key=os.environ.get("ALPHAVANTAGE_API_KEY", "DUMMY")
     )
 
 

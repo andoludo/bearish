@@ -24,8 +24,7 @@ class BaseTable(BaseBearishTable):
     id: Optional[int] = Field(default=None, primary_key=True)
 
 
-class BaseBearishTableTest(BaseTable, table=True):
-    ...
+class BaseBearishTableTest(BaseTable, table=True): ...
 
 
 class BaseFinancials(SQLModel):

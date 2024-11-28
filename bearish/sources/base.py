@@ -38,16 +38,13 @@ class AbstractSource(SourceBase, abc.ABC):
             return Financials()
 
     @abc.abstractmethod
-    def _read_financials(self, ticker: str) -> Financials:
-        ...
+    def _read_financials(self, ticker: str) -> Financials: ...
 
     @abc.abstractmethod
-    def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
-        ...
+    def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets: ...
 
     @abc.abstractmethod
-    def read_series(self, ticker: str, type: str) -> List[Price]:
-        ...
+    def read_series(self, ticker: str, type: str) -> List[Price]: ...
 
 
 class UrlSource(BaseModel):
