@@ -37,7 +37,7 @@ class FinanceDatabaseCurrency(FinanceDatabaseBase, Currency): ...
 class FinanceDatabaseEtf(FinanceDatabaseBase, Etf): ...
 
 
-class FinanceDatabaseSource(DatabaseCsvSource):
+class FinanceDatabaseSource(FinanceDatabaseBase, DatabaseCsvSource):
     __url_sources__ = UrlSources(
         equity=UrlSource(
             url=RAW_EQUITIES_DATA_URL,
