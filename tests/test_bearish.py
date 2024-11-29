@@ -6,6 +6,7 @@ import requests_mock
 
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish
+from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.alphavantage import AlphaVantageBase, AlphaVantageSource
 from bearish.sources.financedatabase import (
@@ -147,7 +148,11 @@ def test_update_series_multiple_times(bearish_db: BearishDb):
 def test_update_financials_alphavantage(bearish_db: BearishDb):
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    bearish = Bearish(path=bearish_db.database_path, sources=[AlphaVantageSource()])
+    bearish = Bearish(
+        path=bearish_db.database_path,
+        api_keys=SourceApiKeys(keys={"AlphaVantage": "AlphaVantage"}),
+        sources=[AlphaVantageSource()],
+    )
     bearish.read_financials_from_many_sources("AAPL")
     financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert financials
@@ -156,7 +161,11 @@ def test_update_financials_alphavantage(bearish_db: BearishDb):
 def test_update_series_alphavantage(bearish_db: BearishDb):
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    bearish = Bearish(path=bearish_db.database_path, sources=[AlphaVantageSource()])
+    bearish = Bearish(
+        path=bearish_db.database_path,
+        api_keys=SourceApiKeys(keys={"AlphaVantage": "AlphaVantage"}),
+        sources=[AlphaVantageSource()],
+    )
     bearish.write_series("AAPL", "full")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series

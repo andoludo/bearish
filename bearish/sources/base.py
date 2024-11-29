@@ -46,6 +46,12 @@ class AbstractSource(SourceBase, abc.ABC):
     @abc.abstractmethod
     def read_series(self, ticker: str, type: str) -> List[Price]: ...
 
+    @abc.abstractmethod
+    def set_api_key(self, api_key: str) -> None: ...
+
+    def __hash__(self) -> int:
+        return hash(self.__source__)
+
 
 class UrlSource(BaseModel):
     url: str
@@ -73,6 +79,7 @@ class UrlSources(BaseModel):
 class DatabaseCsvSource(AbstractSource):
     __url_sources__: UrlSources
 
+    def set_api_key(self, api_key: str) -> None: ...
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         sources = self.__url_sources__
         for field in sources.model_fields:

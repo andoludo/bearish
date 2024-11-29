@@ -1,6 +1,7 @@
+import abc
 import datetime
 from datetime import date
-from typing import Dict, Any, ClassVar
+from typing import Dict, Any, ClassVar, Optional
 
 from pydantic import (
     BaseModel,
@@ -17,9 +18,10 @@ class BaseAssets(BaseModel):
     currencies: Any
 
 
-class SourceBase(BaseModel):
+class SourceBase(BaseModel, abc.ABC):
     __source__: str
     __alias__: ClassVar[Dict[str, str]] = {}
+    __api_key__: ClassVar[Optional[str]] = None
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 

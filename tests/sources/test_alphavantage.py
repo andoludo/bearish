@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from alpha_vantage.fundamentaldata import FundamentalData
 
+from bearish.exceptions import InvalidApiKeyError
 from bearish.models.query.query import Symbols, AssetQuery
 from bearish.sources.alphavantage import (
     AlphaVantageFinancialMetrics,
@@ -155,3 +156,16 @@ def test_alphavantage_read_series():
     AlphaVantageBase.timeseries = FakeTimeSeries()
     series = AlphaVantageSource().read_series(ticker, "full")
     assert series
+
+
+@pytest.mark.order(2)
+def test_api_key():
+    alpha = AlphaVantageSource()
+    alpha.set_api_key("test")
+    assert AlphaVantageCashFlow.from_ticker("AAPL")
+
+
+@pytest.mark.order(1)
+def test_no_api_key():
+    with pytest.raises(InvalidApiKeyError):
+        AlphaVantageCashFlow.from_ticker("AAPL")

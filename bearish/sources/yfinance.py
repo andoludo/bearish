@@ -287,7 +287,8 @@ class yFinancePrice(YfinanceBase, Price):  # noqa: N801
     }
 
 
-class yFinanceSource(AbstractSource):  # noqa: N801
+class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
+    def set_api_key(self, api_key: str) -> None: ...
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()

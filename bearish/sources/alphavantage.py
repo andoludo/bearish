@@ -1,36 +1,48 @@
+import functools
 import logging
-import os
-from typing import List, Optional, ClassVar, cast, Any, Dict
+from typing import List, Optional, ClassVar, cast, Any, Dict, Callable, Type, TypeVar
 
 import pandas as pd
 from alpha_vantage.fundamentaldata import FundamentalData  # type: ignore
 from alpha_vantage.timeseries import TimeSeries  # type: ignore
 from pydantic import BaseModel
 
+from bearish.exceptions import InvalidApiKeyError
+from bearish.models.assets.assets import Assets
 from bearish.models.assets.equity import Equity
+from bearish.models.base import SourceBase
 from bearish.models.financials.balance_sheet import BalanceSheet
+from bearish.models.financials.base import Financials
 from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-
 from bearish.sources.base import (
     AbstractSource,
 )
-from bearish.models.financials.base import Financials
-from bearish.models.assets.assets import Assets
 
 logger = logging.getLogger(__name__)
 
+T = TypeVar("T", bound=Type[Any])
 
-class AlphaVantageBase(BaseModel):
+
+def check_api_key(method: Callable[..., Any]) -> Callable[..., Any]:
+    @functools.wraps(method)
+    def wrapper(cls: T, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+        if not hasattr(cls, "fundamentals") or not hasattr(cls, "timeseries"):
+            raise InvalidApiKeyError(f"API key not set for {cls.__source__}")
+        return method(cls, *args, **kwargs)
+
+    return wrapper
+
+
+class AlphaVantageSourceBase(BaseModel):
     __source__: str = "AlphaVantage"
-    fundamentals: ClassVar[FundamentalData] = FundamentalData(
-        key=os.environ.get("ALPHAVANTAGE_API_KEY", "DUMMY")
-    )
-    timeseries: ClassVar[TimeSeries] = TimeSeries(
-        key=os.environ.get("ALPHAVANTAGE_API_KEY", "DUMMY")
-    )
+
+
+class AlphaVantageBase(AlphaVantageSourceBase, SourceBase):
+    fundamentals: ClassVar[FundamentalData]
+    timeseries: ClassVar[TimeSeries]
 
 
 class AlphaVantageBaseFinancials(AlphaVantageBase):
@@ -87,6 +99,7 @@ class AlphaVantageEquity(AlphaVantageBase, Equity):
     }
 
     @classmethod
+    @check_api_key
     def from_tickers(cls, tickers: List[str]) -> List["AlphaVantageEquity"]:
         equities = []
         for ticker in tickers:
@@ -126,6 +139,7 @@ class AlphaVantageFinancialMetrics(AlphaVantageBaseFinancials, FinancialMetrics)
     }
 
     @classmethod
+    @check_api_key
     def from_ticker(cls, ticker: str) -> List["AlphaVantageFinancialMetrics"]:
         company_overview, _ = cls.fundamentals.get_company_overview(ticker)
         return AlphaVantageFinancialMetrics.from_json(company_overview)  # type: ignore
@@ -164,6 +178,7 @@ class AlphaVantageBalanceSheet(AlphaVantageBaseFinancials, BalanceSheet):
     }
 
     @classmethod
+    @check_api_key
     def from_ticker(cls, ticker: str) -> List["AlphaVantageBalanceSheet"]:
         data_annual, _ = cls.fundamentals.get_balance_sheet_annual(ticker)
         data_quarterly, _ = cls.fundamentals.get_balance_sheet_quarterly(ticker)
@@ -196,6 +211,7 @@ class AlphaVantageCashFlow(AlphaVantageBaseFinancials, CashFlow):
     }
 
     @classmethod
+    @check_api_key
     def from_ticker(cls, ticker: str) -> List["AlphaVantageCashFlow"]:
         data, _ = cls.fundamentals.get_cash_flow_annual(ticker)
         return AlphaVantageCashFlow.from_dataframe(ticker, data)  # type: ignore
@@ -212,7 +228,8 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str, type: str) -> List["Price"]:
+    @check_api_key
+    def from_ticker(cls, ticker: str, type: str) -> List[Price]:
         type = "full" if type == "full" else "compact"
         time_series, metadata = cls.timeseries.get_daily(ticker, outputsize=type)
 
@@ -222,7 +239,7 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
         ]
 
 
-class AlphaVantageSource(AbstractSource):
+class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()
@@ -237,4 +254,8 @@ class AlphaVantageSource(AbstractSource):
         )
 
     def read_series(self, ticker: str, type: str) -> List[Price]:
-        return AlphaVantagePrice.from_ticker(ticker, type)
+        return cast(List[Price], AlphaVantagePrice.from_ticker(ticker, type))
+
+    def set_api_key(self, api_key: str) -> None:
+        AlphaVantageBase.fundamentals = FundamentalData(key=api_key)
+        AlphaVantageBase.timeseries = TimeSeries(key=api_key)

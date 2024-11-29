@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from typing import Optional, List, Any
 
@@ -11,6 +12,8 @@ from pydantic import (
 )
 
 from bearish.database.crud import BearishDb
+from bearish.exceptions import InvalidApiKeyError
+from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
@@ -27,6 +30,7 @@ app = typer.Typer()
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
+    api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDb = PrivateAttr()
     sources: List[AbstractSource] = Field(
         default_factory=lambda: [
@@ -38,6 +42,18 @@ class Bearish(BaseModel):
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
         self._bearish_db = BearishDb(database_path=self.path)
+        for source in self.sources:
+            try:
+                source.set_api_key(
+                    self.api_keys.keys.get(
+                        source.__source__, os.environ.get(source.__source__.upper())  # type: ignore
+                    )
+                )
+            except InvalidApiKeyError as e:  # noqa: PERF203
+                logger.error(
+                    f"Invalid API key for {source.__source__}: {e}. It will be removed from sources"
+                )
+                self.sources.remove(source)
 
     def write_assets(self, query: Optional[AssetQuery] = None) -> None:
         for source in self.sources:

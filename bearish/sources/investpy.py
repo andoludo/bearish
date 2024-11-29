@@ -48,7 +48,7 @@ class InvestPyEtf(InvestPyBase, Etf):
     }
 
 
-class InvestPySource(DatabaseCsvSource):
+class InvestPySource(InvestPyBase, DatabaseCsvSource):
     __url_sources__ = UrlSources(
         equity=UrlSource(
             url=RAW_EQUITIES_INVESTSPY_DATA_URL,
