@@ -18,6 +18,8 @@ alpha-vantage = "^3.0.0"
 python-dotenv = "^1.0.1"
 yfinance = "^0.2.48"
 typer = "^0.13.1"
+finnhub-python = "^2.4.22"
+
 
 
 [tool.poetry.scripts]
