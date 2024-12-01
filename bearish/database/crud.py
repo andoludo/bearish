@@ -18,8 +18,10 @@ from bearish.database.schemas import (
     CashFlowORM,
     BalanceSheetORM,
     PriceORM,
+    SourcesORM,
 )
 from bearish.database.scripts.upgrade import upgrade
+from bearish.interface.interface import BearishDbBase
 from bearish.models.financials.balance_sheet import BalanceSheet
 
 from bearish.models.financials.base import Financials
@@ -32,7 +34,7 @@ if TYPE_CHECKING:
     from bearish.models.query.query import AssetQuery
 
 
-class BearishDb(BaseModel):
+class BearishDb(BearishDbBase):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     database_path: Path
 
@@ -46,7 +48,7 @@ class BearishDb(BaseModel):
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
         self._engine  # noqa: B018
 
-    def write_assets(self, assets: Assets) -> None:
+    def _write_assets(self, assets: Assets) -> None:
         with Session(self._engine) as session:
             objects_orm = (
                 [EquityORM(**object.model_dump()) for object in assets.equities]
@@ -58,7 +60,7 @@ class BearishDb(BaseModel):
             session.add_all(objects_orm)
             session.commit()
 
-    def write_series(self, series: List["Price"]) -> None:
+    def _write_series(self, series: List["Price"]) -> None:
         with Session(self._engine) as session:
             stmt = (
                 insert(PriceORM)
@@ -69,7 +71,7 @@ class BearishDb(BaseModel):
             session.exec(stmt)  # type: ignore
             session.commit()
 
-    def write_financials(self, financials: Financials) -> None:
+    def _write_financials(self, financials: Financials) -> None:
         self._write_financials_series(financials.financial_metrics, FinancialMetricsORM)
         self._write_financials_series(financials.cash_flows, CashFlowORM)
         self._write_financials_series(financials.balance_sheets, BalanceSheetORM)
@@ -90,7 +92,7 @@ class BearishDb(BaseModel):
             session.exec(stmt)  # type: ignore
             session.commit()
 
-    def read_series(self, query: "AssetQuery", months: int = 1) -> List[Price]:
+    def _read_series(self, query: "AssetQuery", months: int = 1) -> List[Price]:
         end_date = datetime.now()
         start_date = end_date - relativedelta(month=months)
         with Session(self._engine) as session:
@@ -101,7 +103,7 @@ class BearishDb(BaseModel):
             series = session.exec(query_).all()
             return [Price.model_validate(serie) for serie in series]
 
-    def read_financials(self, query: "AssetQuery") -> Financials:
+    def _read_financials(self, query: "AssetQuery") -> Financials:
         with Session(self._engine) as session:
             financial_metrics = self._read_asset_type(
                 session, FinancialMetrics, FinancialMetricsORM, query
@@ -116,7 +118,7 @@ class BearishDb(BaseModel):
                 balance_sheets=balance_sheets,
             )
 
-    def read_assets(self, query: "AssetQuery") -> Assets:
+    def _read_assets(self, query: "AssetQuery") -> Assets:
         with Session(self._engine) as session:
             from bearish.models.assets.equity import Equity
             from bearish.models.assets.crypto import Crypto
@@ -157,3 +159,20 @@ class BearishDb(BaseModel):
 
         assets = session.exec(query_).all()
         return [table.model_validate(asset) for asset in assets]
+
+    def _read_sources(self) -> List[str]:
+        with Session(self._engine) as session:
+            query_ = select(SourcesORM).distinct()
+            sources = session.exec(query_).all()
+            return [source.source for source in sources]
+
+    def _write_source(self, source: str) -> None:
+        with Session(self._engine) as session:
+            stmt = (
+                insert(SourcesORM)
+                .prefix_with("OR REPLACE")
+                .values([{"source": source}])
+            )
+
+            session.exec(stmt)  # type: ignore
+            session.commit()

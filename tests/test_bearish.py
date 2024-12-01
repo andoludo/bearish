@@ -33,7 +33,9 @@ def bearish_db() -> BearishDb:
 
 
 def test_update_asset_yfinance(bearish_db: BearishDb):
-    bearish = Bearish(path=bearish_db.database_path, sources=[yFinanceSource()])
+    bearish = Bearish(
+        path=bearish_db.database_path, sources=[yFinanceSource()], asset_sources=[]
+    )
     bearish.write_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert assets
@@ -66,7 +68,9 @@ def test_update_asset_financedatabase(bearish_db: BearishDb):
             .read_text(),
         )
         bearish = Bearish(
-            path=bearish_db.database_path, sources=[FinanceDatabaseSource()]
+            path=bearish_db.database_path,
+            asset_sources=[],
+            sources=[FinanceDatabaseSource()],
         )
         bearish.write_assets()
         assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAVE-INR"])))
@@ -108,28 +112,36 @@ def test_update_assets_multi_sources(bearish_db: BearishDb):
         )
         bearish = Bearish(
             path=bearish_db.database_path,
-            sources=[FinanceDatabaseSource(), yFinanceSource()],
+            asset_sources=[FinanceDatabaseSource()],
+            sources=[yFinanceSource()],
         )
         bearish.write_assets()
+
         assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAVE-INR"])))
 
         assets_multi = bearish.read_assets(
             AssetQuery(symbols=Symbols(equities=["000006.SZ", "AAVE-KRW"]))
         )
+        sources = bearish.read_sources()
         assert assets.cryptos
         assert assets_multi.equities
         assert assets_multi.cryptos
+        assert sources
 
 
 def test_update_financials(bearish_db: BearishDb):
-    bearish = Bearish(path=bearish_db.database_path, sources=[yFinanceSource()])
+    bearish = Bearish(
+        path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
+    )
     bearish.read_financials_from_many_sources("AAPL")
     financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert financials
 
 
 def test_update_series(bearish_db: BearishDb):
-    bearish = Bearish(path=bearish_db.database_path, sources=[yFinanceSource()])
+    bearish = Bearish(
+        path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
+    )
     bearish.write_series("AAPL", "full")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
@@ -137,7 +149,9 @@ def test_update_series(bearish_db: BearishDb):
 
 
 def test_update_series_multiple_times(bearish_db: BearishDb):
-    bearish = Bearish(path=bearish_db.database_path, sources=[yFinanceSource()])
+    bearish = Bearish(
+        path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
+    )
     bearish.write_series("AAPL", "5d")
     bearish.write_series("AAPL", "5d")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
@@ -151,6 +165,7 @@ def test_update_financials_alphavantage(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path,
         api_keys=SourceApiKeys(keys={"AlphaVantage": "AlphaVantage"}),
+        asset_sources=[],
         sources=[AlphaVantageSource()],
     )
     bearish.read_financials_from_many_sources("AAPL")
@@ -164,6 +179,7 @@ def test_update_series_alphavantage(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path,
         api_keys=SourceApiKeys(keys={"AlphaVantage": "AlphaVantage"}),
+        asset_sources=[],
         sources=[AlphaVantageSource()],
     )
     bearish.write_series("AAPL", "full")
@@ -232,7 +248,8 @@ def test_write_assets(bearish_db: BearishDb):
         )
         bearish = Bearish(
             path=bearish_db.database_path,
-            sources=[FinanceDatabaseSource(), InvestPySource()],
+            asset_sources=[FinanceDatabaseSource()],
+            sources=[InvestPySource()],
         )
         bearish.write_assets(AssetQuery(countries=["Argentina"]))
         assets = bearish.read_assets(AssetQuery(countries=["Argentina"]))

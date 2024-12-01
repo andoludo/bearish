@@ -72,3 +72,8 @@ class BalanceSheetORM(BaseFinancials, BalanceSheet, table=True):  # type: ignore
 
 class CashFlowORM(BaseFinancials, CashFlow, table=True):  # type: ignore
     __tablename__ = "cashflow"
+
+
+class SourcesORM(SQLModel, table=True):
+    __tablename__ = "sources"
+    source: str = Field(primary_key=True, index=True)

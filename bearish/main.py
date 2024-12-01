@@ -13,6 +13,7 @@ from pydantic import (
 
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError
+from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.financials.base import Financials
@@ -20,7 +21,9 @@ from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
+from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import InvestPySource
+from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yfinance import yFinanceSource
 
 logger = logging.getLogger(__name__)
@@ -31,18 +34,25 @@ class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
-    _bearish_db: BearishDb = PrivateAttr()
-    sources: List[AbstractSource] = Field(
+    _bearish_db: BearishDbBase = PrivateAttr()
+    asset_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
             FinanceDatabaseSource(),
             InvestPySource(),
+            FmpAssetsSource(),
+        ]
+    )
+    sources: List[AbstractSource] = Field(
+        default_factory=lambda: [
             yFinanceSource(),
+            FmpSource(),
+            TiingoSource(),
         ]
     )
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
         self._bearish_db = BearishDb(database_path=self.path)
-        for source in self.sources:
+        for source in self.sources + self.asset_sources:
             try:
                 source.set_api_key(
                     self.api_keys.keys.get(
@@ -56,7 +66,13 @@ class Bearish(BaseModel):
                 self.sources.remove(source)
 
     def write_assets(self, query: Optional[AssetQuery] = None) -> None:
-        for source in self.sources:
+        existing_sources = self._bearish_db.read_sources()
+        asset_sources = [
+            asset_source
+            for asset_source in self.asset_sources
+            if asset_source.__source__ not in existing_sources
+        ]
+        for source in asset_sources + self.sources:
             if query:
                 cached_assets = self.read_assets(AssetQuery(countries=query.countries))
                 query.update_symbols(cached_assets)
@@ -66,6 +82,7 @@ class Bearish(BaseModel):
                 logger.warning(f"No assets found from {type(source).__name__}")
                 continue
             self._bearish_db.write_assets(assets_)
+            self._bearish_db.write_source(source.__source__)
 
     def read_assets(self, assets_query: AssetQuery) -> Assets:
         return self._bearish_db.read_assets(assets_query)
@@ -112,6 +129,9 @@ class Bearish(BaseModel):
             series.extend(series_)
         if series:
             self._bearish_db.write_series(series)
+
+    def read_sources(self) -> List[str]:
+        return self._bearish_db.read_sources()
 
 
 @app.command()
