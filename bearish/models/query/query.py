@@ -47,6 +47,9 @@ class AssetQuery(BaseAssetQuery):
     countries: Annotated[
         List[str], BeforeValidator(remove_duplicates), Field(default_factory=list)
     ]
+    exchanges: Annotated[
+        List[str], BeforeValidator(remove_duplicates), Field(default_factory=list)
+    ]
     symbols: Symbols = Field(default=Symbols())  # type: ignore
 
     def update_symbols(self, assets: Assets) -> None:

@@ -156,6 +156,8 @@ class BearishDb(BearishDbBase):
             query_ = select(orm_table)
             if query.countries:
                 query_ = query_.where(orm_table.country.in_(query.countries))  # type: ignore
+            if query.exchanges:
+                query_ = query_.where(orm_table.exchange.in_(query.exchanges))  # type: ignore
 
         assets = session.exec(query_).all()
         return [table.model_validate(asset) for asset in assets]

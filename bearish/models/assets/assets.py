@@ -30,3 +30,9 @@ class Assets(BaseAssets):
         self.cryptos.extend(assets.cryptos)
         self.etfs.extend(assets.etfs)
         self.currencies.extend(assets.currencies)
+
+    def symbols(self) -> List[str]:
+        return [
+            asset.symbol
+            for asset in self.equities + self.cryptos + self.etfs + self.currencies
+        ]

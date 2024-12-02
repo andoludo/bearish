@@ -103,6 +103,9 @@ class FmpEquity(FmpSourceBase, Equity):
         for ticker in tickers:
             try:
                 profile = read_api(API_URL, "profile", cls.__api_key__, ticker)
+                if profile.get("Error Message"):
+                    logger.error(f"Error reading {ticker}: {profile['Error Message']}")
+                    break
                 quote = read_api(API_URL, "quote", cls.__api_key__, ticker)
                 ratio_ttm = read_api(API_URL, "ratios-ttm", cls.__api_key__, ticker)
                 key_metrics = read_api(
@@ -111,7 +114,7 @@ class FmpEquity(FmpSourceBase, Equity):
                 datas = [*profile, *quote, *ratio_ttm, *key_metrics]
                 data = {k: v for data in datas for k, v in data.items()}
                 tickers_.append(cls.model_validate(data))
-            except Exception as e:  # noqa: PERF203
+            except Exception as e:
                 logger.error(f"Error reading {ticker}: {e}")
                 continue
         return tickers_

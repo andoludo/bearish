@@ -95,6 +95,13 @@ def test_fmp_equity(fmp_api_fixture: requests_mock.Mocker) -> None:
     assert not assets.is_empty()
 
 
+@pytest.mark.skip("requires API key")
+def test_fmp_equity_integration() -> None:
+    fmp = FmpSource()
+    fmp.set_api_key("...")
+    assets = fmp._read_assets(AssetQuery(symbols=Symbols(equities=["AGFB.BR"])))
+
+
 def test_fmp_financials(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)

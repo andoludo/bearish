@@ -74,7 +74,7 @@ class Bearish(BaseModel):
         ]
         for source in asset_sources + self.sources:
             if query:
-                cached_assets = self.read_assets(AssetQuery(countries=query.countries))
+                cached_assets = self.read_assets(AssetQuery.model_validate(query))
                 query.update_symbols(cached_assets)
             logger.info(f"Fetching assets from source {type(source).__name__}")
             assets_ = source.read_assets(query)
@@ -135,12 +135,34 @@ class Bearish(BaseModel):
 
 
 @app.command()
-def assets(path: Path, countries: List[str]) -> None:
+def tickers(path: Path, exchanges: List[str], api_keys: Optional[Path] = None) -> None:
+
     logger.info(
-        f"Writing assets to database for countries: {countries}",
+        f"Writing assets to database for countries: {exchanges}",
     )
-    bearish = Bearish(path=path)
-    bearish.write_assets(AssetQuery(countries=countries))
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    bearish.write_assets(AssetQuery(exchanges=exchanges, countries=[]))
+
+
+@app.command()
+def financials(
+    path: Path, exchanges: List[str], api_keys: Optional[Path] = None
+) -> None:
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    asset_query = AssetQuery(exchanges=exchanges, countries=[])
+    assets = bearish.read_assets(asset_query)
+    bearish.write_many_financials(assets.symbols())
+
+
+@app.command()
+def series(path: Path, exchanges: List[str], api_keys: Optional[Path] = None) -> None:
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    asset_query = AssetQuery(exchanges=exchanges, countries=[])
+    assets = bearish.read_assets(asset_query)
+    bearish.write_many_series(assets.symbols(), "full")
 
 
 if __name__ == "__main__":
