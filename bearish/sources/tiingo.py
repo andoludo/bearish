@@ -50,7 +50,7 @@ class TiingoSource(TiingoSourceBase, AbstractSource):
     def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
-    def read_series(self, ticker: str, type: str) -> List[TiingoPrice]:  # type: ignore
+    def _read_series(self, ticker: str, type: str) -> List[TiingoPrice]:  # type: ignore
         datas = read_api(self.__api_key__, ticker)
         return [
             TiingoPrice.model_validate(

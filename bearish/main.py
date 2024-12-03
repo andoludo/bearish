@@ -19,6 +19,7 @@ from bearish.models.assets.assets import Assets
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
+from bearish.sources.alphavantage import AlphaVantageSource
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
@@ -45,6 +46,7 @@ class Bearish(BaseModel):
     sources: List[AbstractSource] = Field(
         default_factory=lambda: [
             yFinanceSource(),
+            AlphaVantageSource(),
             FmpSource(),
             TiingoSource(),
         ]
@@ -59,7 +61,7 @@ class Bearish(BaseModel):
                         source.__source__, os.environ.get(source.__source__.upper())  # type: ignore
                     )
                 )
-            except InvalidApiKeyError as e:  # noqa: PERF203
+            except Exception as e:  # noqa: PERF203
                 logger.error(
                     f"Invalid API key for {source.__source__}: {e}. It will be removed from sources"
                 )
@@ -93,34 +95,32 @@ class Bearish(BaseModel):
     def read_series(self, assets_query: AssetQuery) -> List[Price]:
         return self._bearish_db.read_series(assets_query)
 
-    def read_financials_from_many_sources(self, ticker: str) -> Financials:
-        financials = Financials()
-        for source in self.sources:
-            financials_ = source.read_financials(ticker)
-            if financials_.is_empty():
-                logger.warning(
-                    f"No financials found for {ticker} from {type(source).__name__}"
-                )
-                continue
-            financials.add(financials_)
-        return financials
-
     def write_many_financials(self, tickers: List[str]) -> None:
+        for source in self.sources:
+            self.write_financials(source, tickers)
+
+    def write_financials(self, source: AbstractSource, tickers: List[str]) -> None:
         financials = Financials()
         for ticker in tickers:
-            financials_ = self.read_financials_from_many_sources(ticker)
-            financials.add(financials_)
+            try:
+                financials_ = source.read_financials(ticker)
+            except InvalidApiKeyError as e:
+                logger.error(f"Invalid API key for {source.__source__}: {e}")
+                break
             if financials_.is_empty():
                 continue
+            financials.add(financials_)
         self._bearish_db.write_financials(financials)
 
     def write_many_series(self, tickers: List[str], type: str) -> None:
-        for ticker in tickers:
-            self.write_series(ticker, type)
-
-    def write_series(self, ticker: str, type: str) -> None:
-        series = []
         for source in self.sources:
+            self.write_series(source, tickers, type)
+
+    def write_series(
+        self, source: AbstractSource, tickers: List[str], type: str
+    ) -> None:
+        series = []
+        for ticker in tickers:
             try:
                 series_ = source.read_series(ticker, type)
             except Exception as e:

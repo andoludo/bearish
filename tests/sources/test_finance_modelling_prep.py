@@ -100,6 +100,7 @@ def test_fmp_equity_integration() -> None:
     fmp = FmpSource()
     fmp.set_api_key("...")
     assets = fmp._read_assets(AssetQuery(symbols=Symbols(equities=["AGFB.BR"])))
+    assert assets
 
 
 def test_fmp_financials(fmp_api_fixture: requests_mock.Mocker) -> None:

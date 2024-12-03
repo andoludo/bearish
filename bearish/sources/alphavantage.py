@@ -253,7 +253,7 @@ class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
             cash_flows=AlphaVantageCashFlow.from_ticker(ticker),
         )
 
-    def read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, ticker: str, type: str) -> List[Price]:
         return cast(List[Price], AlphaVantagePrice.from_ticker(ticker, type))
 
     def set_api_key(self, api_key: str) -> None:

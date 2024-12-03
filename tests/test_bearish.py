@@ -133,7 +133,7 @@ def test_update_financials(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.read_financials_from_many_sources("AAPL")
+    bearish.write_many_financials(["AAPL"])
     financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert financials
 
@@ -142,7 +142,7 @@ def test_update_series(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.write_series("AAPL", "full")
+    bearish.write_many_series(["AAPL"], "full")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
@@ -152,8 +152,8 @@ def test_update_series_multiple_times(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.write_series("AAPL", "5d")
-    bearish.write_series("AAPL", "5d")
+    bearish.write_many_series(["AAPL"], "5d")
+    bearish.write_many_series(["AAPL"], "5d")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
@@ -168,7 +168,7 @@ def test_update_financials_alphavantage(bearish_db: BearishDb):
         asset_sources=[],
         sources=[AlphaVantageSource()],
     )
-    bearish.read_financials_from_many_sources("AAPL")
+    bearish.write_many_financials(["AAPL"])
     financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert financials
 
@@ -182,7 +182,7 @@ def test_update_series_alphavantage(bearish_db: BearishDb):
         asset_sources=[],
         sources=[AlphaVantageSource()],
     )
-    bearish.write_series("AAPL", "full")
+    bearish.write_many_series(["AAPL"], "full")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1

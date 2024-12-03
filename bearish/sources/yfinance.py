@@ -306,7 +306,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
             cash_flows=yFinanceCashFlow.from_ticker(ticker),
         )
 
-    def read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, ticker: str, type: str) -> List[Price]:
         type = "max" if type == "full" else "5d"
         ticker_ = yf.Ticker(ticker)
         data = ticker_.history(period=type)

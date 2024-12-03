@@ -3,6 +3,7 @@ from typing import Optional, List, Any, ClassVar, Dict
 
 import requests  # type: ignore
 
+from bearish.exceptions import InvalidApiKeyError
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.etfs import Etf
@@ -34,7 +35,16 @@ def read_api(
     request_response = requests.get(
         compose_url(api_url, endpoint, api_key, ticker, period), timeout=10
     )
-    return request_response.json()
+    response_json = request_response.json()
+    if isinstance(response_json, dict) and response_json.get("Error Message"):
+        logger.error(f"Error reading {ticker}: {response_json['Error Message']}")
+        raise InvalidApiKeyError(response_json["Error Message"])
+    if isinstance(response_json, list):
+        for response_json_ in response_json:
+            if response_json_.get("Error Message"):
+                logger.error(f"Error reading {ticker}: {response_json_['Error Message']}")
+                raise InvalidApiKeyError(response_json_["Error Message"])
+    return response_json
 
 
 class FmpSourceBase(SourceBase):
@@ -103,9 +113,6 @@ class FmpEquity(FmpSourceBase, Equity):
         for ticker in tickers:
             try:
                 profile = read_api(API_URL, "profile", cls.__api_key__, ticker)
-                if profile.get("Error Message"):
-                    logger.error(f"Error reading {ticker}: {profile['Error Message']}")
-                    break
                 quote = read_api(API_URL, "quote", cls.__api_key__, ticker)
                 ratio_ttm = read_api(API_URL, "ratios-ttm", cls.__api_key__, ticker)
                 key_metrics = read_api(
@@ -114,6 +121,9 @@ class FmpEquity(FmpSourceBase, Equity):
                 datas = [*profile, *quote, *ratio_ttm, *key_metrics]
                 data = {k: v for data in datas for k, v in data.items()}
                 tickers_.append(cls.model_validate(data))
+            except InvalidApiKeyError as e:  # noqa: PERF203
+                logger.warning(f"Error reading {ticker}: {e}")
+                break
             except Exception as e:
                 logger.error(f"Error reading {ticker}: {e}")
                 continue
@@ -233,7 +243,7 @@ class FmpSource(FmpSourceBase, AbstractSource):
             ],
         )
 
-    def read_series(self, ticker: str, type: str) -> List[FmpPrice]:  # type: ignore
+    def _read_series(self, ticker: str, type: str) -> List[FmpPrice]:  # type: ignore
         historical_price = read_api(
             API_URL, "historical-price-full", self.__api_key__, ticker
         )
@@ -256,7 +266,7 @@ class FmpAssetsSource(FmpAssetsSourceBase, AbstractSource):
     def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
-    def read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, ticker: str, type: str) -> List[Price]:
         return []
 
     def set_api_key(self, api_key: str) -> None:

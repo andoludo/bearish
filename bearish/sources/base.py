@@ -7,6 +7,7 @@ import pandas as pd
 import requests  # type: ignore
 from pydantic import ConfigDict, validate_call, BaseModel, Field
 
+from bearish.exceptions import InvalidApiKeyError
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.assets import Assets
 from bearish.models.base import SourceBase, DataSourceBase
@@ -24,6 +25,8 @@ class AbstractSource(SourceBase, abc.ABC):
     def read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         try:
             return self._read_assets(query)
+        except InvalidApiKeyError as e:
+            raise e
         except Exception as e:
             logger.error(f"Error reading assets from {type(self).__name__}: {e}")
             return Assets()
@@ -33,9 +36,22 @@ class AbstractSource(SourceBase, abc.ABC):
         try:
             logger.info(f"Reading Financials from {type(self).__name__}: for {ticker}")
             return self._read_financials(ticker)
+        except InvalidApiKeyError as e:
+            raise e
         except Exception as e:
             logger.error(f"Error reading Financials from {type(self).__name__}: {e}")
             return Financials()
+
+    @validate_call(validate_return=True)
+    def read_series(self, ticker: str, type_: str) -> List[Price]:
+        try:
+            logger.info(f"Reading Prices from {type(self).__name__}: for {ticker}")
+            return self._read_series(ticker, type_)
+        except InvalidApiKeyError as e:
+            raise e
+        except Exception as e:
+            logger.error(f"Error reading Financials from {type(self).__name__}: {e}")
+            return []
 
     @abc.abstractmethod
     def _read_financials(self, ticker: str) -> Financials: ...
@@ -44,7 +60,7 @@ class AbstractSource(SourceBase, abc.ABC):
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets: ...
 
     @abc.abstractmethod
-    def read_series(self, ticker: str, type: str) -> List[Price]: ...
+    def _read_series(self, ticker: str, type: str) -> List[Price]: ...
 
     @abc.abstractmethod
     def set_api_key(self, api_key: str) -> None: ...
@@ -80,6 +96,7 @@ class DatabaseCsvSource(AbstractSource):
     __url_sources__: UrlSources
 
     def set_api_key(self, api_key: str) -> None: ...
+
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         sources = self.__url_sources__
         for field in sources.model_fields:
@@ -109,5 +126,5 @@ class DatabaseCsvSource(AbstractSource):
     def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
-    def read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, ticker: str, type: str) -> List[Price]:
         return []
