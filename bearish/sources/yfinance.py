@@ -16,15 +16,17 @@ from bearish.models.price.price import Price
 
 from bearish.sources.base import (
     AbstractSource,
+    ValidTickers,
 )
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets
+from bearish.types import Sources
 
 logger = logging.getLogger(__name__)
 
 
 class YfinanceBase(BaseModel):
-    __source__ = "Yfinance"
+    __source__: Sources = "Yfinance"
 
 
 class YfinanceFinancialBase(YfinanceBase):
@@ -288,6 +290,8 @@ class yFinancePrice(YfinanceBase, Price):  # noqa: N801
 
 
 class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
+    valid_tickers: ValidTickers = ValidTickers(exchanges=["BRU", "PAR"])
+
     def set_api_key(self, api_key: str) -> None: ...
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:

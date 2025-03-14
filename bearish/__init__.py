@@ -1,5 +1,8 @@
 import logging.config
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -36,3 +39,4 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.CRITICAL)
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("peewee").setLevel(logging.CRITICAL)

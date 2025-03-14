@@ -9,6 +9,7 @@ from bearish.sources.base import (
     UrlSource,
     DatabaseCsvSource,
 )
+from bearish.types import Sources
 
 RAW_EQUITIES_INVESTSPY_DATA_URL = "https://raw.githubusercontent.com/alvarobartt/investpy/refs/heads/master/investpy/resources/stocks.csv"
 RAW_CRYPTO_INVESTSPY_DATA_URL = "https://raw.githubusercontent.com/alvarobartt/investpy/refs/heads/master/investpy/resources/cryptos.csv"
@@ -16,7 +17,7 @@ RAW_ETF_INVESTSPY_DATA_URL = "https://raw.githubusercontent.com/alvarobartt/inve
 
 
 class InvestPyBase(SourceBase):
-    __source__ = "investpy"
+    __source__: Sources = "investpy"
 
 
 class InvestPyEquity(InvestPyBase, Equity):

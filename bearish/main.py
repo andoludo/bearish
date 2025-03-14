@@ -16,10 +16,10 @@ from bearish.exceptions import InvalidApiKeyError
 from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
+from bearish.models.base import Ticker, Tracker, TrackerQuery
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-from bearish.sources.alphavantage import AlphaVantageSource
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
@@ -46,7 +46,6 @@ class Bearish(BaseModel):
     sources: List[AbstractSource] = Field(
         default_factory=lambda: [
             yFinanceSource(),
-            AlphaVantageSource(),
             FmpSource(),
             TiingoSource(),
         ]
@@ -74,7 +73,7 @@ class Bearish(BaseModel):
             for asset_source in self.asset_sources
             if asset_source.__source__ not in existing_sources
         ]
-        for source in asset_sources + self.sources:
+        for source in asset_sources:
             if query:
                 cached_assets = self.read_assets(AssetQuery.model_validate(query))
                 query.update_symbols(cached_assets)
@@ -86,7 +85,14 @@ class Bearish(BaseModel):
             self._bearish_db.write_assets(assets_)
             self._bearish_db.write_source(source.__source__)
 
-    def read_assets(self, assets_query: AssetQuery) -> Assets:
+    def read_assets(self, assets_query: Optional[AssetQuery] = None) -> Assets:
+        if not assets_query:
+            exchanges = [
+                exchange
+                for source in self.sources
+                for exchange in source.valid_tickers.exchanges
+            ]
+            assets_query = AssetQuery(exchanges=exchanges)  # type: ignore
         return self._bearish_db.read_assets(assets_query)
 
     def read_financials(self, assets_query: AssetQuery) -> Financials:
@@ -95,11 +101,17 @@ class Bearish(BaseModel):
     def read_series(self, assets_query: AssetQuery) -> List[Price]:
         return self._bearish_db.read_series(assets_query)
 
-    def write_many_financials(self, tickers: List[str]) -> None:
+    def write_many_financials(self, tickers: List[Ticker]) -> None:
         for source in self.sources:
-            self.write_financials(source, tickers)
+            tickers_available = self._bearish_db.read_tracker(
+                TrackerQuery(source=source.__source__, financials=True)
+            )
+            tickers_ = [
+                ticker for ticker in tickers if ticker.symbol not in tickers_available
+            ]
+            self.write_financials(source, tickers_)
 
-    def write_financials(self, source: AbstractSource, tickers: List[str]) -> None:
+    def write_financials(self, source: AbstractSource, tickers: List[Ticker]) -> None:
         financials = Financials()
         for ticker in tickers:
             try:
@@ -110,57 +122,73 @@ class Bearish(BaseModel):
             if financials_.is_empty():
                 continue
             financials.add(financials_)
+            self._bearish_db.write_tracker(
+                Tracker(symbol=ticker.symbol, source=source.__source__, financials=True)
+            )
         self._bearish_db.write_financials(financials)
 
-    def write_many_series(self, tickers: List[str], type: str) -> None:
+    def write_many_series(self, tickers: List[Ticker], type: str) -> None:
         for source in self.sources:
-            self.write_series(source, tickers, type)
+            tickers_available = self._bearish_db.read_tracker(
+                TrackerQuery(source=source.__source__, price=True)
+            )
+            tickers_ = [
+                ticker for ticker in tickers if ticker.symbol not in tickers_available
+            ]
+            self.write_series(source, tickers_, type)
 
     def write_series(
-        self, source: AbstractSource, tickers: List[str], type: str
+        self, source: AbstractSource, tickers: List[Ticker], type: str
     ) -> None:
-        series = []
         for ticker in tickers:
             try:
                 series_ = source.read_series(ticker, type)
             except Exception as e:
                 logger.error(f"Error reading series: {e}")
                 continue
-            series.extend(series_)
-        if series:
-            self._bearish_db.write_series(series)
+            if series_:
+                self._bearish_db.write_series(series_)
+                self._bearish_db.write_tracker(
+                    Tracker(symbol=ticker.symbol, source=source.__source__, price=True)
+                )
 
     def read_sources(self) -> List[str]:
         return self._bearish_db.read_sources()
 
 
 @app.command()
-def tickers(path: Path, exchanges: List[str], api_keys: Optional[Path] = None) -> None:
+def tickers(
+    path: Path, exchanges: Optional[List[str]] = None, api_keys: Optional[Path] = None
+) -> None:
 
     logger.info(
         f"Writing assets to database for countries: {exchanges}",
     )
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.write_assets(AssetQuery(exchanges=exchanges, countries=[]))
+    bearish.write_assets(
+        AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
+    )
 
 
 @app.command()
 def financials(
-    path: Path, exchanges: List[str], api_keys: Optional[Path] = None
+    path: Path, exchanges: Optional[List[str]] = None, api_keys: Optional[Path] = None
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    asset_query = AssetQuery(exchanges=exchanges, countries=[])
+    asset_query = AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
     assets = bearish.read_assets(asset_query)
     bearish.write_many_financials(assets.symbols())
 
 
 @app.command()
-def series(path: Path, exchanges: List[str], api_keys: Optional[Path] = None) -> None:
+def prices(
+    path: Path, exchanges: Optional[List[str]] = None, api_keys: Optional[Path] = None
+) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    asset_query = AssetQuery(exchanges=exchanges, countries=[])
+    asset_query = AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
     assets = bearish.read_assets(asset_query)
     bearish.write_many_series(assets.symbols(), "full")
 

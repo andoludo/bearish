@@ -8,7 +8,8 @@ from bearish.models.base import SourceBase
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-from bearish.sources.base import AbstractSource
+from bearish.sources.base import AbstractSource, ValidTickers
+from bearish.types import Sources
 
 
 def compute_url(ticker: str, api_key: str) -> str:
@@ -24,7 +25,7 @@ def read_api(api_key: str, ticker: str) -> List[Dict[str, Any]]:
 
 
 class TiingoSourceBase(SourceBase):
-    __source__: str = "Tiingo"
+    __source__: Sources = "Tiingo"
 
 
 class TiingoPrice(TiingoSourceBase, Price):
@@ -41,6 +42,10 @@ class TiingoPrice(TiingoSourceBase, Price):
 
 
 class TiingoSource(TiingoSourceBase, AbstractSource):
+    valid_tickers: ValidTickers = ValidTickers(
+        sources=["FinanceDatabase"], exchanges=["NYQ"]
+    )
+
     def set_api_key(self, api_key: str) -> None:
         TiingoSourceBase.__api_key__ = api_key
 

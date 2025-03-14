@@ -5,6 +5,7 @@ from time import sleep
 import pytest
 import requests_mock
 
+from bearish.models.base import Ticker
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.financial_modelling_prep import (
     read_api,
@@ -87,6 +88,15 @@ def test_fmp_assets(fmp_api_fixture: requests_mock.Mocker) -> None:
     assert not assets.is_empty()
 
 
+@pytest.mark.skip("requires API key")
+def test_fmp_assets_integration() -> None:
+    fmp_assets = FmpAssetsSource()
+    fmp_assets.set_api_key("...")
+    assets = fmp_assets._read_assets()
+    assert assets
+    assert not assets.is_empty()
+
+
 def test_fmp_equity(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
@@ -114,5 +124,5 @@ def test_fmp_financials(fmp_api_fixture: requests_mock.Mocker) -> None:
 def test_fmp_series(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    prices = fmp.read_series("AAPL", "full")
+    prices = fmp.read_series(Ticker(symbol="AAPL"), "full")
     assert prices

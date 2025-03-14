@@ -10,6 +10,7 @@ from bearish.sources.base import (
     UrlSource,
     DatabaseCsvSource,
 )
+from bearish.types import Sources
 
 RAW_EQUITIES_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/equities.csv"
 RAW_CRYPTO_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/cryptos.csv"
@@ -18,7 +19,7 @@ RAW_ETF_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/r
 
 
 class FinanceDatabaseBase(SourceBase):
-    __source__ = "FinanceDatabase"
+    __source__: Sources = "FinanceDatabase"
     __alias__: ClassVar[Dict[str, str]] = {
         "symbol": "symbol",
         "cryptocurrency": "cryptocurrency",
@@ -43,18 +44,24 @@ class FinanceDatabaseSource(FinanceDatabaseBase, DatabaseCsvSource):
             url=RAW_EQUITIES_DATA_URL,
             type_class=FinanceDatabaseEquity,
             filters=["symbol", "country"],
+            renames={"Unnamed: 0": "symbol"},
         ),
         crypto=UrlSource(
             url=RAW_CRYPTO_DATA_URL,
             type_class=FinanceDatabaseCrypto,
             filters=["symbol", "cryptocurrency"],
+            renames={"Unnamed: 0": "symbol"},
         ),
         currency=UrlSource(
             url=RAW_CURRENCY_DATA_URL,
             type_class=FinanceDatabaseCurrency,
             filters=["symbol"],
+            renames={"Unnamed: 0": "symbol"},
         ),
         etf=UrlSource(
-            url=RAW_ETF_DATA_URL, type_class=FinanceDatabaseEtf, filters=["symbol"]
+            url=RAW_ETF_DATA_URL,
+            type_class=FinanceDatabaseEtf,
+            filters=["symbol"],
+            renames={"Unnamed: 0": "symbol"},
         ),
     )

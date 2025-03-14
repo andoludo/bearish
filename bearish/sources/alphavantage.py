@@ -20,6 +20,7 @@ from bearish.models.query.query import AssetQuery
 from bearish.sources.base import (
     AbstractSource,
 )
+from bearish.types import Sources
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ def check_api_key(method: Callable[..., Any]) -> Callable[..., Any]:
 
 
 class AlphaVantageSourceBase(BaseModel):
-    __source__: str = "AlphaVantage"
+    __source__: Sources = "AlphaVantage"
 
 
 class AlphaVantageBase(AlphaVantageSourceBase, SourceBase):

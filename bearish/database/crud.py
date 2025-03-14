@@ -1,11 +1,12 @@
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Type, Union, Any
+from typing import List, TYPE_CHECKING, Type, Union, Any, cast
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import create_engine, Engine, insert
+from sqlalchemy import Engine, create_engine, insert
+
 from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
 
@@ -19,9 +20,11 @@ from bearish.database.schemas import (
     BalanceSheetORM,
     PriceORM,
     SourcesORM,
+    TrackerORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.interface.interface import BearishDbBase
+from bearish.models.base import Tracker, TrackerQuery
 from bearish.models.financials.balance_sheet import BalanceSheet
 
 from bearish.models.financials.base import Financials
@@ -178,3 +181,36 @@ class BearishDb(BearishDbBase):
 
             session.exec(stmt)  # type: ignore
             session.commit()
+
+    def _write_tracker(self, tracker: Tracker) -> None:
+        with Session(self._engine) as session:
+            query = (
+                select(TrackerORM)
+                .where(TrackerORM.symbol == tracker.symbol)
+                .where(TrackerORM.source == tracker.source)
+            )
+            tracker_orm = session.exec(query).first()
+            if tracker_orm:
+                tracker_orm.financials = tracker.financials or tracker_orm.financials
+                tracker_orm.price = tracker.price or tracker_orm.price
+                session.commit()
+            else:
+                stmt = (
+                    insert(TrackerORM)
+                    .prefix_with("OR REPLACE")
+                    .values(tracker.model_dump())
+                )
+                session.exec(stmt)  # type: ignore
+                session.commit()
+
+    def _read_tracker(self, tracker_query: TrackerQuery) -> List[str]:
+        with Session(self._engine) as session:
+            query = select(TrackerORM.symbol).where(
+                TrackerORM.source == tracker_query.source
+            )
+            if tracker_query.financials:
+                query = query.where(TrackerORM.financials == tracker_query.financials)
+            if tracker_query.price:
+                query = query.where(TrackerORM.price == tracker_query.price)
+            tracker_orm = session.exec(query).all()
+            return cast(List[str], tracker_orm)

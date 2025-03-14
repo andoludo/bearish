@@ -23,7 +23,7 @@ finnhub-python = "^2.4.22"
 
 
 [tool.poetry.scripts]
-trano = "bearish.main:app"
+bearish = "bearish.main:app"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"

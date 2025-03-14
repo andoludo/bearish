@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 
 from bearish.database.crud import BearishDb
-from bearish.database.scripts.upgrade import upgrade
 
 
 @pytest.fixture(scope="session")

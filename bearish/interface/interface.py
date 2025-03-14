@@ -5,6 +5,7 @@ from typing import List
 from pydantic import BaseModel, ConfigDict, validate_call
 
 from bearish.models.assets.assets import Assets
+from bearish.models.base import TrackerQuery, Tracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
@@ -42,9 +43,14 @@ class BearishDbBase(BaseModel):
     def read_sources(self) -> List[str]:
         return self._read_sources()
 
-    @validate_call
     def write_source(self, source: str) -> None:
         return self._write_source(source)
+
+    def read_tracker(self, tracker_query: TrackerQuery) -> List[str]:
+        return self._read_tracker(tracker_query)
+
+    def write_tracker(self, tracker: Tracker) -> None:
+        return self._write_tracker(tracker)
 
     @abc.abstractmethod
     def _write_assets(self, assets: Assets) -> None: ...
@@ -69,3 +75,8 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _read_sources(self) -> List[str]: ...
+
+    @abc.abstractmethod
+    def _read_tracker(self, tracker_query: TrackerQuery) -> List[str]: ...
+    @abc.abstractmethod
+    def _write_tracker(self, tracker: Tracker) -> None: ...

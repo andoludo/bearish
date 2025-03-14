@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 
@@ -7,6 +8,8 @@ import requests_mock
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish
 from bearish.models.api_keys.api_keys import SourceApiKeys
+from bearish.models.base import Ticker, TrackerQuery
+from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.alphavantage import AlphaVantageBase, AlphaVantageSource
 from bearish.sources.financedatabase import (
@@ -16,12 +19,14 @@ from bearish.sources.financedatabase import (
     RAW_CURRENCY_DATA_URL,
     RAW_ETF_DATA_URL,
 )
+from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import (
     InvestPySource,
     RAW_EQUITIES_INVESTSPY_DATA_URL,
     RAW_CRYPTO_INVESTSPY_DATA_URL,
     RAW_ETF_INVESTSPY_DATA_URL,
 )
+from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yfinance import yFinanceSource
 from tests.conftest import FakeFundamentalData, FakeTimeSeries
 
@@ -39,6 +44,20 @@ def test_update_asset_yfinance(bearish_db: BearishDb):
     bearish.write_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert assets
+
+
+@pytest.mark.skip("Test with real db")
+def test_update_asset_fmp(bearish_db: BearishDb):
+    api_keys = SourceApiKeys(keys={"FMPAssets": "..."})
+    bearish = Bearish(
+        api_keys=api_keys,
+        path=bearish_db.database_path,
+        sources=[],
+        asset_sources=[FmpAssetsSource()],
+    )
+    bearish.write_assets(AssetQuery(exchanges=["BRU"]))
+    assets = bearish.read_assets(AssetQuery(exchanges=["NASDAQ"]))
+    assert not assets.is_empty()
 
 
 def test_update_asset_financedatabase(bearish_db: BearishDb):
@@ -69,8 +88,8 @@ def test_update_asset_financedatabase(bearish_db: BearishDb):
         )
         bearish = Bearish(
             path=bearish_db.database_path,
-            asset_sources=[],
-            sources=[FinanceDatabaseSource()],
+            asset_sources=[FinanceDatabaseSource()],
+            sources=[],
         )
         bearish.write_assets()
         assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAVE-INR"])))
@@ -133,7 +152,7 @@ def test_update_financials(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.write_many_financials(["AAPL"])
+    bearish.write_many_financials([Ticker(symbol="AAPL", source="Yfinance")])
     financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert financials
 
@@ -142,18 +161,30 @@ def test_update_series(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.write_many_series(["AAPL"], "full")
+    bearish.write_many_series([Ticker(symbol="AAPL")], "full")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
+
+
+def test_trackers(bearish_db: BearishDb):
+    bearish = Bearish(
+        path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
+    )
+    bearish.write_many_financials([Ticker(symbol="AAPL")])
+    bearish.write_many_series([Ticker(symbol="AAPL")], "full")
+    financials = bearish._bearish_db.read_tracker(
+        TrackerQuery(source="Yfinance", financials=True)
+    )
+    assert financials
 
 
 def test_update_series_multiple_times(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.write_many_series(["AAPL"], "5d")
-    bearish.write_many_series(["AAPL"], "5d")
+    bearish.write_many_series([Ticker(symbol="AAPL", source="Yfinance")], "5d")
+    bearish.write_many_series([Ticker(symbol="AAPL", source="Yfinance")], "5d")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
@@ -168,7 +199,7 @@ def test_update_financials_alphavantage(bearish_db: BearishDb):
         asset_sources=[],
         sources=[AlphaVantageSource()],
     )
-    bearish.write_many_financials(["AAPL"])
+    bearish.write_many_financials([Ticker(symbol="AAPL")])
     financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert financials
 
@@ -182,7 +213,7 @@ def test_update_series_alphavantage(bearish_db: BearishDb):
         asset_sources=[],
         sources=[AlphaVantageSource()],
     )
-    bearish.write_many_series(["AAPL"], "full")
+    bearish.write_many_series([Ticker(symbol="AAPL")], "full")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
@@ -248,9 +279,48 @@ def test_write_assets(bearish_db: BearishDb):
         )
         bearish = Bearish(
             path=bearish_db.database_path,
-            asset_sources=[FinanceDatabaseSource()],
-            sources=[InvestPySource()],
+            asset_sources=[FinanceDatabaseSource(), InvestPySource()],
+            sources=[],
         )
         bearish.write_assets(AssetQuery(countries=["Argentina"]))
         assets = bearish.read_assets(AssetQuery(countries=["Argentina"]))
         assert not assets.is_empty()
+
+
+def test_write_assets_finance_database(bearish_db: BearishDb):
+    bearish = Bearish(
+        path=bearish_db.database_path,
+        asset_sources=[FinanceDatabaseSource()],
+        sources=[],
+    )
+    bearish.write_assets(AssetQuery(countries=["Argentina"]))
+    assets = bearish.read_assets(AssetQuery(countries=["Argentina"]))
+    assert not assets.is_empty()
+
+
+def test_write_assets_tiingo(bearish_db: BearishDb):
+    source_api_keys = SourceApiKeys(keys={"Tiingo": os.getenv("TIINGO_API_KEY")})
+    bearish = Bearish(
+        api_keys=source_api_keys,
+        path=bearish_db.database_path,
+        asset_sources=[],
+        sources=[TiingoSource()],
+    )
+    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="full")
+    prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    assert prices
+    assert all(isinstance(p, Price) for p in prices)
+
+
+def test_write_assets_fmp(bearish_db: BearishDb):
+    source_api_keys = SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")})
+    bearish = Bearish(
+        api_keys=source_api_keys,
+        path=bearish_db.database_path,
+        asset_sources=[],
+        sources=[FmpSource()],
+    )
+    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="full")
+    prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    assert prices
+    assert all(isinstance(p, Price) for p in prices)

@@ -6,7 +6,7 @@ from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.etfs import Etf
-from bearish.models.base import BaseAssets
+from bearish.models.base import BaseAssets, Ticker
 
 
 class Assets(BaseAssets):
@@ -31,8 +31,8 @@ class Assets(BaseAssets):
         self.etfs.extend(assets.etfs)
         self.currencies.extend(assets.currencies)
 
-    def symbols(self) -> List[str]:
+    def symbols(self) -> List[Ticker]:
         return [
-            asset.symbol
+            Ticker(symbol=asset.symbol, source=asset.source, exchange=asset.exchange)
             for asset in self.equities + self.cryptos + self.etfs + self.currencies
         ]

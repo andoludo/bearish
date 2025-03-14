@@ -14,7 +14,8 @@ from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-from bearish.sources.base import AbstractSource
+from bearish.sources.base import AbstractSource, ValidTickers
+from bearish.types import Sources
 
 logger = logging.getLogger(__name__)
 
@@ -42,17 +43,19 @@ def read_api(
     if isinstance(response_json, list):
         for response_json_ in response_json:
             if response_json_.get("Error Message"):
-                logger.error(f"Error reading {ticker}: {response_json_['Error Message']}")
+                logger.error(
+                    f"Error reading {ticker}: {response_json_['Error Message']}"
+                )
                 raise InvalidApiKeyError(response_json_["Error Message"])
     return response_json
 
 
 class FmpSourceBase(SourceBase):
-    __source__: str = "FMP"
+    __source__: Sources = "FMP"
 
 
 class FmpAssetsSourceBase(SourceBase):
-    __source__: str = "FMPAssets"
+    __source__: Sources = "FMPAssets"
 
 
 class FmpAssetsEquity(FmpAssetsSourceBase, Equity):
@@ -202,6 +205,11 @@ class FmpPrice(FmpSourceBase, Price):
 
 
 class FmpSource(FmpSourceBase, AbstractSource):
+    valid_tickers: ValidTickers = ValidTickers(
+        sources=[FmpAssetsSourceBase.__source__],
+        exchanges=["Nasdaq", "NASDAQ Capital Market", "NASDAQ Global Select"],
+    )
+
     def set_api_key(self, api_key: str) -> None:
         FmpSourceBase.__api_key__ = api_key
 
