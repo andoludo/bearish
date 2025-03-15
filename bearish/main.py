@@ -9,6 +9,7 @@ from pydantic import (
     Field,
     ConfigDict,
     PrivateAttr,
+    validate_call,
 )
 
 from bearish.database.crud import BearishDb
@@ -26,6 +27,7 @@ from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import InvestPySource
 from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yfinance import yFinanceSource
+from bearish.types import SeriesLength
 
 logger = logging.getLogger(__name__)
 app = typer.Typer()
@@ -127,7 +129,8 @@ class Bearish(BaseModel):
             )
         self._bearish_db.write_financials(financials)
 
-    def write_many_series(self, tickers: List[Ticker], type: str) -> None:
+    @validate_call
+    def write_many_series(self, tickers: List[Ticker], type: SeriesLength) -> None:
         for source in self.sources:
             tickers_available = self._bearish_db.read_tracker(
                 TrackerQuery(source=source.__source__, price=True)
@@ -138,7 +141,7 @@ class Bearish(BaseModel):
             self.write_series(source, tickers_, type)
 
     def write_series(
-        self, source: AbstractSource, tickers: List[Ticker], type: str
+        self, source: AbstractSource, tickers: List[Ticker], type: SeriesLength
     ) -> None:
         for ticker in tickers:
             try:
@@ -190,7 +193,7 @@ def prices(
     bearish = Bearish(path=path, api_keys=source_api_keys)
     asset_query = AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
     assets = bearish.read_assets(asset_query)
-    bearish.write_many_series(assets.symbols(), "full")
+    bearish.write_many_series(assets.symbols(), "max")
 
 
 if __name__ == "__main__":

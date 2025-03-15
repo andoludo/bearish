@@ -20,7 +20,7 @@ from bearish.sources.base import (
 )
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets
-from bearish.types import Sources
+from bearish.types import Sources, SeriesLength
 
 logger = logging.getLogger(__name__)
 
@@ -310,8 +310,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
             cash_flows=yFinanceCashFlow.from_ticker(ticker),
         )
 
-    def _read_series(self, ticker: str, type: str) -> List[Price]:
-        type = "max" if type == "full" else "5d"
+    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:
         ticker_ = yf.Ticker(ticker)
         data = ticker_.history(period=type)
         records = data.reset_index().to_dict(orient="records")

@@ -14,7 +14,7 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.types import Sources
+from bearish.types import Sources, SeriesLength
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class AbstractSource(SourceBase, abc.ABC):
             return Financials()
 
     @validate_call(validate_return=True)
-    def read_series(self, ticker: Ticker, type_: str) -> List[Price]:
+    def read_series(self, ticker: Ticker, type_: SeriesLength) -> List[Price]:
         try:
             logger.info(f"Reading Prices from {type(self).__name__}: for {ticker}")
             return self._read_series(ticker.symbol, type_)
@@ -79,7 +79,7 @@ class AbstractSource(SourceBase, abc.ABC):
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets: ...
 
     @abc.abstractmethod
-    def _read_series(self, ticker: str, type: str) -> List[Price]: ...
+    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]: ...
 
     @abc.abstractmethod
     def set_api_key(self, api_key: str) -> None: ...

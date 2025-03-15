@@ -161,7 +161,7 @@ def test_update_series(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
-    bearish.write_many_series([Ticker(symbol="AAPL")], "full")
+    bearish.write_many_series([Ticker(symbol="AAPL")], "max")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
@@ -172,7 +172,7 @@ def test_trackers(bearish_db: BearishDb):
         path=bearish_db.database_path, asset_sources=[], sources=[yFinanceSource()]
     )
     bearish.write_many_financials([Ticker(symbol="AAPL")])
-    bearish.write_many_series([Ticker(symbol="AAPL")], "full")
+    bearish.write_many_series([Ticker(symbol="AAPL")], "max")
     financials = bearish._bearish_db.read_tracker(
         TrackerQuery(source="Yfinance", financials=True)
     )
@@ -213,24 +213,10 @@ def test_update_series_alphavantage(bearish_db: BearishDb):
         asset_sources=[],
         sources=[AlphaVantageSource()],
     )
-    bearish.write_many_series([Ticker(symbol="AAPL")], "full")
+    bearish.write_many_series([Ticker(symbol="AAPL")], "max")
     series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert series
     assert len(series) > 1
-
-
-@pytest.mark.skip("Test with real db")
-def test_real_db():
-    bearish = Bearish(path=Path("/home/aan/Documents/bearish/bearish.db"))
-    assets = bearish.read_assets(AssetQuery(exchanges=["BRU"]))
-    bearish.write_many_financials([asset.symbol for asset in assets.equities])
-
-
-@pytest.mark.skip("Test with real db")
-def test_real_db_series():
-    bearish = Bearish(path=Path("/home/aan/Documents/bearish/bearish.db"))
-    assets = bearish.read_assets(AssetQuery(exchanges=["BRU"]))
-    bearish.write_many_series([asset.symbol for asset in assets.equities], "full")
 
 
 def test_write_assets(bearish_db: BearishDb):
@@ -306,7 +292,7 @@ def test_write_assets_tiingo(bearish_db: BearishDb):
         asset_sources=[],
         sources=[TiingoSource()],
     )
-    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="full")
+    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="max")
     prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert prices
     assert all(isinstance(p, Price) for p in prices)
@@ -320,7 +306,19 @@ def test_write_assets_fmp(bearish_db: BearishDb):
         asset_sources=[],
         sources=[FmpSource()],
     )
-    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="full")
+    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="max")
+    prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    assert prices
+    assert all(isinstance(p, Price) for p in prices)
+
+
+def test_write_assets_yfinance(bearish_db: BearishDb):
+    bearish = Bearish(
+        path=bearish_db.database_path,
+        asset_sources=[],
+        sources=[yFinanceSource()],
+    )
+    bearish.write_many_series(tickers=[Ticker(symbol="AAPL")], type="1d")
     prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
     assert prices
     assert all(isinstance(p, Price) for p in prices)

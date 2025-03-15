@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from time import sleep
 
@@ -16,7 +17,7 @@ from bearish.sources.financial_modelling_prep import (
 )
 
 
-API_KEY = "test"
+API_KEY = os.getenv("FMP_API_KEY")
 
 ENDPOINTS = [
     "stock",
@@ -88,10 +89,9 @@ def test_fmp_assets(fmp_api_fixture: requests_mock.Mocker) -> None:
     assert not assets.is_empty()
 
 
-@pytest.mark.skip("requires API key")
 def test_fmp_assets_integration() -> None:
     fmp_assets = FmpAssetsSource()
-    fmp_assets.set_api_key("...")
+    fmp_assets.set_api_key(API_KEY)
     assets = fmp_assets._read_assets()
     assert assets
     assert not assets.is_empty()
@@ -124,5 +124,24 @@ def test_fmp_financials(fmp_api_fixture: requests_mock.Mocker) -> None:
 def test_fmp_series(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    prices = fmp.read_series(Ticker(symbol="AAPL"), "full")
+    prices = fmp.read_series(Ticker(symbol="AAPL"), "max")
     assert prices
+
+
+def test_fmp_series_limited(fmp_api_fixture: requests_mock.Mocker) -> None:
+    fmp = FmpSource()
+    fmp.set_api_key(API_KEY)
+    prices = fmp.read_series(Ticker(symbol="AAPL"), "5d")
+    assert prices
+
+
+def test_read_api() -> None:
+    response_period = read_api(
+        API_URL,
+        "historical-price-full",
+        API_KEY,
+        "AAPL",
+        from_="2025-01-01&to=2025-02-10",
+    )
+    assert response_period["historical"]
+    assert len(response_period["historical"]) == 26

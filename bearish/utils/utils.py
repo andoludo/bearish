@@ -1,8 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from math import isnan
 from typing import Any, Optional
 
 import pandas as pd
+
+from bearish.types import SeriesLength
 
 
 def to_float(value: Any) -> Optional[float]:  # noqa: ANN401
@@ -50,3 +52,11 @@ def remove_duplicates(value: list[str]) -> list[str]:
     if not value:
         return []
     return list(set(value))
+
+
+def get_start_date(type: SeriesLength) -> Optional[str]:
+    from_ = None
+    if type != "max":
+        past_date = datetime.today() - timedelta(days=int(type.replace("d", "")))
+        from_ = str(past_date.strftime("%Y-%m-%d"))
+    return from_

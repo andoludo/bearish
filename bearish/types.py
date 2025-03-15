@@ -9,3 +9,5 @@ Sources = Literal[
     "FinanceDatabase",
     "AlphaVantage",
 ]
+
+SeriesLength = Literal["max", "1d", "5d"]

@@ -15,26 +15,41 @@ from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
 from bearish.sources.base import AbstractSource, ValidTickers
-from bearish.types import Sources
+from bearish.types import Sources, SeriesLength
+from bearish.utils.utils import get_start_date
 
 logger = logging.getLogger(__name__)
 
 API_URL = "https://financialmodelingprep.com/api/v3/"
 
 
-def compose_url(
-    api_url: str, endpoint: str, api_key: str, ticker: str, period: Optional[str] = None
+def compose_url(  # noqa: PLR0913
+    api_url: str,
+    endpoint: str,
+    api_key: str,
+    ticker: str,
+    period: Optional[str] = None,
+    from_: Optional[str] = None,
 ) -> str:
     period_ = f"?period={period}" if period else ""
-    separator = "&" if period else "?"
-    return f"{api_url}{endpoint}/{ticker}{period_}{separator}apikey={api_key}"
+    from__ = f"?from={from_}" if from_ else ""
+    if from_ and period:
+        raise NotImplementedError("Cannot use both period and from_")
+    separator = "&" if (period or from_) else "?"
+    return f"{api_url}{endpoint}/{ticker}{period_}{from__}{separator}apikey={api_key}"
 
 
-def read_api(
-    api_url: str, endpoint: str, api_key: str, ticker: str, period: Optional[str] = None
+def read_api(  # noqa: PLR0913
+    api_url: str,
+    endpoint: str,
+    api_key: str,
+    ticker: str,
+    period: Optional[str] = None,
+    from_: Optional[str] = None,
 ) -> Any:  # noqa: ANN401
     request_response = requests.get(
-        compose_url(api_url, endpoint, api_key, ticker, period), timeout=10
+        compose_url(api_url, endpoint, api_key, ticker, period=period, from_=from_),
+        timeout=10,
     )
     response_json = request_response.json()
     if isinstance(response_json, dict) and response_json.get("Error Message"):
@@ -251,10 +266,18 @@ class FmpSource(FmpSourceBase, AbstractSource):
             ],
         )
 
-    def _read_series(self, ticker: str, type: str) -> List[FmpPrice]:  # type: ignore
+    def _read_series(self, ticker: str, type: SeriesLength) -> List[FmpPrice]:  # type: ignore
+        from_ = get_start_date(type)
+
         historical_price = read_api(
-            API_URL, "historical-price-full", self.__api_key__, ticker
+            API_URL,
+            "historical-price-full",
+            self.__api_key__,
+            ticker,
+            period=None,
+            from_=from_,
         )
+
         symbol = historical_price["symbol"]
         datas = historical_price["historical"]
         return [FmpPrice.model_validate({**data, "symbol": symbol}) for data in datas]
@@ -274,7 +297,7 @@ class FmpAssetsSource(FmpAssetsSourceBase, AbstractSource):
     def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
-    def _read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:
         return []
 
     def set_api_key(self, api_key: str) -> None:

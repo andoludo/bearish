@@ -9,17 +9,21 @@ from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
 from bearish.sources.base import AbstractSource, ValidTickers
-from bearish.types import Sources
+from bearish.types import Sources, SeriesLength
+from bearish.utils.utils import get_start_date
 
 
-def compute_url(ticker: str, api_key: str) -> str:
-    return f"https://api.tiingo.com/tiingo/daily/{ticker.lower()}/prices?startDate=2019-01-02&token={api_key}"
+def compute_url(ticker: str, api_key: str, from_: Optional[str] = None) -> str:
+    from_ = from_ if from_ else "2019-01-02"
+    return f"https://api.tiingo.com/tiingo/daily/{ticker.lower()}/prices?startDate={from_}&token={api_key}"
 
 
-def read_api(api_key: str, ticker: str) -> List[Dict[str, Any]]:
+def read_api(
+    api_key: str, ticker: str, from_: Optional[str] = None
+) -> List[Dict[str, Any]]:
     headers = {"Content-Type": "application/json"}
     request_response = requests.get(
-        compute_url(ticker, api_key), headers=headers, timeout=10
+        compute_url(ticker, api_key, from_), headers=headers, timeout=10
     )
     return cast(List[Dict[str, Any]], request_response.json())
 
@@ -55,8 +59,9 @@ class TiingoSource(TiingoSourceBase, AbstractSource):
     def _read_financials(self, ticker: str) -> Financials:
         return Financials()
 
-    def _read_series(self, ticker: str, type: str) -> List[TiingoPrice]:  # type: ignore
-        datas = read_api(self.__api_key__, ticker)
+    def _read_series(self, ticker: str, type: SeriesLength) -> List[TiingoPrice]:  # type: ignore
+        from_ = get_start_date(type)
+        datas = read_api(self.__api_key__, ticker, from_)
         return [
             TiingoPrice.model_validate(
                 {
