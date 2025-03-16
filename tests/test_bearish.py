@@ -33,7 +33,7 @@ from tests.conftest import FakeFundamentalData, FakeTimeSeries
 
 @pytest.fixture(scope="session")
 def bearish_db() -> BearishDb:
-    with tempfile.NamedTemporaryFile(delete=False, suffix="db") as file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as file:
         return BearishDb(database_path=Path(file.name))
 
 
