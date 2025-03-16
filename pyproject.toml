@@ -4,7 +4,7 @@ version = "0.1.4"
 description = ""
 authors = ["aan <andoludovic.andriamamonjy@gmail.com>"]
 readme = "README.md"
-
+packages = [{ include = "bearish" }]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 pandas = "^2.1.4"
