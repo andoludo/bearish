@@ -1,1 +1,2 @@
 *.db filter=lfs diff=lfs merge=lfs -text
+tests/data/bear.db filter=lfs diff=lfs merge=lfs -text
