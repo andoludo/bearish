@@ -14,7 +14,7 @@
 Install Bearish using `pip`:
 
 ```sh
-pip install bearish
+pip install bearishpy
 ```
 
 ## 🚀 Usage
