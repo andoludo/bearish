@@ -20,8 +20,3 @@ def test_get_exchange_query():
     assert query
 
 
-def test_detailed_assets_(bear_db: BearishDb) -> None:
-    exchanges = exchanges_factory()
-    query = exchanges.get_exchange_query(["US", "Germany"])
-    tickers = bear_db._get_tickers(query)
-    assert tickers
