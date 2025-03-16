@@ -35,7 +35,6 @@ from tests.conftest import FakeFundamentalData, FakeTimeSeries
 def bearish_db() -> BearishDb:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as file:
         bearish = BearishDb(database_path=Path(file.name))
-        bearish._engine
         return bearish
 
 
