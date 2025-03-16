@@ -1,11 +1,14 @@
 import logging
 from datetime import date
+
 from typing import List, Optional, Dict, Any, Callable
 
 import pandas as pd
 import yfinance as yf  # type: ignore
 from pydantic import BaseModel
+from tenacity import retry, stop_after_attempt, wait_fixed
 
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
@@ -16,7 +19,6 @@ from bearish.models.price.price import Price
 
 from bearish.sources.base import (
     AbstractSource,
-    ValidTickers,
 )
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets
@@ -42,23 +44,32 @@ class YfinanceFinancialBase(YfinanceBase):
         ]
 
 
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(0.5))
+def get_info(
+    ticker: str, function: Callable[[str, yf.Ticker], Dict[str, Any]]
+) -> Dict[str, Any]:
+    current_ticker = yf.Ticker(ticker)
+    info = function(ticker, current_ticker)
+    return info
+
+
 class YfinanceAssetBase(YfinanceBase):
     @classmethod
     def _from_tickers(
         cls, tickers: List[str], function: Callable[[str, yf.Ticker], Dict[str, Any]]
     ) -> List["YfinanceAssetBase"]:
         equities = []
-        tickers_ = yf.Tickers(" ".join(tickers))
-        found_tickers = tickers_.tickers
         for ticker in tickers:
-            if found_tickers.get(ticker):
-                try:
-                    equities.append(
-                        cls.model_validate(function(ticker, found_tickers[ticker]))
-                    )
-                except Exception as e:
-                    logger.error(f"Error reading {ticker}: {e}")
-                    print(f"Error reading {ticker}: {e}")
+            try:
+                info = get_info(ticker, function)
+                if not info:
+                    logger.error(f"No info found for {ticker}")
+                    continue
+            except Exception as e:
+                logger.error(f"Error reading {ticker}: {e}")
+                continue
+            logger.info(f"Successfully read {ticker}")
+            equities.append(cls.model_validate(info))
         return equities
 
 
@@ -290,7 +301,13 @@ class yFinancePrice(YfinanceBase, Price):  # noqa: N801
 
 
 class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
-    valid_tickers: ValidTickers = ValidTickers(exchanges=["BRU", "PAR"])
+    countries: List[Countries] = [
+        "United Kingdom",
+        "Germany",
+        "France",
+        "Netherlands",
+        "Belgium",
+    ]
 
     def set_api_key(self, api_key: str) -> None: ...
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:

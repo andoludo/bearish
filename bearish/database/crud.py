@@ -3,6 +3,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import List, TYPE_CHECKING, Type, Union, Any, cast
 
+import pandas as pd
 from dateutil.relativedelta import relativedelta  # type: ignore
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Engine, create_engine, insert
@@ -23,8 +24,9 @@ from bearish.database.schemas import (
     TrackerORM,
 )
 from bearish.database.scripts.upgrade import upgrade
+from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.interface.interface import BearishDbBase
-from bearish.models.base import Tracker, TrackerQuery
+from bearish.models.base import Tracker, TrackerQuery, Ticker
 from bearish.models.financials.balance_sheet import BalanceSheet
 
 from bearish.models.financials.base import Financials
@@ -214,3 +216,14 @@ class BearishDb(BearishDbBase):
                 query = query.where(TrackerORM.price == tracker_query.price)
             tracker_orm = session.exec(query).all()
             return cast(List[str], tracker_orm)
+
+    def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
+        symbols = pd.read_sql(
+            f"""SELECT symbol, exchange from equity where {exchange_query.to_suffixes_sql_statement()} 
+            OR exchange IN {exchange_query.to_aliases_sql_statement()};""",
+            con=self._engine,
+        )
+        return [
+            Ticker(symbol=symbol["symbol"], exchange=symbol["exchange"])
+            for symbol in symbols.to_dict(orient="records")
+        ]

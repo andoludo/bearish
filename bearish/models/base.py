@@ -22,8 +22,11 @@ class BaseAssets(BaseModel):
 
 class Ticker(BaseModel):
     symbol: str
-    source: Optional[Sources] = None
     exchange: Optional[str] = None
+    source: Optional[Sources] = None
+
+    def __hash__(self) -> int:
+        return hash(self.symbol)
 
 
 class SourceBase(BaseModel, abc.ABC):

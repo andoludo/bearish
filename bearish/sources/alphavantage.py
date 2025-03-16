@@ -8,6 +8,7 @@ from alpha_vantage.timeseries import TimeSeries  # type: ignore
 from pydantic import BaseModel
 
 from bearish.exceptions import InvalidApiKeyError
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.equity import Equity
 from bearish.models.base import SourceBase
@@ -241,6 +242,8 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
 
 
 class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
+    countries: List[Countries] = ["US"]
+
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()

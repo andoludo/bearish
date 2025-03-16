@@ -19,6 +19,7 @@ python-dotenv = "^1.0.1"
 yfinance = "^0.2.48"
 typer = "^0.13.1"
 finnhub-python = "^2.4.22"
+tenacity = "^9.0.0"
 
 
 
@@ -108,7 +109,7 @@ skip = ["models"]
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]
 ignore = []
-extend-ignore = ["ANN101","ANN102","UP006","UP035"]
+extend-ignore = ["ANN101","ANN102","UP006","UP035","S608","W291"]
 
 fixable = ["ALL"]
 unfixable = []

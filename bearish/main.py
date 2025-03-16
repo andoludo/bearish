@@ -1,7 +1,8 @@
 import logging
 import os
+from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Any
+from typing import Optional, List, Any, get_args, Annotated, cast
 
 import typer
 from pydantic import (
@@ -14,13 +15,14 @@ from pydantic import (
 
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError
+from bearish.exchanges.exchanges import Countries, exchanges_factory, ExchangeQuery
 from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.base import Ticker, Tracker, TrackerQuery
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.models.query.query import AssetQuery
+from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
@@ -45,6 +47,9 @@ class Bearish(BaseModel):
             FmpAssetsSource(),
         ]
     )
+    detailed_asset_sources: List[AbstractSource] = Field(
+        default_factory=lambda: [yFinanceSource()]  # type: ignore
+    )
     sources: List[AbstractSource] = Field(
         default_factory=lambda: [
             yFinanceSource(),
@@ -55,7 +60,7 @@ class Bearish(BaseModel):
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
         self._bearish_db = BearishDb(database_path=self.path)
-        for source in self.sources + self.asset_sources:
+        for source in self.sources + self.asset_sources + self.detailed_asset_sources:
             try:
                 source.set_api_key(
                     self.api_keys.keys.get(
@@ -75,6 +80,14 @@ class Bearish(BaseModel):
             for asset_source in self.asset_sources
             if asset_source.__source__ not in existing_sources
         ]
+        return self._write_base_assets(asset_sources, query)
+
+    def write_detailed_assets(self, query: Optional[AssetQuery] = None) -> None:
+        return self._write_base_assets(self.detailed_asset_sources, query)
+
+    def _write_base_assets(
+        self, asset_sources: List[AbstractSource], query: Optional[AssetQuery] = None
+    ) -> None:
         for source in asset_sources:
             if query:
                 cached_assets = self.read_assets(AssetQuery.model_validate(query))
@@ -87,14 +100,7 @@ class Bearish(BaseModel):
             self._bearish_db.write_assets(assets_)
             self._bearish_db.write_source(source.__source__)
 
-    def read_assets(self, assets_query: Optional[AssetQuery] = None) -> Assets:
-        if not assets_query:
-            exchanges = [
-                exchange
-                for source in self.sources
-                for exchange in source.valid_tickers.exchanges
-            ]
-            assets_query = AssetQuery(exchanges=exchanges)  # type: ignore
+    def read_assets(self, assets_query: AssetQuery) -> Assets:
         return self._bearish_db.read_assets(assets_query)
 
     def read_financials(self, assets_query: AssetQuery) -> Financials:
@@ -158,42 +164,71 @@ class Bearish(BaseModel):
     def read_sources(self) -> List[str]:
         return self._bearish_db.read_sources()
 
+    def get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
+        return self._bearish_db.get_tickers(exchange_query)
+
+
+class CountryEnum(str, Enum): ...
+
+
+CountriesEnum = Enum(  # type: ignore
+    "CountriesEnum",
+    {country: country for country in get_args(Countries)},
+    type=CountryEnum,
+)
+
 
 @app.command()
 def tickers(
-    path: Path, exchanges: Optional[List[str]] = None, api_keys: Optional[Path] = None
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    api_keys: Optional[Path] = None,
 ) -> None:
 
     logger.info(
-        f"Writing assets to database for countries: {exchanges}",
+        f"Writing assets to database for countries: {countries}",
     )
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.write_assets(
-        AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
+    bearish.write_assets()
+    exchanges = exchanges_factory()
+    tickers = bearish.get_tickers(
+        exchanges.get_exchange_query(cast(List[Countries], countries))
     )
+    asset_query = AssetQuery(
+        symbols=Symbols(equities=[ticker.symbol for ticker in tickers])  # type: ignore
+    )
+    bearish.write_detailed_assets(asset_query)
 
 
 @app.command()
 def financials(
-    path: Path, exchanges: Optional[List[str]] = None, api_keys: Optional[Path] = None
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    api_keys: Optional[Path] = None,
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    asset_query = AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
-    assets = bearish.read_assets(asset_query)
-    bearish.write_many_financials(assets.symbols())
+    exchanges = exchanges_factory()
+    tickers = bearish.get_tickers(
+        exchanges.get_exchange_query(cast(List[Countries], countries))
+    )
+    bearish.write_many_financials(tickers)
 
 
 @app.command()
 def prices(
-    path: Path, exchanges: Optional[List[str]] = None, api_keys: Optional[Path] = None
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    api_keys: Optional[Path] = None,
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    asset_query = AssetQuery(exchanges=exchanges, countries=[]) if exchanges else None
-    assets = bearish.read_assets(asset_query)
-    bearish.write_many_series(assets.symbols(), "max")
+    exchanges = exchanges_factory()
+    tickers = bearish.get_tickers(
+        exchanges.get_exchange_query(cast(List[Countries], countries))
+    )
+    bearish.write_many_series(tickers, "max")
 
 
 if __name__ == "__main__":

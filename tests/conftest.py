@@ -16,6 +16,12 @@ def bearish_db() -> BearishDb:
 
 
 @pytest.fixture(scope="session")
+def bear_db() -> BearishDb:
+    bear_path = Path(__file__).parent / "data" / "bear.db"
+    return BearishDb(database_path=bear_path)
+
+
+@pytest.fixture(scope="session")
 def equities_path() -> Path:
     return Path(__file__).parent.joinpath("data/equities.csv")
 

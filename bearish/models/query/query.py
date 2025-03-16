@@ -54,9 +54,12 @@ class AssetQuery(BaseAssetQuery):
 
     def update_symbols(self, assets: Assets) -> None:
         for field in assets.model_fields:
+            symbols = sorted(
+                {asset.symbol for asset in getattr(assets, field)}
+                | set(getattr(self.symbols, field))
+            )
             setattr(
                 self.symbols,
                 field,
-                [asset.symbol for asset in getattr(assets, field)]
-                + getattr(self.symbols, field),
+                symbols,
             )

@@ -2,8 +2,10 @@ import logging
 from typing import Optional, List, Any, ClassVar, Dict
 
 import requests  # type: ignore
+from pydantic import Field
 
 from bearish.exceptions import InvalidApiKeyError
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.etfs import Etf
@@ -14,7 +16,7 @@ from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-from bearish.sources.base import AbstractSource, ValidTickers
+from bearish.sources.base import AbstractSource
 from bearish.types import Sources, SeriesLength
 from bearish.utils.utils import get_start_date
 
@@ -220,10 +222,7 @@ class FmpPrice(FmpSourceBase, Price):
 
 
 class FmpSource(FmpSourceBase, AbstractSource):
-    valid_tickers: ValidTickers = ValidTickers(
-        sources=[FmpAssetsSourceBase.__source__],
-        exchanges=["Nasdaq", "NASDAQ Capital Market", "NASDAQ Global Select"],
-    )
+    countries: List[Countries] = ["US"]  # noqa: RUF012
 
     def set_api_key(self, api_key: str) -> None:
         FmpSourceBase.__api_key__ = api_key
@@ -284,6 +283,8 @@ class FmpSource(FmpSourceBase, AbstractSource):
 
 
 class FmpAssetsSource(FmpAssetsSourceBase, AbstractSource):
+    countries: List[Countries] = Field(default_factory=list)
+
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         stocks = read_api(API_URL, "stock", self.__api_key__, "list")
         stocks = [s for s in stocks if s["type"] == "stock"]

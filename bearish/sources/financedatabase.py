@@ -1,5 +1,8 @@
-from typing import ClassVar, Dict
+from typing import ClassVar, Dict, List
 
+from pydantic import Field
+
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.equity import Equity
@@ -39,6 +42,7 @@ class FinanceDatabaseEtf(FinanceDatabaseBase, Etf): ...
 
 
 class FinanceDatabaseSource(FinanceDatabaseBase, DatabaseCsvSource):
+    countries: List[Countries] = Field(default_factory=list)
     __url_sources__ = UrlSources(
         equity=UrlSource(
             url=RAW_EQUITIES_DATA_URL,

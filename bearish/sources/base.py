@@ -8,6 +8,7 @@ import requests  # type: ignore
 from pydantic import ConfigDict, validate_call, BaseModel, Field
 
 from bearish.exceptions import InvalidApiKeyError
+from bearish.exchanges.exchanges import Countries, Exchanges, exchanges_factory
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.assets import Assets
 from bearish.models.base import SourceBase, DataSourceBase, Ticker
@@ -40,7 +41,8 @@ class ValidTickers(BaseModel):
 
 class AbstractSource(SourceBase, abc.ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    valid_tickers: ValidTickers = Field(default_factory=ValidTickers)
+    countries: List[Countries]
+    exchanges: Exchanges = Field(default_factory=exchanges_factory)
 
     @validate_call(validate_return=True)
     def read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
@@ -52,6 +54,8 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @validate_call(validate_return=True)
     def read_financials(self, ticker: Ticker) -> Financials:
+        if self.exchanges.ticker_belongs_to_countries(ticker, countries=self.countries):
+            return Financials()
         try:
             logger.info(f"Reading Financials from {type(self).__name__}: for {ticker}")
             return self._read_financials(ticker.symbol)
@@ -63,6 +67,8 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @validate_call(validate_return=True)
     def read_series(self, ticker: Ticker, type_: SeriesLength) -> List[Price]:
+        if self.exchanges.ticker_belongs_to_countries(ticker, countries=self.countries):
+            return []
         try:
             logger.info(f"Reading Prices from {type(self).__name__}: for {ticker}")
             return self._read_series(ticker.symbol, type_)

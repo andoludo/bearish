@@ -3,12 +3,13 @@ from typing import Optional, List, Dict, Any, cast, ClassVar
 
 import requests  # type: ignore
 
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.assets import Assets
 from bearish.models.base import SourceBase
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-from bearish.sources.base import AbstractSource, ValidTickers
+from bearish.sources.base import AbstractSource
 from bearish.types import Sources, SeriesLength
 from bearish.utils.utils import get_start_date
 
@@ -46,9 +47,7 @@ class TiingoPrice(TiingoSourceBase, Price):
 
 
 class TiingoSource(TiingoSourceBase, AbstractSource):
-    valid_tickers: ValidTickers = ValidTickers(
-        sources=["FinanceDatabase"], exchanges=["NYQ"]
-    )
+    countries: List[Countries] = ["US"]  # noqa: RUF012
 
     def set_api_key(self, api_key: str) -> None:
         TiingoSourceBase.__api_key__ = api_key
