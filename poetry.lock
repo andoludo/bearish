@@ -533,21 +533,6 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.6.10)", "diff-cover (>=9.2.1)",
 typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
-name = "finnhub-python"
-version = "2.4.22"
-description = "Finnhub API"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "finnhub_python-2.4.22-py3-none-any.whl", hash = "sha256:323ea33b38df54a15b4cdc028677b35b4c577d01eb6734c7398094a681b8c503"},
-    {file = "finnhub_python-2.4.22.tar.gz", hash = "sha256:deaceb7c56af8719b84aa714818dc95ffd272d362eb73e83d2dc8d667d386737"},
-]
-
-[package.dependencies]
-requests = ">=2.22.0"
-
-[[package]]
 name = "frozendict"
 version = "2.4.6"
 description = "A simple immutable dictionary"
@@ -2593,4 +2578,4 @@ repair = ["scipy (>=1.6.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "42291c0e4a45bc088620b15e6a77977d4a350e81241b4cfbf4c7de47ec8d1db5"
+content-hash = "f66b11d7e5c426062574b40c781383b30ed807a600497c45f0cce09adf5f7812"
