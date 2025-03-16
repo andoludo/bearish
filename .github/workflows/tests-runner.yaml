@@ -3,6 +3,9 @@ name: Tests runner
 on:
   push:
 
+env:
+  TIINGO_API_KEY: ${{secrets.TIINGO_API_KEY}}
+  FMP_API_KEY: ${{secrets.FMP_API_KEY}}
 jobs:
   build:
 

@@ -1,5 +1,8 @@
-from typing import ClassVar, Dict
+from typing import ClassVar, Dict, List
 
+from pydantic import Field
+
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.etfs import Etf
@@ -9,6 +12,7 @@ from bearish.sources.base import (
     UrlSource,
     DatabaseCsvSource,
 )
+from bearish.types import Sources
 
 RAW_EQUITIES_INVESTSPY_DATA_URL = "https://raw.githubusercontent.com/alvarobartt/investpy/refs/heads/master/investpy/resources/stocks.csv"
 RAW_CRYPTO_INVESTSPY_DATA_URL = "https://raw.githubusercontent.com/alvarobartt/investpy/refs/heads/master/investpy/resources/cryptos.csv"
@@ -16,7 +20,7 @@ RAW_ETF_INVESTSPY_DATA_URL = "https://raw.githubusercontent.com/alvarobartt/inve
 
 
 class InvestPyBase(SourceBase):
-    __source__ = "investpy"
+    __source__: Sources = "investpy"
 
 
 class InvestPyEquity(InvestPyBase, Equity):
@@ -49,6 +53,7 @@ class InvestPyEtf(InvestPyBase, Etf):
 
 
 class InvestPySource(InvestPyBase, DatabaseCsvSource):
+    countries: List[Countries] = Field(default_factory=list)
     __url_sources__ = UrlSources(
         equity=UrlSource(
             url=RAW_EQUITIES_INVESTSPY_DATA_URL,

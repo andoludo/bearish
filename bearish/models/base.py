@@ -10,6 +10,8 @@ from pydantic import (
     field_validator,
 )
 
+from bearish.types import Sources
+
 
 class BaseAssets(BaseModel):
     equities: Any
@@ -18,19 +20,36 @@ class BaseAssets(BaseModel):
     currencies: Any
 
 
+class Ticker(BaseModel):
+    symbol: str
+    exchange: Optional[str] = None
+    source: Optional[Sources] = None
+
+    def __hash__(self) -> int:
+        return hash(self.symbol)
+
+
 class SourceBase(BaseModel, abc.ABC):
-    __source__: str
+    __source__: Sources
     __alias__: ClassVar[Dict[str, str]] = {}
-    __api_key__: ClassVar[Optional[str]] = None
+    __api_key__: ClassVar[str]
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 
-class DataSourceBase(SourceBase):
+class TrackerQuery(BaseModel):
+    source: str
+    financials: bool = False
+    price: bool = False
 
+
+class Tracker(TrackerQuery):
+    symbol: str
+
+
+class DataSourceBase(SourceBase, Ticker):
+    source: Sources
     date: datetime.date
     created_at: datetime.date
-    symbol: str
-    source: str
 
     @field_validator("date", mode="before")
     def _date_validator(cls, value: str | datetime.date) -> datetime.date:  # noqa: N805

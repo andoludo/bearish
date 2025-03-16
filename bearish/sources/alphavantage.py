@@ -8,6 +8,7 @@ from alpha_vantage.timeseries import TimeSeries  # type: ignore
 from pydantic import BaseModel
 
 from bearish.exceptions import InvalidApiKeyError
+from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.equity import Equity
 from bearish.models.base import SourceBase
@@ -20,6 +21,7 @@ from bearish.models.query.query import AssetQuery
 from bearish.sources.base import (
     AbstractSource,
 )
+from bearish.types import Sources
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ def check_api_key(method: Callable[..., Any]) -> Callable[..., Any]:
 
 
 class AlphaVantageSourceBase(BaseModel):
-    __source__: str = "AlphaVantage"
+    __source__: Sources = "AlphaVantage"
 
 
 class AlphaVantageBase(AlphaVantageSourceBase, SourceBase):
@@ -240,6 +242,8 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
 
 
 class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
+    countries: List[Countries] = ["US"]
+
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()
@@ -253,7 +257,7 @@ class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
             cash_flows=AlphaVantageCashFlow.from_ticker(ticker),
         )
 
-    def read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, ticker: str, type: str) -> List[Price]:
         return cast(List[Price], AlphaVantagePrice.from_ticker(ticker, type))
 
     def set_api_key(self, api_key: str) -> None:

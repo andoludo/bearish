@@ -4,9 +4,6 @@ from nox import Session
 nox.options.reuse_existing_virtualenvs = True
 
 
-nox.options.reuse_existing_virtualenvs = True
-
-
 @nox.session(python=["3.10"])
 def install(session: Session) -> None:
     groups = ["main", "dev"]

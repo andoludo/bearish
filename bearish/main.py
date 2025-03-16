@@ -1,7 +1,8 @@
 import logging
 import os
+from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Any
+from typing import Optional, List, Any, get_args, Annotated, cast
 
 import typer
 from pydantic import (
@@ -9,19 +10,26 @@ from pydantic import (
     Field,
     ConfigDict,
     PrivateAttr,
+    validate_call,
 )
 
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError
+from bearish.exchanges.exchanges import Countries, exchanges_factory, ExchangeQuery
+from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
+from bearish.models.base import Ticker, Tracker, TrackerQuery
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.models.query.query import AssetQuery
+from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
+from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import InvestPySource
+from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yfinance import yFinanceSource
+from bearish.types import SeriesLength
 
 logger = logging.getLogger(__name__)
 app = typer.Typer()
@@ -31,34 +39,58 @@ class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
-    _bearish_db: BearishDb = PrivateAttr()
-    sources: List[AbstractSource] = Field(
+    _bearish_db: BearishDbBase = PrivateAttr()
+    asset_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
             FinanceDatabaseSource(),
             InvestPySource(),
+            FmpAssetsSource(),
+        ]
+    )
+    detailed_asset_sources: List[AbstractSource] = Field(
+        default_factory=lambda: [yFinanceSource()]  # type: ignore
+    )
+    sources: List[AbstractSource] = Field(
+        default_factory=lambda: [
             yFinanceSource(),
+            FmpSource(),
+            TiingoSource(),
         ]
     )
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
         self._bearish_db = BearishDb(database_path=self.path)
-        for source in self.sources:
+        for source in self.sources + self.asset_sources + self.detailed_asset_sources:
             try:
                 source.set_api_key(
                     self.api_keys.keys.get(
                         source.__source__, os.environ.get(source.__source__.upper())  # type: ignore
                     )
                 )
-            except InvalidApiKeyError as e:  # noqa: PERF203
+            except Exception as e:  # noqa: PERF203
                 logger.error(
                     f"Invalid API key for {source.__source__}: {e}. It will be removed from sources"
                 )
                 self.sources.remove(source)
 
     def write_assets(self, query: Optional[AssetQuery] = None) -> None:
-        for source in self.sources:
+        existing_sources = self._bearish_db.read_sources()
+        asset_sources = [
+            asset_source
+            for asset_source in self.asset_sources
+            if asset_source.__source__ not in existing_sources
+        ]
+        return self._write_base_assets(asset_sources, query)
+
+    def write_detailed_assets(self, query: Optional[AssetQuery] = None) -> None:
+        return self._write_base_assets(self.detailed_asset_sources, query)
+
+    def _write_base_assets(
+        self, asset_sources: List[AbstractSource], query: Optional[AssetQuery] = None
+    ) -> None:
+        for source in asset_sources:
             if query:
-                cached_assets = self.read_assets(AssetQuery(countries=query.countries))
+                cached_assets = self.read_assets(AssetQuery.model_validate(query))
                 query.update_symbols(cached_assets)
             logger.info(f"Fetching assets from source {type(source).__name__}")
             assets_ = source.read_assets(query)
@@ -66,6 +98,7 @@ class Bearish(BaseModel):
                 logger.warning(f"No assets found from {type(source).__name__}")
                 continue
             self._bearish_db.write_assets(assets_)
+            self._bearish_db.write_source(source.__source__)
 
     def read_assets(self, assets_query: AssetQuery) -> Assets:
         return self._bearish_db.read_assets(assets_query)
@@ -76,51 +109,126 @@ class Bearish(BaseModel):
     def read_series(self, assets_query: AssetQuery) -> List[Price]:
         return self._bearish_db.read_series(assets_query)
 
-    def read_financials_from_many_sources(self, ticker: str) -> Financials:
-        financials = Financials()
+    def write_many_financials(self, tickers: List[Ticker]) -> None:
         for source in self.sources:
-            financials_ = source.read_financials(ticker)
-            if financials_.is_empty():
-                logger.warning(
-                    f"No financials found for {ticker} from {type(source).__name__}"
-                )
-                continue
-            financials.add(financials_)
-        return financials
+            tickers_available = self._bearish_db.read_tracker(
+                TrackerQuery(source=source.__source__, financials=True)
+            )
+            tickers_ = [
+                ticker for ticker in tickers if ticker.symbol not in tickers_available
+            ]
+            self.write_financials(source, tickers_)
 
-    def write_many_financials(self, tickers: List[str]) -> None:
+    def write_financials(self, source: AbstractSource, tickers: List[Ticker]) -> None:
         financials = Financials()
         for ticker in tickers:
-            financials_ = self.read_financials_from_many_sources(ticker)
-            financials.add(financials_)
+            try:
+                financials_ = source.read_financials(ticker)
+            except InvalidApiKeyError as e:
+                logger.error(f"Invalid API key for {source.__source__}: {e}")
+                break
             if financials_.is_empty():
                 continue
+            financials.add(financials_)
+            self._bearish_db.write_tracker(
+                Tracker(symbol=ticker.symbol, source=source.__source__, financials=True)
+            )
         self._bearish_db.write_financials(financials)
 
-    def write_many_series(self, tickers: List[str], type: str) -> None:
-        for ticker in tickers:
-            self.write_series(ticker, type)
-
-    def write_series(self, ticker: str, type: str) -> None:
-        series = []
+    @validate_call
+    def write_many_series(self, tickers: List[Ticker], type: SeriesLength) -> None:
         for source in self.sources:
+            tickers_available = self._bearish_db.read_tracker(
+                TrackerQuery(source=source.__source__, price=True)
+            )
+            tickers_ = [
+                ticker for ticker in tickers if ticker.symbol not in tickers_available
+            ]
+            self.write_series(source, tickers_, type)
+
+    def write_series(
+        self, source: AbstractSource, tickers: List[Ticker], type: SeriesLength
+    ) -> None:
+        for ticker in tickers:
             try:
                 series_ = source.read_series(ticker, type)
             except Exception as e:
                 logger.error(f"Error reading series: {e}")
                 continue
-            series.extend(series_)
-        if series:
-            self._bearish_db.write_series(series)
+            if series_:
+                self._bearish_db.write_series(series_)
+                self._bearish_db.write_tracker(
+                    Tracker(symbol=ticker.symbol, source=source.__source__, price=True)
+                )
+
+    def read_sources(self) -> List[str]:
+        return self._bearish_db.read_sources()
+
+    def get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
+        return self._bearish_db.get_tickers(exchange_query)
+
+
+class CountryEnum(str, Enum): ...
+
+
+CountriesEnum = Enum(  # type: ignore
+    "CountriesEnum",
+    {country: country for country in get_args(Countries)},
+    type=CountryEnum,
+)
 
 
 @app.command()
-def assets(path: Path, countries: List[str]) -> None:
+def tickers(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    api_keys: Optional[Path] = None,
+) -> None:
+
     logger.info(
         f"Writing assets to database for countries: {countries}",
     )
-    bearish = Bearish(path=path)
-    bearish.write_assets(AssetQuery(countries=countries))
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    bearish.write_assets()
+    exchanges = exchanges_factory()
+    tickers = bearish.get_tickers(
+        exchanges.get_exchange_query(cast(List[Countries], countries))
+    )
+    asset_query = AssetQuery(
+        symbols=Symbols(equities=[ticker.symbol for ticker in tickers])  # type: ignore
+    )
+    bearish.write_detailed_assets(asset_query)
+
+
+@app.command()
+def financials(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    api_keys: Optional[Path] = None,
+) -> None:
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    exchanges = exchanges_factory()
+    tickers = bearish.get_tickers(
+        exchanges.get_exchange_query(cast(List[Countries], countries))
+    )
+    bearish.write_many_financials(tickers)
+
+
+@app.command()
+def prices(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    api_keys: Optional[Path] = None,
+) -> None:
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    exchanges = exchanges_factory()
+    tickers = bearish.get_tickers(
+        exchanges.get_exchange_query(cast(List[Countries], countries))
+    )
+    bearish.write_many_series(tickers, "max")
 
 
 if __name__ == "__main__":

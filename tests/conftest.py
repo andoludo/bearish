@@ -7,13 +7,18 @@ import pandas as pd
 import pytest
 
 from bearish.database.crud import BearishDb
-from bearish.database.scripts.upgrade import upgrade
 
 
 @pytest.fixture(scope="session")
 def bearish_db() -> BearishDb:
     with tempfile.NamedTemporaryFile(delete=False, suffix="db") as file:
         return BearishDb(database_path=file.name)
+
+
+@pytest.fixture(scope="session")
+def bear_db() -> BearishDb:
+    bear_path = Path(__file__).parent / "data" / "bear.db"
+    return BearishDb(database_path=bear_path)
 
 
 @pytest.fixture(scope="session")

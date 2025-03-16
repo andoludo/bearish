@@ -1,10 +1,12 @@
-from dotenv import load_dotenv
 import logging.config
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 LOGGING_CONFIG = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
     "formatters": {
         "standard": {
             "format": "%(asctime)s [%(levelname)s] %(name)s: [%(funcName)s] %(message)s"
@@ -35,4 +37,6 @@ LOGGING_CONFIG = {
 
 
 logging.config.dictConfig(LOGGING_CONFIG)
-load_dotenv()
+logging.getLogger("urllib3.connectionpool").setLevel(logging.CRITICAL)
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("peewee").setLevel(logging.CRITICAL)
