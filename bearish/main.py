@@ -106,10 +106,15 @@ class Bearish(BaseModel):
         return self._write_base_assets(asset_sources, query)
 
     def write_detailed_assets(self, query: Optional[AssetQuery] = None) -> None:
-        return self._write_base_assets(self.detailed_asset_sources, query, use_all_sources=False)
+        return self._write_base_assets(
+            self.detailed_asset_sources, query, use_all_sources=False
+        )
 
     def _write_base_assets(
-        self, asset_sources: List[AbstractSource], query: Optional[AssetQuery] = None, use_all_sources: bool = True
+        self,
+        asset_sources: List[AbstractSource],
+        query: Optional[AssetQuery] = None,
+        use_all_sources: bool = True,
     ) -> None:
         if query:
             cached_assets = self.read_assets(AssetQuery.model_validate(query))
@@ -128,7 +133,7 @@ class Bearish(BaseModel):
                 break
             else:
                 query = AssetQuery(
-                    symbols=Symbols(equities=assets_.failed_query.symbols)  # type: ignore
+                    symbols=Symbols(equities=[Ticker(symbol=s) for s in assets_.failed_query.symbols])  # type: ignore
                 )
 
     def read_assets(self, assets_query: AssetQuery) -> Assets:
@@ -155,6 +160,12 @@ class Bearish(BaseModel):
             t
             for t in tickers
             if t.symbol not in self._get_tracked_tickers(TrackerQuery(price=True))
+        ]
+
+    def get_ticker_with_price(self) -> List[Ticker]:
+        return [
+            Ticker(symbol=t)
+            for t in self._get_tracked_tickers(TrackerQuery(price=True))
         ]
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
@@ -237,9 +248,7 @@ def tickers(
             cast(List[Countries], countries), bearish.get_asset_sources()
         )
     )
-    asset_query = AssetQuery(
-        symbols=Symbols(equities=[ticker.symbol for ticker in tickers])  # type: ignore
-    )
+    asset_query = AssetQuery(symbols=Symbols(equities=tickers))  # type: ignore
     bearish.write_detailed_assets(asset_query)
 
 

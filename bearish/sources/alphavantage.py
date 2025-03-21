@@ -249,7 +249,7 @@ class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()
-        equities = AlphaVantageEquity.from_tickers(query.symbols.equities)
+        equities = AlphaVantageEquity.from_tickers(query.symbols.equities_symbols())
         return Assets(equities=equities)
 
     def _read_financials(self, ticker: str) -> Financials:

@@ -45,8 +45,10 @@ def test_update_asset_yfinance(bearish_db: BearishDb):
         financials_sources=[],
         asset_sources=[],
     )
-    bearish.write_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
-    assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    bearish.write_assets(AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")])))
+    assets = bearish.read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert assets
 
 
@@ -98,10 +100,16 @@ def test_update_asset_financedatabase(bearish_db: BearishDb):
             financials_sources=[],
         )
         bearish.write_assets()
-        assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAVE-INR"])))
+        assets = bearish.read_assets(
+            AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAVE-INR")]))
+        )
 
         assets_multi = bearish.read_assets(
-            AssetQuery(symbols=Symbols(equities=["000006.SZ", "AAVE-KRW"]))
+            AssetQuery(
+                symbols=Symbols(
+                    equities=[Ticker(symbol="000006.SZ"), Ticker(symbol="AAVE-KRW")]
+                )
+            )
         )
 
         assert assets.cryptos
@@ -143,10 +151,16 @@ def test_update_assets_multi_sources(bearish_db: BearishDb):
         )
         bearish.write_assets()
 
-        assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["AAVE-INR"])))
+        assets = bearish.read_assets(
+            AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAVE-INR")]))
+        )
 
         assets_multi = bearish.read_assets(
-            AssetQuery(symbols=Symbols(equities=["000006.SZ", "AAVE-KRW"]))
+            AssetQuery(
+                symbols=Symbols(
+                    equities=[Ticker(symbol="000006.SZ"), Ticker(symbol="AAVE-KRW")]
+                )
+            )
         )
         sources = bearish.read_sources()
         assert assets.cryptos
@@ -165,7 +179,9 @@ def test_update_financials(bearish_db: BearishDb):
     bearish.write_many_financials(
         [Ticker(symbol="AAPL", source="Yfinance", exchange="NASDAQ")]
     )
-    financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    financials = bearish.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert financials
 
 
@@ -176,7 +192,9 @@ def test_update_series(bearish_db: BearishDb):
         price_sources=[yFinanceSource()],
     )
     bearish.write_many_series([Ticker(symbol="AIR.PA")], "max")
-    series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AIR.PA"])))
+    series = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
+    )
     assert series
     assert len(series) > 1
 
@@ -204,7 +222,9 @@ def test_update_series_multiple_times(bearish_db: BearishDb):
     )
     bearish.write_many_series([Ticker(symbol="AIR.PA", source="Yfinance")], "5d")
     bearish.write_many_series([Ticker(symbol="AIR.PA", source="Yfinance")], "5d")
-    series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AIR.PA"])))
+    series = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
+    )
     assert series
     assert len(series) > 1
 
@@ -219,7 +239,9 @@ def test_update_financials_alphavantage(bearish_db: BearishDb):
         financials_sources=[AlphaVantageSource()],
     )
     bearish.write_many_financials([Ticker(symbol="AAPL")])
-    financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    financials = bearish.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert financials
 
 
@@ -233,7 +255,9 @@ def test_update_series_alphavantage(bearish_db: BearishDb):
         price_sources=[AlphaVantageSource()],
     )
     bearish.write_many_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "max")
-    series = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    series = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert series
     assert len(series) > 1
 
@@ -314,7 +338,9 @@ def test_write_assets_tiingo(bearish_db: BearishDb):
     bearish.write_many_series(
         tickers=[Ticker(symbol="AAPL", exchange="NASDAQ")], type="max"
     )
-    prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    prices = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert prices
     assert all(isinstance(p, Price) for p in prices)
 
@@ -330,7 +356,9 @@ def test_write_assets_fmp(bearish_db: BearishDb):
     bearish.write_many_series(
         tickers=[Ticker(symbol="AAPL", exchange="NASDAQ")], type="max"
     )
-    prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    prices = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert prices
     assert all(isinstance(p, Price) for p in prices)
 
@@ -342,7 +370,9 @@ def test_write_assets_yfinance(bearish_db: BearishDb):
         price_sources=[yFinanceSource()],
     )
     bearish.write_many_series(tickers=[Ticker(symbol="AIR.PA")], type="1d")
-    prices = bearish.read_series(AssetQuery(symbols=Symbols(equities=["AIR.PA"])))
+    prices = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
+    )
     assert prices
     assert all(isinstance(p, Price) for p in prices)
 
@@ -350,10 +380,22 @@ def test_write_assets_yfinance(bearish_db: BearishDb):
 def test_detailed_assets(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
+        detailed_asset_sources=[yFinanceSource()],
     )
-    asset_query = AssetQuery(symbols=Symbols(equities=["VOW", "ACR", "1WE", "VBK"]))
+    asset_query = AssetQuery(
+        symbols=Symbols(
+            equities=[
+                Ticker(symbol="VOW"),
+                Ticker(symbol="ACR"),
+                Ticker(symbol="1WE"),
+                Ticker(symbol="VBK"),
+            ]
+        )
+    )
     bearish.write_detailed_assets(asset_query)
-    assets = bearish.read_assets(AssetQuery(symbols=Symbols(equities=["VOW"])))
+    assets = bearish.read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="VOW")]))
+    )
     assert assets.equities
 
 
@@ -365,5 +407,7 @@ def test_update_financials_fmp(bearish_db: BearishDb):
         financials_sources=[FmpSource()],
     )
     bearish.write_many_financials([Ticker(symbol="AAPL", exchange="NASDAQ")])
-    financials = bearish.read_financials(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    financials = bearish.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert financials

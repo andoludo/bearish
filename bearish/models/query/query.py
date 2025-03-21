@@ -3,7 +3,7 @@ from typing import Annotated, List, Any
 from pydantic import BaseModel, model_validator, BeforeValidator, Field
 
 from bearish.models.assets.assets import Assets
-from bearish.models.base import BaseAssets
+from bearish.models.base import BaseAssets, Ticker
 from bearish.utils.utils import remove_duplicates
 
 
@@ -17,17 +17,23 @@ class BaseAssetQuery(BaseModel):
 
 class Symbols(BaseAssets):
     equities: Annotated[
-        List[str], BeforeValidator(remove_duplicates), Field(default_factory=list)
+        List[Ticker], BeforeValidator(remove_duplicates), Field(default_factory=list)
     ]
     etfs: Annotated[
-        List[str], BeforeValidator(remove_duplicates), Field(default_factory=list)
+        List[Ticker], BeforeValidator(remove_duplicates), Field(default_factory=list)
     ]
     currencies: Annotated[
-        List[str], BeforeValidator(remove_duplicates), Field(default_factory=list)
+        List[Ticker], BeforeValidator(remove_duplicates), Field(default_factory=list)
     ]
     cryptos: Annotated[
-        List[str], BeforeValidator(remove_duplicates), Field(default_factory=list)
+        List[Ticker], BeforeValidator(remove_duplicates), Field(default_factory=list)
     ]
+
+    def equities_symbols(self) -> List[str]:
+        return [t.symbol for t in self.equities]
+
+    def etfs_symbols(self) -> List[str]:
+        return [t.symbol for t in self.etfs]
 
     def empty(self) -> bool:
         return not any(
@@ -40,7 +46,9 @@ class Symbols(BaseAssets):
         )
 
     def all(self) -> List[str]:
-        return self.equities + self.etfs + self.currencies + self.cryptos
+        return [
+            t.symbol for t in self.equities + self.etfs + self.currencies + self.cryptos
+        ]
 
 
 class AssetQuery(BaseAssetQuery):
@@ -57,8 +65,12 @@ class AssetQuery(BaseAssetQuery):
             if field == "failed_query":
                 continue
             symbols = sorted(
-                {asset.symbol for asset in getattr(assets, field)}
-                | set(getattr(self.symbols, field))
+                {
+                    Ticker(symbol=asset.symbol, exchange=asset.exchange)
+                    for asset in getattr(assets, field)
+                }
+                | set(getattr(self.symbols, field)),
+                key=lambda x: x.symbol,
             )
             setattr(
                 self.symbols,

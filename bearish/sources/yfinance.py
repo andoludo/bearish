@@ -74,11 +74,11 @@ class YfinanceAssetBase(YfinanceBase):
             try:
                 info = get_info(ticker, function)
                 if not info:
-                    logger.warning(f"No info found for {ticker}")
+                    logger.error(f"No info found for {ticker}")
                     failed_query.append(ticker)
                     continue
             except Exception as e:
-                logger.warning(f"Error reading {ticker}: {e}")
+                logger.error(f"Error reading {ticker}: {e}")
                 failed_query.append(ticker)
                 continue
             logger.info(f"Successfully read {ticker}")
@@ -341,8 +341,8 @@ class yFinanceSource(YfinanceBase, AbstractSource):
 
         if query.symbols.empty():
             return Assets()
-        equities = YfinanceEquity.from_tickers(query.symbols.equities)
-        etfs = YfinanceEtf.from_tickers(query.symbols.etfs)
+        equities = YfinanceEquity.from_tickers(query.symbols.equities_symbols())
+        etfs = YfinanceEtf.from_tickers(query.symbols.etfs_symbols())
         return Assets(
             equities=equities.equities,
             etfs=etfs.equities,

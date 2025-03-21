@@ -101,7 +101,9 @@ def test_fmp_assets_integration() -> None:
 def test_fmp_equity(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    assets = fmp._read_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    assets = fmp._read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert assets
     assert not assets.is_empty()
 
@@ -110,7 +112,9 @@ def test_fmp_equity(fmp_api_fixture: requests_mock.Mocker) -> None:
 def test_fmp_equity_integration() -> None:
     fmp = FmpSource()
     fmp.set_api_key("...")
-    assets = fmp._read_assets(AssetQuery(symbols=Symbols(equities=["AGFB.BR"])))
+    assets = fmp._read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AGFB.BR")]))
+    )
     assert assets
 
 

@@ -1,5 +1,6 @@
 import yfinance
 
+from bearish.models.base import Ticker
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.yfinance import (
     YfinanceFinancialMetrics,
@@ -37,7 +38,7 @@ def test_get_ticker():
 
 
 def test_yFinanceSource_update_assets():
-    tickers = ["MSFT", "AAPL", "GOOG"]
+    tickers = [Ticker(symbol="MSFT"), Ticker(symbol="AAPL"), Ticker(symbol="GOOG")]
     assets = yFinanceSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -45,7 +46,11 @@ def test_yFinanceSource_update_assets():
 
 
 def test_yFinanceSource_update_non_existent_assets():
-    tickers = ["IDONOTEXISRS", "AAPL", "GOOG"]
+    tickers = [
+        Ticker(symbol="IDONOTEXISRS"),
+        Ticker(symbol="AAPL"),
+        Ticker(symbol="GOOG"),
+    ]
     assets = yFinanceSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -53,7 +58,7 @@ def test_yFinanceSource_update_non_existent_assets():
 
 
 def test_yFinanceSource_no_country():
-    tickers = ["ML.PA"]
+    tickers = [Ticker(symbol="ML.PA")]
     assets = yFinanceSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -62,7 +67,11 @@ def test_yFinanceSource_no_country():
 
 def test_yFinanceSource_with_etf():
     assets = yFinanceSource()._read_assets(
-        AssetQuery(symbols=Symbols(equities=["MSFT"], etfs=["SPY"]))
+        AssetQuery(
+            symbols=Symbols(
+                equities=[Ticker(symbol="MSFT")], etfs=[Ticker(symbol="SPY")]
+            )
+        )
     )
     assert assets.equities
     assert assets.etfs

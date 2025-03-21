@@ -234,7 +234,7 @@ class FmpSource(FmpSourceBase, AbstractSource):
 
         if query.symbols.empty():
             return Assets()
-        equities = FmpEquity.from_tickers(query.symbols.equities)
+        equities = FmpEquity.from_tickers(query.symbols.equities_symbols())
         return Assets(equities=equities)
 
     def _read_financials(self, ticker: str) -> Financials:
