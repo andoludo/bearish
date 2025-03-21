@@ -1,13 +1,14 @@
 import abc
 import logging
+from functools import wraps
 from io import StringIO
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Callable, Any, cast
 
 import pandas as pd
 import requests  # type: ignore
 from pydantic import ConfigDict, validate_call, BaseModel, Field
 
-from bearish.exceptions import InvalidApiKeyError
+from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import Countries, Exchanges, exchanges_factory
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.assets import Assets
@@ -39,12 +40,37 @@ class ValidTickers(BaseModel):
             )
 
 
+class ApiUsage(BaseModel):
+    calls: int = 0
+    calls_limit: Optional[int] = None
+
+    def limit_reached(self) -> bool:
+        return self.calls >= self.calls_limit if self.calls_limit else False
+
+    def add_api_calls(self, calls: int) -> None:
+        self.calls += calls
+
+
+def check_api_limit(func: Callable[..., Any]) -> Callable[..., Any]:
+    @wraps(func)
+    def wrapper(self: "AbstractSource", *args: Any, **kwargs: Any) -> Any:
+        if self.api_usage.limit_reached():
+            raise LimitApiKeyReachedError(
+                f"API '{self.__source__}' Limit reached : {self.api_usage.calls_limit}"
+            )
+        return func(self, *args, **kwargs)
+
+    return cast(Callable[..., Any], wrapper)
+
+
 class AbstractSource(SourceBase, abc.ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     countries: List[Countries]
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
+    api_usage: ApiUsage = Field(default_factory=ApiUsage)
 
     @validate_call(validate_return=True)
+    @check_api_limit
     def read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         try:
             return self._read_assets(query)
@@ -53,8 +79,15 @@ class AbstractSource(SourceBase, abc.ABC):
             return Assets()
 
     @validate_call(validate_return=True)
+    @check_api_limit
     def read_financials(self, ticker: Ticker) -> Financials:
-        if self.exchanges.ticker_belongs_to_countries(ticker, countries=self.countries):
+        if not self.exchanges.ticker_belongs_to_countries(
+            ticker, countries=self.countries
+        ):
+            logger.warning(
+                f"Trying to access Financials from {type(self).__name__} "
+                f"for tickers ({ticker.symbol}) not in {self.countries}"
+            )
             return Financials()
         try:
             logger.info(f"Reading Financials from {type(self).__name__}: for {ticker}")
@@ -66,8 +99,15 @@ class AbstractSource(SourceBase, abc.ABC):
             return Financials()
 
     @validate_call(validate_return=True)
+    @check_api_limit
     def read_series(self, ticker: Ticker, type_: SeriesLength) -> List[Price]:
-        if self.exchanges.ticker_belongs_to_countries(ticker, countries=self.countries):
+        if not self.exchanges.ticker_belongs_to_countries(
+            ticker, countries=self.countries
+        ):
+            logger.warning(
+                f"Trying to access prices from {type(self).__name__} "
+                f"for tickers ({ticker.symbol}) not in {self.countries}"
+            )
             return []
         try:
             logger.info(f"Reading Prices from {type(self).__name__}: for {ticker}")

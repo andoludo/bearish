@@ -1,3 +1,5 @@
+import yfinance
+
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.yfinance import (
     YfinanceFinancialMetrics,
@@ -6,6 +8,7 @@ from bearish.sources.yfinance import (
     yFinanceSource,
     YfinanceEquity,
     YfinanceEtf,
+    yFinanceEarningsDate,
 )
 
 
@@ -76,3 +79,8 @@ def test_yfinance_equity():
     equities = YfinanceEquity.from_tickers(tickers)
     assert equities
     assert len(equities) == len(tickers)
+
+
+def test_yfinance_earnings():
+    earnings_date = yFinanceEarningsDate.from_ticker("AAPL")
+    assert earnings_date

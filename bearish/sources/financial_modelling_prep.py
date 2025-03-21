@@ -16,7 +16,7 @@ from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
-from bearish.sources.base import AbstractSource
+from bearish.sources.base import AbstractSource, ApiUsage
 from bearish.types import Sources, SeriesLength
 from bearish.utils.utils import get_start_date
 
@@ -48,7 +48,7 @@ def read_api(  # noqa: PLR0913
     ticker: str,
     period: Optional[str] = None,
     from_: Optional[str] = None,
-) -> Any:  # noqa: ANN401
+) -> Any:
     request_response = requests.get(
         compose_url(api_url, endpoint, api_key, ticker, period=period, from_=from_),
         timeout=10,
@@ -223,6 +223,7 @@ class FmpPrice(FmpSourceBase, Price):
 
 class FmpSource(FmpSourceBase, AbstractSource):
     countries: List[Countries] = ["US"]  # noqa: RUF012
+    api_usage: ApiUsage = ApiUsage(calls_limit=220)
 
     def set_api_key(self, api_key: str) -> None:
         FmpSourceBase.__api_key__ = api_key
@@ -250,6 +251,7 @@ class FmpSource(FmpSourceBase, AbstractSource):
         )
         ratio_ttm = read_api(API_URL, "ratios-ttm", self.__api_key__, ticker)
         key_metrics = read_api(API_URL, "key-metrics-ttm", self.__api_key__, ticker)
+        self.api_usage.add_api_calls(4)
         datas = [*ratio_ttm, *key_metrics]
         financial_metrics = {k: v for data in datas for k, v in data.items()}
         financial_metrics.update({"symbol": ticker})
@@ -276,7 +278,7 @@ class FmpSource(FmpSourceBase, AbstractSource):
             period=None,
             from_=from_,
         )
-
+        self.api_usage.add_api_calls(1)
         symbol = historical_price["symbol"]
         datas = historical_price["historical"]
         return [FmpPrice.model_validate({**data, "symbol": symbol}) for data in datas]

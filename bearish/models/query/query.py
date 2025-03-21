@@ -9,7 +9,7 @@ from bearish.utils.utils import remove_duplicates
 
 class BaseAssetQuery(BaseModel):
     @model_validator(mode="after")
-    def validate_query(self) -> Any:  # noqa: ANN401
+    def validate_query(self) -> Any:
         if all(not getattr(self, field) for field in self.model_fields):
             raise ValueError("At least one query parameter must be provided")
         return self

@@ -155,7 +155,9 @@ def test_alphavantage_read_series():
     ticker = "AAPL"
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    series = AlphaVantageSource().read_series(Ticker(symbol=ticker), "max")
+    series = AlphaVantageSource().read_series(
+        Ticker(symbol=ticker, exchange="NASDAQ"), "max"
+    )
     assert series
 
 

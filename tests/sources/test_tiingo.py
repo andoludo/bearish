@@ -34,12 +34,12 @@ def tiingo_api_fixture() -> requests_mock.Mocker:
 def test_tiingo_read_series(tiingo_api_fixture: requests_mock.Mocker) -> None:
     tiingo = TiingoSource()
     tiingo.set_api_key("test")
-    prices = tiingo.read_series(Ticker(symbol="AAPL"), "max")
+    prices = tiingo.read_series(Ticker(symbol="AAPL", exchange="NASDAQ"), "max")
     assert prices
 
 
 def test_tiingo_read_series_5d() -> None:
     tiingo = TiingoSource()
     tiingo.set_api_key(API_KEY)
-    prices = tiingo.read_series(Ticker(symbol="AAPL"), "5d")
+    prices = tiingo.read_series(Ticker(symbol="AAPL", exchange="NASDAQ"), "5d")
     assert prices

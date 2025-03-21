@@ -7,7 +7,7 @@ import pandas as pd
 from bearish.types import SeriesLength
 
 
-def to_float(value: Any) -> Optional[float]:  # noqa: ANN401
+def to_float(value: Any) -> Optional[float]:
     if value == "None":
         return None
     if value is None:
@@ -20,7 +20,7 @@ def to_float(value: Any) -> Optional[float]:  # noqa: ANN401
     return float(value)
 
 
-def to_datetime(value: Any) -> datetime:  # noqa: ANN401
+def to_datetime(value: Any) -> datetime:
     if isinstance(value, str):
         return datetime.strptime(value, "%Y-%m-%d")
     elif isinstance(value, pd.Timestamp):
@@ -33,7 +33,7 @@ def to_datetime(value: Any) -> datetime:  # noqa: ANN401
         raise ValueError(f"Invalid datetime value: {value}")
 
 
-def to_string(value: Any) -> Optional[str]:  # noqa: ANN401
+def to_string(value: Any) -> Optional[str]:
     if value is None or (isinstance(value, float) and isnan(value)):
         return None
     if value == "None":
@@ -41,7 +41,7 @@ def to_string(value: Any) -> Optional[str]:  # noqa: ANN401
     return str(value)
 
 
-def format_capitalize(value: Any) -> Optional[str]:  # noqa: ANN401
+def format_capitalize(value: Any) -> Optional[str]:
     country = to_string(value)
     if country is None:
         return None

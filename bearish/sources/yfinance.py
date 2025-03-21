@@ -10,6 +10,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
+from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
 from bearish.models.financials.balance_sheet import BalanceSheet
@@ -33,9 +34,13 @@ class YfinanceBase(BaseModel):
 
 class YfinanceFinancialBase(YfinanceBase):
     @classmethod
-    def _from_ticker(cls, ticker: str, attribute: str) -> List["YfinanceFinancialBase"]:
+    def _from_ticker(
+        cls, ticker: str, attribute: str, transpose: bool = True
+    ) -> List["YfinanceFinancialBase"]:
         ticker_ = yf.Ticker(ticker)
-        data = getattr(ticker_, attribute).T
+        data = (
+            getattr(ticker_, attribute).T if transpose else getattr(ticker_, attribute)
+        )
         data.index = [date(index.year, index.month, index.day) for index in data.index]
         data = data.reset_index(names=["date"])
         return [
@@ -44,7 +49,7 @@ class YfinanceFinancialBase(YfinanceBase):
         ]
 
 
-@retry(stop=stop_after_attempt(2), wait=wait_fixed(0.5))
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
 def get_info(
     ticker: str, function: Callable[[str, yf.Ticker], Dict[str, Any]]
 ) -> Dict[str, Any]:
@@ -215,7 +220,19 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
         return cls._from_ticker(ticker, "financials")  # type: ignore
 
 
-class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):  # noqa: N801
+class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
+    __alias__ = {
+        "symbol": "symbol",
+        "EPS Estimate": "eps_estimate",
+        "Reported EPS": "eps_reported",
+    }
+
+    @classmethod
+    def from_ticker(cls, ticker: str) -> List["yFinanceEarningsDate"]:
+        return cls._from_ticker(ticker, "earnings_dates", transpose=False)  # type: ignore
+
+
+class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
     __alias__ = {
         "symbol": "symbol",
         "Treasury Shares Number": "treasury_stock",
@@ -262,7 +279,7 @@ class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):  # noqa: N801
         return cls._from_ticker(ticker, "balance_sheet")  # type: ignore
 
 
-class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):  # noqa: N801
+class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
     __alias__ = {
         "symbol": "symbol",
         "Operating Cash Flow": "operating_cash_flow",
@@ -288,7 +305,7 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):  # noqa: N801
         return cls._from_ticker(ticker, "cashflow")  # type: ignore
 
 
-class yFinancePrice(YfinanceBase, Price):  # noqa: N801
+class yFinancePrice(YfinanceBase, Price):
     __alias__ = {
         "Open": "open",
         "High": "high",
@@ -300,7 +317,7 @@ class yFinancePrice(YfinanceBase, Price):  # noqa: N801
     }
 
 
-class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
+class yFinanceSource(YfinanceBase, AbstractSource):
     countries: List[Countries] = [
         "United Kingdom",
         "Germany",
@@ -325,6 +342,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
             financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker),
             balance_sheets=yFinanceBalanceSheet.from_ticker(ticker),
             cash_flows=yFinanceCashFlow.from_ticker(ticker),
+            earnings_date=yFinanceEarningsDate.from_ticker(ticker),
         )
 
     def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:

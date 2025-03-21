@@ -1,5 +1,5 @@
-from bearish.database.crud import BearishDb
 from bearish.exchanges.exchanges import exchanges_factory
+from bearish.models.base import Ticker
 
 
 def test_exchange_get_suffixes():
@@ -20,3 +20,8 @@ def test_get_exchange_query():
     assert query
 
 
+def test_ticker_included():
+    exchanges = exchanges_factory()
+    ticker = Ticker(symbol="ALMNG.PA")
+    ticker_included = exchanges.ticker_belongs_to_countries(ticker, countries=["US"])
+    assert not ticker_included

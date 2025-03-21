@@ -11,6 +11,7 @@ from bearish.models.assets.etfs import Etf
 from bearish.models.base import Tracker
 from bearish.models.financials.balance_sheet import BalanceSheet
 from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 
@@ -70,6 +71,10 @@ class BalanceSheetORM(BaseFinancials, BalanceSheet, table=True):  # type: ignore
 
 class CashFlowORM(BaseFinancials, CashFlow, table=True):  # type: ignore
     __tablename__ = "cashflow"
+
+
+class EarningsDateORM(BaseFinancials, EarningsDate, table=True):  # type: ignore
+    __tablename__ = "earningsdate"
 
 
 class SourcesORM(SQLModel, table=True):

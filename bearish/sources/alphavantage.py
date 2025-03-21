@@ -20,8 +20,9 @@ from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
 from bearish.sources.base import (
     AbstractSource,
+    ApiUsage,
 )
-from bearish.types import Sources
+from bearish.types import Sources, SeriesLength
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ T = TypeVar("T", bound=Type[Any])
 
 def check_api_key(method: Callable[..., Any]) -> Callable[..., Any]:
     @functools.wraps(method)
-    def wrapper(cls: T, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+    def wrapper(cls: T, *args: Any, **kwargs: Any) -> Any:
         if not hasattr(cls, "fundamentals") or not hasattr(cls, "timeseries"):
             raise InvalidApiKeyError(f"API key not set for {cls.__source__}")
         return method(cls, *args, **kwargs)
@@ -231,9 +232,9 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
 
     @classmethod
     @check_api_key
-    def from_ticker(cls, ticker: str, type: str) -> List[Price]:
-        type = "full" if type == "full" else "compact"
-        time_series, metadata = cls.timeseries.get_daily(ticker, outputsize=type)
+    def from_ticker(cls, ticker: str, type: SeriesLength) -> List[Price]:
+        type_ = "full" if type == "max" else "compact"
+        time_series, metadata = cls.timeseries.get_daily(ticker, outputsize=type_)
 
         return [
             cast(Price, AlphaVantagePrice(**(v | {"date": k} | metadata)))
@@ -243,6 +244,7 @@ class AlphaVantagePrice(AlphaVantageBase, Price):
 
 class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
     countries: List[Countries] = ["US"]
+    api_usage: ApiUsage = ApiUsage(calls_limit=10)
 
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
@@ -251,14 +253,18 @@ class AlphaVantageSource(AlphaVantageSourceBase, AbstractSource):
         return Assets(equities=equities)
 
     def _read_financials(self, ticker: str) -> Financials:
-        return Financials(
+        financials = Financials(
             financial_metrics=[AlphaVantageFinancialMetrics.from_ticker(ticker)],
             balance_sheets=AlphaVantageBalanceSheet.from_ticker(ticker),
             cash_flows=AlphaVantageCashFlow.from_ticker(ticker),
         )
+        self.api_usage.add_api_calls(3)
+        return financials
 
-    def _read_series(self, ticker: str, type: str) -> List[Price]:
-        return cast(List[Price], AlphaVantagePrice.from_ticker(ticker, type))
+    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:
+        prices = cast(List[Price], AlphaVantagePrice.from_ticker(ticker, type))
+        self.api_usage.add_api_calls(1)
+        return prices
 
     def set_api_key(self, api_key: str) -> None:
         AlphaVantageBase.fundamentals = FundamentalData(key=api_key)
