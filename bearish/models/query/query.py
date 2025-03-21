@@ -54,6 +54,8 @@ class AssetQuery(BaseAssetQuery):
 
     def update_symbols(self, assets: Assets) -> None:
         for field in assets.model_fields:
+            if field == "failed_query":
+                continue
             symbols = sorted(
                 {asset.symbol for asset in getattr(assets, field)}
                 | set(getattr(self.symbols, field))

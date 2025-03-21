@@ -106,15 +106,15 @@ class Bearish(BaseModel):
         return self._write_base_assets(asset_sources, query)
 
     def write_detailed_assets(self, query: Optional[AssetQuery] = None) -> None:
-        return self._write_base_assets(self.detailed_asset_sources, query)
+        return self._write_base_assets(self.detailed_asset_sources, query, use_all_sources=False)
 
     def _write_base_assets(
-        self, asset_sources: List[AbstractSource], query: Optional[AssetQuery] = None
+        self, asset_sources: List[AbstractSource], query: Optional[AssetQuery] = None, use_all_sources: bool = True
     ) -> None:
+        if query:
+            cached_assets = self.read_assets(AssetQuery.model_validate(query))
+            query.update_symbols(cached_assets)
         for source in asset_sources:
-            if query:
-                cached_assets = self.read_assets(AssetQuery.model_validate(query))
-                query.update_symbols(cached_assets)
             logger.info(f"Fetching assets from source {type(source).__name__}")
             assets_ = source.read_assets(query)
             if assets_.is_empty():
@@ -122,6 +122,14 @@ class Bearish(BaseModel):
                 continue
             self._bearish_db.write_assets(assets_)
             self._bearish_db.write_source(source.__source__)
+            if use_all_sources:
+                continue
+            if not assets_.failed_query.symbols:
+                break
+            else:
+                query = AssetQuery(
+                    symbols=Symbols(equities=assets_.failed_query.symbols)  # type: ignore
+                )
 
     def read_assets(self, assets_query: AssetQuery) -> Assets:
         return self._bearish_db.read_assets(assets_query)

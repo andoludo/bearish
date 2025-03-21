@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any, Callable
 
 import pandas as pd
 import yfinance as yf  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bearish.exchanges.exchanges import Countries
@@ -22,7 +22,7 @@ from bearish.sources.base import (
     AbstractSource,
 )
 from bearish.models.financials.base import Financials
-from bearish.models.assets.assets import Assets
+from bearish.models.assets.assets import Assets, FailedQueryAssets
 from bearish.types import Sources, SeriesLength
 
 logger = logging.getLogger(__name__)
@@ -58,24 +58,32 @@ def get_info(
     return info
 
 
+class YfinanceAssetOutput(BaseModel):
+    equities: List["YfinanceAssetBase"]
+    failed_query: List[str] = Field(default_factory=list)
+
+
 class YfinanceAssetBase(YfinanceBase):
     @classmethod
     def _from_tickers(
         cls, tickers: List[str], function: Callable[[str, yf.Ticker], Dict[str, Any]]
-    ) -> List["YfinanceAssetBase"]:
+    ) -> YfinanceAssetOutput:
         equities = []
+        failed_query = []
         for ticker in tickers:
             try:
                 info = get_info(ticker, function)
                 if not info:
-                    logger.error(f"No info found for {ticker}")
+                    logger.warning(f"No info found for {ticker}")
+                    failed_query.append(ticker)
                     continue
             except Exception as e:
-                logger.error(f"Error reading {ticker}: {e}")
+                logger.warning(f"Error reading {ticker}: {e}")
+                failed_query.append(ticker)
                 continue
             logger.info(f"Successfully read {ticker}")
             equities.append(cls.model_validate(info))
-        return equities
+        return YfinanceAssetOutput(equities=equities, failed_query=failed_query)
 
 
 class YfinanceEquity(YfinanceAssetBase, Equity):
@@ -128,8 +136,8 @@ class YfinanceEquity(YfinanceAssetBase, Equity):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEquity"]:
-        return cls._from_tickers(tickers, lambda ticker, x: x.info)  # type: ignore
+    def from_tickers(cls, tickers: List[str]) -> YfinanceAssetOutput:
+        return cls._from_tickers(tickers, lambda ticker, x: x.info)
 
 
 def to_funds_data_dict(data: pd.DataFrame, ticker: str) -> Dict[str, Any]:
@@ -194,8 +202,8 @@ class YfinanceEtf(YfinanceAssetBase, Etf):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEtf"]:
-        return cls._from_tickers(tickers, _get_etf)  # type: ignore
+    def from_tickers(cls, tickers: List[str]) -> YfinanceAssetOutput:
+        return cls._from_tickers(tickers, _get_etf)
 
 
 class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
@@ -335,7 +343,13 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             return Assets()
         equities = YfinanceEquity.from_tickers(query.symbols.equities)
         etfs = YfinanceEtf.from_tickers(query.symbols.etfs)
-        return Assets(equities=equities, etfs=etfs)
+        return Assets(
+            equities=equities.equities,
+            etfs=etfs.equities,
+            failed_query=FailedQueryAssets(
+                symbols=etfs.failed_query + equities.failed_query
+            ),
+        )
 
     def _read_financials(self, ticker: str) -> Financials:
         return Financials(
