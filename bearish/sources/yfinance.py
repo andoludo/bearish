@@ -42,7 +42,7 @@ class YfinanceFinancialBase(YfinanceBase):
         data = (
             getattr(ticker_, attribute).T if transpose else getattr(ticker_, attribute)
         )
-        if not data:
+        if data is None:
             return []
         data.index = [date(index.year, index.month, index.day) for index in data.index]
         data = data.reset_index(names=["date"])

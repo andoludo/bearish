@@ -98,3 +98,14 @@ def test_yfinance_earnings():
 def test_earnings_data():
     earnings_data = yFinanceEarningsDate.from_ticker("MLHCF.PA")
     assert not earnings_data
+
+
+def test_bug_financials():
+    financial_metrics = YfinanceFinancialMetrics.from_ticker("ALHIT.PA")
+    balance_sheets = yFinanceBalanceSheet.from_ticker("ALHIT.PA")
+    cash_flows = yFinanceCashFlow.from_ticker("ALHIT.PA")
+    earnings_date = yFinanceEarningsDate.from_ticker("ALHIT.PA")
+    assert financial_metrics
+    assert balance_sheets
+    assert not cash_flows
+    assert earnings_date
