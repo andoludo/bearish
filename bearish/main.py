@@ -15,7 +15,12 @@ from pydantic import (
 
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
-from bearish.exchanges.exchanges import Countries, exchanges_factory, ExchangeQuery
+from bearish.exchanges.exchanges import (
+    Countries,
+    exchanges_factory,
+    ExchangeQuery,
+    Exchanges,
+)
 from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
@@ -40,6 +45,7 @@ class Bearish(BaseModel):
     path: Path
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
+    exchanges: Exchanges = Field(default_factory=exchanges_factory)
     asset_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
             FinanceDatabaseSource(),
@@ -207,6 +213,7 @@ class Bearish(BaseModel):
                         Tracker(
                             symbol=ticker.symbol,
                             source=source.__source__,
+                            exchange=ticker.exchange,
                             price=True,
                             price_date=price_date,
                         )
@@ -218,6 +225,31 @@ class Bearish(BaseModel):
 
     def get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
         return self._bearish_db.get_tickers(exchange_query)
+
+    def get_detailed_tickers(self, countries: List[Countries]) -> None:
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], countries), self.get_asset_sources()  # type: ignore
+            )
+        )
+        asset_query = AssetQuery(symbols=Symbols(equities=tickers))  # type: ignore
+        self.write_detailed_assets(asset_query)
+
+    def get_financials(self, countries: List[Countries]) -> None:
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], countries), self.get_detailed_asset_sources()  # type: ignore
+            )
+        )
+        self.write_many_financials(tickers)
+
+    def get_prices(self, countries: List[Countries]) -> None:
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], countries), self.get_detailed_asset_sources()  # type: ignore
+            )
+        )
+        self.write_many_series(tickers, "max")
 
 
 class CountryEnum(str, Enum): ...
@@ -243,14 +275,7 @@ def tickers(
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.write_assets()
-    exchanges = exchanges_factory()
-    tickers = bearish.get_tickers(
-        exchanges.get_exchange_query(
-            cast(List[Countries], countries), bearish.get_asset_sources()
-        )
-    )
-    asset_query = AssetQuery(symbols=Symbols(equities=tickers))  # type: ignore
-    bearish.write_detailed_assets(asset_query)
+    bearish.get_detailed_tickers(countries)  # type: ignore
 
 
 @app.command()
@@ -261,13 +286,7 @@ def financials(
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    exchanges = exchanges_factory()
-    tickers = bearish.get_tickers(
-        exchanges.get_exchange_query(
-            cast(List[Countries], countries), bearish.get_detailed_asset_sources()
-        )
-    )
-    bearish.write_many_financials(tickers)
+    bearish.get_financials(countries)  # type: ignore
 
 
 @app.command()
@@ -278,13 +297,7 @@ def prices(
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    exchanges = exchanges_factory()
-    tickers = bearish.get_tickers(
-        exchanges.get_exchange_query(
-            cast(List[Countries], countries), bearish.get_detailed_asset_sources()
-        )
-    )
-    bearish.write_many_series(tickers, "max")
+    bearish.get_prices(countries)  # type: ignore
 
 
 if __name__ == "__main__":

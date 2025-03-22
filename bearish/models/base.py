@@ -45,6 +45,7 @@ class TrackerQuery(BaseModel):
 class Tracker(TrackerQuery):
     source: str
     symbol: str
+    exchange: Optional[str] = None
 
 
 class DataSourceBase(SourceBase, Ticker):
