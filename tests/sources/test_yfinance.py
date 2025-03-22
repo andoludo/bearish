@@ -93,3 +93,8 @@ def test_yfinance_equity():
 def test_yfinance_earnings():
     earnings_date = yFinanceEarningsDate.from_ticker("AAPL")
     assert earnings_date
+
+
+def test_earnings_data():
+    earnings_data = yFinanceEarningsDate.from_ticker("MLHCF.PA")
+    assert not earnings_data

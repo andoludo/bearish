@@ -98,7 +98,9 @@ class AbstractSource(SourceBase, abc.ABC):
         except InvalidApiKeyError as e:
             raise e
         except Exception as e:
-            logger.error(f"Error reading Financials from {type(self).__name__}: {e}")
+            logger.error(
+                f"Error reading Financials ({ticker.symbol})from {type(self).__name__}: {e}"
+            )
             return Financials()
 
     @validate_call(validate_return=True)
@@ -118,7 +120,9 @@ class AbstractSource(SourceBase, abc.ABC):
         except InvalidApiKeyError as e:
             raise e
         except Exception as e:
-            logger.error(f"Error reading Financials from {type(self).__name__}: {e}")
+            logger.error(
+                f"Error reading prices ({ticker.symbol}) from {type(self).__name__}: {e}"
+            )
             return []
 
     @abc.abstractmethod

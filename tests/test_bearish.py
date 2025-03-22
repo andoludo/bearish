@@ -413,3 +413,17 @@ def test_update_financials_fmp(bearish_db: BearishDb):
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
     )
     assert financials
+
+
+def test_write_financials_yfinance(bearish_db: BearishDb):
+    bearish = Bearish(
+        path=bearish_db.database_path,
+        asset_sources=[],
+        price_sources=[],
+        financials_sources=[yFinanceSource()],
+    )
+    bearish.write_many_financials([Ticker(symbol="MLHCF.PA")])
+    financials = bearish.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="MLHCF.PA")]))
+    )
+    assert financials
