@@ -108,7 +108,7 @@ skip = ["models"]
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]
 ignore = []
-extend-ignore = ["ANN101","ANN102","UP006","UP035","S608","W291"]
+extend-ignore = ["ANN101","ANN102","UP006","UP035","S608","W291","ANN401", "N801"]
 
 fixable = ["ALL"]
 unfixable = []

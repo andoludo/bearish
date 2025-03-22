@@ -1,8 +1,10 @@
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator, validate_call
 
 from bearish.models.base import Ticker
+from bearish.models.query.query import AssetQuery
+from bearish.types import Sources
 
 Countries = Literal[
     "US",
@@ -43,12 +45,18 @@ ExchangeType = Literal["suffixes", "aliases"]
 class ExchangeQuery(BaseModel):
     suffixes: List[str] = Field(default_factory=list)
     aliases: List[str] = Field(default_factory=list)
+    sources: List[str] = Field(default_factory=list)
 
     def to_suffixes_sql_statement(self) -> str:
         return f"""({' OR '.join([f"symbol LIKE '%{suffix}'" for suffix in self.suffixes])})"""
 
     def to_aliases_sql_statement(self) -> str:
         return f"""({','.join([f"'{alias}'" for alias in self.aliases])})"""
+
+    def to_sources_sql_statement(self) -> str:
+        if not self.sources:
+            return ""
+        return f"""({','.join([f"'{source}'" for source in self.sources])})"""
 
     def included(self, ticker: Ticker) -> bool:
         return (
@@ -96,16 +104,29 @@ class Exchanges(BaseModel):
             if country_exchange.country == country
         ]
 
-    def get_exchange_query(self, countries: List[Countries]) -> ExchangeQuery:
+    @validate_call
+    def get_exchange_query(
+        self, countries: List[Countries], sources: Optional[List[Sources]] = None
+    ) -> ExchangeQuery:
+        sources = sources or []
         suffixes = self.get_exchanges(countries, "suffixes")
         aliases = self.get_exchanges(countries, "aliases")
-        return ExchangeQuery(suffixes=suffixes, aliases=aliases)
+        return ExchangeQuery(suffixes=suffixes, aliases=aliases, sources=sources)
 
     def ticker_belongs_to_countries(
         self, ticker: Ticker, countries: List[Countries]
     ) -> bool:
         exchange_query = self.get_exchange_query(countries)
         return exchange_query.included(ticker)
+
+    def get_asset_query(
+        self, asset_query: AssetQuery, countries: List[Countries]
+    ) -> AssetQuery:
+        exchange_query = self.get_exchange_query(countries)
+        symbols = asset_query.symbols.filter(exchange_query.included)
+        asset_query_ = AssetQuery.model_validate(asset_query.model_dump())
+        asset_query_.symbols = symbols
+        return asset_query_
 
 
 def exchanges_factory() -> Exchanges:

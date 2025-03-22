@@ -51,7 +51,8 @@ class BearishDbBase(BaseModel):
     def write_source(self, source: str) -> None:
         return self._write_source(source)
 
-    def read_tracker(self, tracker_query: TrackerQuery) -> List[str]:
+    @validate_call
+    def read_tracker(self, tracker_query: TrackerQuery) -> List[Ticker]:
         return self._read_tracker(tracker_query)
 
     def write_tracker(self, tracker: Tracker) -> None:
@@ -82,7 +83,7 @@ class BearishDbBase(BaseModel):
     def _read_sources(self) -> List[str]: ...
 
     @abc.abstractmethod
-    def _read_tracker(self, tracker_query: TrackerQuery) -> List[str]: ...
+    def _read_tracker(self, tracker_query: TrackerQuery) -> List[Ticker]: ...
     @abc.abstractmethod
     def _write_tracker(self, tracker: Tracker) -> None: ...
 

@@ -123,7 +123,7 @@ def test_cash_flow(root_path: Path):
 
 
 def test_alphavantage_read_assets():
-    tickers = ["AAPL"]
+    tickers = [Ticker(symbol="AAPL")]
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
     assets = AlphaVantageSource()._read_assets(
@@ -135,7 +135,7 @@ def test_alphavantage_read_assets():
 
 @pytest.mark.integration
 def test_alphavantage_read_assets_integration():
-    tickers = ["ML"]
+    tickers = [Ticker(symbol="ML")]
     assets = AlphaVantageSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -155,7 +155,9 @@ def test_alphavantage_read_series():
     ticker = "AAPL"
     AlphaVantageBase.fundamentals = FakeFundamentalData()
     AlphaVantageBase.timeseries = FakeTimeSeries()
-    series = AlphaVantageSource().read_series(Ticker(symbol=ticker), "max")
+    series = AlphaVantageSource().read_series(
+        Ticker(symbol=ticker, exchange="NASDAQ"), "max"
+    )
     assert series
 
 

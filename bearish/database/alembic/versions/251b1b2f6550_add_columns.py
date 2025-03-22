@@ -1,8 +1,8 @@
 """Add columns
 
-Revision ID: 676e9d58121a
+Revision ID: 251b1b2f6550
 Revises: 
-Create Date: 2024-12-22 12:31:12.166940
+Create Date: 2025-03-22 07:37:56.495382
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 import sqlmodel
 
 # revision identifiers, used by Alembic.
-revision: str = "676e9d58121a"
+revision: str = "251b1b2f6550"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,8 +24,8 @@ def upgrade() -> None:
     op.create_table(
         "balancesheet",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("treasury_stock", sa.Float(), nullable=True),
@@ -74,8 +74,8 @@ def upgrade() -> None:
     op.create_table(
         "cashflow",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("operating_cash_flow", sa.Float(), nullable=True),
@@ -108,8 +108,8 @@ def upgrade() -> None:
     op.create_table(
         "crypto",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("base_symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -135,8 +135,8 @@ def upgrade() -> None:
     op.create_table(
         "currency",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("base_symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -165,10 +165,34 @@ def upgrade() -> None:
         )
 
     op.create_table(
+        "earningsdate",
+        sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("date", sa.DateTime(), nullable=False),
+        sa.Column("created_at", sa.Date(), nullable=False),
+        sa.Column("eps_estimate", sa.Float(), nullable=True),
+        sa.Column("eps_reported", sa.Float(), nullable=True),
+        sa.Column("revenue_estimate", sa.Float(), nullable=True),
+        sa.Column("revenue_reported", sa.Float(), nullable=True),
+        sa.PrimaryKeyConstraint("symbol", "source", "date"),
+    )
+    with op.batch_alter_table("earningsdate", schema=None) as batch_op:
+        batch_op.create_index(
+            batch_op.f("ix_earningsdate_date"), ["date"], unique=False
+        )
+        batch_op.create_index(
+            batch_op.f("ix_earningsdate_source"), ["source"], unique=False
+        )
+        batch_op.create_index(
+            batch_op.f("ix_earningsdate_symbol"), ["symbol"], unique=False
+        )
+
+    op.create_table(
         "equity",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("base_symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -230,8 +254,8 @@ def upgrade() -> None:
     op.create_table(
         "etf",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("base_symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -284,8 +308,8 @@ def upgrade() -> None:
     op.create_table(
         "financialmetrics",
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("date", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("ebitda", sa.Float(), nullable=True),
@@ -318,9 +342,9 @@ def upgrade() -> None:
 
     op.create_table(
         "price",
+        sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("date", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.Date(), nullable=False),
         sa.Column("open", sa.Float(), nullable=False),
@@ -349,8 +373,10 @@ def upgrade() -> None:
         "tracker",
         sa.Column("financials", sa.Boolean(), nullable=False),
         sa.Column("price", sa.Boolean(), nullable=False),
+        sa.Column("price_date", sa.Date(), nullable=True),
         sa.Column("source", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("symbol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("exchange", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sqlite_autoincrement=True,
@@ -396,6 +422,12 @@ def downgrade() -> None:
         batch_op.drop_index(batch_op.f("ix_equity_country"))
 
     op.drop_table("equity")
+    with op.batch_alter_table("earningsdate", schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f("ix_earningsdate_symbol"))
+        batch_op.drop_index(batch_op.f("ix_earningsdate_source"))
+        batch_op.drop_index(batch_op.f("ix_earningsdate_date"))
+
+    op.drop_table("earningsdate")
     with op.batch_alter_table("currency", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_currency_symbol"))
         batch_op.drop_index(batch_op.f("ix_currency_source"))

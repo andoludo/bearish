@@ -5,11 +5,13 @@ from typing import List, Optional, Dict, Any, Callable
 
 import pandas as pd
 import yfinance as yf  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
+from bearish.models.base import Ticker
+from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
 from bearish.models.financials.balance_sheet import BalanceSheet
@@ -21,7 +23,7 @@ from bearish.sources.base import (
     AbstractSource,
 )
 from bearish.models.financials.base import Financials
-from bearish.models.assets.assets import Assets
+from bearish.models.assets.assets import Assets, FailedQueryAssets
 from bearish.types import Sources, SeriesLength
 
 logger = logging.getLogger(__name__)
@@ -33,9 +35,15 @@ class YfinanceBase(BaseModel):
 
 class YfinanceFinancialBase(YfinanceBase):
     @classmethod
-    def _from_ticker(cls, ticker: str, attribute: str) -> List["YfinanceFinancialBase"]:
+    def _from_ticker(
+        cls, ticker: str, attribute: str, transpose: bool = True
+    ) -> List["YfinanceFinancialBase"]:
         ticker_ = yf.Ticker(ticker)
-        data = getattr(ticker_, attribute).T
+        data = (
+            getattr(ticker_, attribute).T if transpose else getattr(ticker_, attribute)
+        )
+        if data is None:
+            return []
         data.index = [date(index.year, index.month, index.day) for index in data.index]
         data = data.reset_index(names=["date"])
         return [
@@ -44,33 +52,41 @@ class YfinanceFinancialBase(YfinanceBase):
         ]
 
 
-@retry(stop=stop_after_attempt(2), wait=wait_fixed(0.5))
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
 def get_info(
-    ticker: str, function: Callable[[str, yf.Ticker], Dict[str, Any]]
+    ticker: Ticker, function: Callable[[str, yf.Ticker], Dict[str, Any]]
 ) -> Dict[str, Any]:
-    current_ticker = yf.Ticker(ticker)
-    info = function(ticker, current_ticker)
+    current_ticker = yf.Ticker(ticker.symbol)
+    info = function(ticker.symbol, current_ticker)
     return info
+
+
+class YfinanceAssetOutput(BaseModel):
+    equities: List["YfinanceAssetBase"]
+    failed_query: List[Ticker] = Field(default_factory=list)
 
 
 class YfinanceAssetBase(YfinanceBase):
     @classmethod
     def _from_tickers(
-        cls, tickers: List[str], function: Callable[[str, yf.Ticker], Dict[str, Any]]
-    ) -> List["YfinanceAssetBase"]:
+        cls, tickers: List[Ticker], function: Callable[[str, yf.Ticker], Dict[str, Any]]
+    ) -> YfinanceAssetOutput:
         equities = []
+        failed_query = []
         for ticker in tickers:
             try:
                 info = get_info(ticker, function)
                 if not info:
-                    logger.error(f"No info found for {ticker}")
+                    logger.error(f"No info found for {ticker.symbol}")
+                    failed_query.append(ticker)
                     continue
             except Exception as e:
-                logger.error(f"Error reading {ticker}: {e}")
+                logger.error(f"Error reading {ticker.symbol}: {e}")
+                failed_query.append(ticker)
                 continue
-            logger.info(f"Successfully read {ticker}")
+            logger.info(f"Successfully read {ticker.symbol}")
             equities.append(cls.model_validate(info))
-        return equities
+        return YfinanceAssetOutput(equities=equities, failed_query=failed_query)
 
 
 class YfinanceEquity(YfinanceAssetBase, Equity):
@@ -123,8 +139,8 @@ class YfinanceEquity(YfinanceAssetBase, Equity):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEquity"]:
-        return cls._from_tickers(tickers, lambda ticker, x: x.info)  # type: ignore
+    def from_tickers(cls, tickers: List[Ticker]) -> YfinanceAssetOutput:
+        return cls._from_tickers(tickers, lambda ticker, x: x.info)
 
 
 def to_funds_data_dict(data: pd.DataFrame, ticker: str) -> Dict[str, Any]:
@@ -189,8 +205,8 @@ class YfinanceEtf(YfinanceAssetBase, Etf):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> List["YfinanceEtf"]:
-        return cls._from_tickers(tickers, _get_etf)  # type: ignore
+    def from_tickers(cls, tickers: List[Ticker]) -> YfinanceAssetOutput:
+        return cls._from_tickers(tickers, _get_etf)
 
 
 class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
@@ -215,7 +231,19 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
         return cls._from_ticker(ticker, "financials")  # type: ignore
 
 
-class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):  # noqa: N801
+class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
+    __alias__ = {
+        "symbol": "symbol",
+        "EPS Estimate": "eps_estimate",
+        "Reported EPS": "eps_reported",
+    }
+
+    @classmethod
+    def from_ticker(cls, ticker: str) -> List["yFinanceEarningsDate"]:
+        return cls._from_ticker(ticker, "earnings_dates", transpose=False)  # type: ignore
+
+
+class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
     __alias__ = {
         "symbol": "symbol",
         "Treasury Shares Number": "treasury_stock",
@@ -262,7 +290,7 @@ class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):  # noqa: N801
         return cls._from_ticker(ticker, "balance_sheet")  # type: ignore
 
 
-class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):  # noqa: N801
+class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
     __alias__ = {
         "symbol": "symbol",
         "Operating Cash Flow": "operating_cash_flow",
@@ -288,7 +316,7 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):  # noqa: N801
         return cls._from_ticker(ticker, "cashflow")  # type: ignore
 
 
-class yFinancePrice(YfinanceBase, Price):  # noqa: N801
+class yFinancePrice(YfinanceBase, Price):
     __alias__ = {
         "Open": "open",
         "High": "high",
@@ -300,7 +328,7 @@ class yFinancePrice(YfinanceBase, Price):  # noqa: N801
     }
 
 
-class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
+class yFinanceSource(YfinanceBase, AbstractSource):
     countries: List[Countries] = [
         "United Kingdom",
         "Germany",
@@ -318,13 +346,20 @@ class yFinanceSource(YfinanceBase, AbstractSource):  # noqa: N801
             return Assets()
         equities = YfinanceEquity.from_tickers(query.symbols.equities)
         etfs = YfinanceEtf.from_tickers(query.symbols.etfs)
-        return Assets(equities=equities, etfs=etfs)
+        return Assets(
+            equities=equities.equities,
+            etfs=etfs.equities,
+            failed_query=FailedQueryAssets(
+                symbols=etfs.failed_query + equities.failed_query
+            ),
+        )
 
     def _read_financials(self, ticker: str) -> Financials:
         return Financials(
             financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker),
             balance_sheets=yFinanceBalanceSheet.from_ticker(ticker),
             cash_flows=yFinanceCashFlow.from_ticker(ticker),
+            earnings_date=yFinanceEarningsDate.from_ticker(ticker),
         )
 
     def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:

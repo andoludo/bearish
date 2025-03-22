@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 from time import sleep
 
@@ -100,7 +101,9 @@ def test_fmp_assets_integration() -> None:
 def test_fmp_equity(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    assets = fmp._read_assets(AssetQuery(symbols=Symbols(equities=["AAPL"])))
+    assets = fmp._read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
     assert assets
     assert not assets.is_empty()
 
@@ -109,7 +112,9 @@ def test_fmp_equity(fmp_api_fixture: requests_mock.Mocker) -> None:
 def test_fmp_equity_integration() -> None:
     fmp = FmpSource()
     fmp.set_api_key("...")
-    assets = fmp._read_assets(AssetQuery(symbols=Symbols(equities=["AGFB.BR"])))
+    assets = fmp._read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AGFB.BR")]))
+    )
     assert assets
 
 
@@ -124,14 +129,14 @@ def test_fmp_financials(fmp_api_fixture: requests_mock.Mocker) -> None:
 def test_fmp_series(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    prices = fmp.read_series(Ticker(symbol="AAPL"), "max")
+    prices = fmp.read_series(Ticker(symbol="AAPL", exchange="NASDAQ"), "max")
     assert prices
 
 
 def test_fmp_series_limited(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    prices = fmp.read_series(Ticker(symbol="AAPL"), "5d")
+    prices = fmp.read_series(Ticker(symbol="AAPL", exchange="NASDAQ"), "5d")
     assert prices
 
 

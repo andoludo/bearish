@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Type, Union, Any, cast
+from typing import List, TYPE_CHECKING, Type, Union, Any
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta  # type: ignore
@@ -22,6 +22,7 @@ from bearish.database.schemas import (
     PriceORM,
     SourcesORM,
     TrackerORM,
+    EarningsDateORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
@@ -32,6 +33,7 @@ from bearish.models.financials.balance_sheet import BalanceSheet
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets
 from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.financials.metrics import FinancialMetrics
 from bearish.models.price.price import Price
 
@@ -50,7 +52,7 @@ class BearishDb(BearishDbBase):
         engine = create_engine(database_url)
         return engine
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
+    def model_post_init(self, __context: Any) -> None:
         self._engine  # noqa: B018
 
     def _write_assets(self, assets: Assets) -> None:
@@ -80,10 +82,16 @@ class BearishDb(BearishDbBase):
         self._write_financials_series(financials.financial_metrics, FinancialMetricsORM)
         self._write_financials_series(financials.cash_flows, CashFlowORM)
         self._write_financials_series(financials.balance_sheets, BalanceSheetORM)
+        self._write_financials_series(financials.earnings_date, EarningsDateORM)
 
     def _write_financials_series(
         self,
-        series: Union[List[CashFlow], List[FinancialMetrics], List[BalanceSheet]],
+        series: Union[
+            List[CashFlow],
+            List[FinancialMetrics],
+            List[BalanceSheet],
+            List[EarningsDate],
+        ],
         table: Type[SQLModel],
     ) -> None:
         if not series:
@@ -205,22 +213,31 @@ class BearishDb(BearishDbBase):
                 session.exec(stmt)  # type: ignore
                 session.commit()
 
-    def _read_tracker(self, tracker_query: TrackerQuery) -> List[str]:
+    def _read_tracker(self, tracker_query: TrackerQuery) -> List[Ticker]:
         with Session(self._engine) as session:
-            query = select(TrackerORM.symbol).where(
-                TrackerORM.source == tracker_query.source
-            )
+            query = select(TrackerORM.symbol, TrackerORM.exchange, TrackerORM.source)
+            if tracker_query.exchange:
+                query = query.where(TrackerORM.exchange == tracker_query.exchange)
             if tracker_query.financials:
                 query = query.where(TrackerORM.financials == tracker_query.financials)
             if tracker_query.price:
                 query = query.where(TrackerORM.price == tracker_query.price)
             tracker_orm = session.exec(query).all()
-            return cast(List[str], tracker_orm)
+            return [
+                Ticker(symbol=t[0], exchange=t[1], source=t[2]) for t in tracker_orm
+            ]
 
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
+        if not exchange_query.sources:
+            query = f"""SELECT symbol, exchange from equity where {exchange_query.to_suffixes_sql_statement()} 
+                OR exchange IN {exchange_query.to_aliases_sql_statement()};"""
+        else:
+            query = f"""SELECT symbol, exchange from equity where source IN {exchange_query.to_sources_sql_statement()} 
+            AND ( {exchange_query.to_suffixes_sql_statement()} 
+                 OR exchange IN {exchange_query.to_aliases_sql_statement()});"""
+
         symbols = pd.read_sql(
-            f"""SELECT symbol, exchange from equity where {exchange_query.to_suffixes_sql_statement()} 
-            OR exchange IN {exchange_query.to_aliases_sql_statement()};""",
+            query,
             con=self._engine,
         )
         return [

@@ -1,3 +1,6 @@
+import yfinance
+
+from bearish.models.base import Ticker
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.yfinance import (
     YfinanceFinancialMetrics,
@@ -6,6 +9,7 @@ from bearish.sources.yfinance import (
     yFinanceSource,
     YfinanceEquity,
     YfinanceEtf,
+    yFinanceEarningsDate,
 )
 
 
@@ -28,13 +32,13 @@ def test_cashflow():
 
 
 def test_get_ticker():
-    tickers = ["MSFT", "AAPL", "GOOG"]
+    tickers = [Ticker(symbol="MSFT"), Ticker(symbol="AAPL"), Ticker(symbol="GOOG")]
     equities = YfinanceEquity.from_tickers(tickers)
-    assert len(equities) == len(tickers)
+    assert len(equities.equities) == len(tickers)
 
 
 def test_yFinanceSource_update_assets():
-    tickers = ["MSFT", "AAPL", "GOOG"]
+    tickers = [Ticker(symbol="MSFT"), Ticker(symbol="AAPL"), Ticker(symbol="GOOG")]
     assets = yFinanceSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -42,7 +46,11 @@ def test_yFinanceSource_update_assets():
 
 
 def test_yFinanceSource_update_non_existent_assets():
-    tickers = ["IDONOTEXISRS", "AAPL", "GOOG"]
+    tickers = [
+        Ticker(symbol="IDONOTEXISRS"),
+        Ticker(symbol="AAPL"),
+        Ticker(symbol="GOOG"),
+    ]
     assets = yFinanceSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -50,7 +58,7 @@ def test_yFinanceSource_update_non_existent_assets():
 
 
 def test_yFinanceSource_no_country():
-    tickers = ["ML.PA"]
+    tickers = [Ticker(symbol="ML.PA")]
     assets = yFinanceSource()._read_assets(
         AssetQuery(symbols=Symbols(equities=tickers))
     )
@@ -59,20 +67,45 @@ def test_yFinanceSource_no_country():
 
 def test_yFinanceSource_with_etf():
     assets = yFinanceSource()._read_assets(
-        AssetQuery(symbols=Symbols(equities=["MSFT"], etfs=["SPY"]))
+        AssetQuery(
+            symbols=Symbols(
+                equities=[Ticker(symbol="MSFT")], etfs=[Ticker(symbol="SPY")]
+            )
+        )
     )
     assert assets.equities
     assert assets.etfs
 
 
 def test_yfinance_etf():
-    ticker = "SPY"
+    ticker = Ticker(symbol="SPY")
     etf = YfinanceEtf.from_tickers([ticker])
     assert etf
 
 
 def test_yfinance_equity():
-    tickers = ["HO.PA", "GOOG"]
+    tickers = [Ticker(symbol="HO.PA"), Ticker(symbol="GOOG")]
     equities = YfinanceEquity.from_tickers(tickers)
     assert equities
-    assert len(equities) == len(tickers)
+    assert len(equities.equities) == len(tickers)
+
+
+def test_yfinance_earnings():
+    earnings_date = yFinanceEarningsDate.from_ticker("AAPL")
+    assert earnings_date
+
+
+def test_earnings_data():
+    earnings_data = yFinanceEarningsDate.from_ticker("MLHCF.PA")
+    assert not earnings_data
+
+
+def test_bug_financials():
+    financial_metrics = YfinanceFinancialMetrics.from_ticker("ALHIT.PA")
+    balance_sheets = yFinanceBalanceSheet.from_ticker("ALHIT.PA")
+    cash_flows = yFinanceCashFlow.from_ticker("ALHIT.PA")
+    earnings_date = yFinanceEarningsDate.from_ticker("ALHIT.PA")
+    assert financial_metrics
+    assert balance_sheets
+    assert not cash_flows
+    assert earnings_date
