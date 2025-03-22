@@ -152,21 +152,21 @@ class Bearish(BaseModel):
     def read_series(self, assets_query: AssetQuery) -> List[Price]:
         return self._bearish_db.read_series(assets_query)
 
-    def _get_tracked_tickers(self, tracker_query: TrackerQuery) -> List[str]:
+    def _get_tracked_tickers(self, tracker_query: TrackerQuery) -> List[Ticker]:
         return self._bearish_db.read_tracker(tracker_query)
 
     def get_tickers_without_financials(self, tickers: List[Ticker]) -> List[Ticker]:
         return [
             t
             for t in tickers
-            if t.symbol not in self._get_tracked_tickers(TrackerQuery(financials=True))
+            if t not in self._get_tracked_tickers(TrackerQuery(financials=True))
         ]
 
     def get_tickers_without_price(self, tickers: List[Ticker]) -> List[Ticker]:
         return [
             t
             for t in tickers
-            if t.symbol not in self._get_tracked_tickers(TrackerQuery(price=True))
+            if t not in self._get_tracked_tickers(TrackerQuery(price=True))
         ]
 
     def get_ticker_with_price(self) -> List[Ticker]:
@@ -251,6 +251,11 @@ class Bearish(BaseModel):
         )
         self.write_many_series(tickers, "max")
 
+    def update_prices(self, symbols: List[str]) -> None:
+        tickers = self._get_tracked_tickers(TrackerQuery(price=True))
+        tickers = [t for t in tickers if t.symbol in symbols]
+        self.write_many_series(tickers, "max")
+
 
 class CountryEnum(str, Enum): ...
 
@@ -298,6 +303,17 @@ def prices(
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.get_prices(countries)  # type: ignore
+
+
+@app.command()
+def update_prices(
+    path: Path,
+    symbols: Annotated[List[str], typer.Argument()],
+    api_keys: Optional[Path] = None,
+) -> None:
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    bearish.update_prices(symbols)
 
 
 if __name__ == "__main__":

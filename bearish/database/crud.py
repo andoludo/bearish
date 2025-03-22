@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Type, Union, Any, cast
+from typing import List, TYPE_CHECKING, Type, Union, Any
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta  # type: ignore
@@ -213,15 +213,19 @@ class BearishDb(BearishDbBase):
                 session.exec(stmt)  # type: ignore
                 session.commit()
 
-    def _read_tracker(self, tracker_query: TrackerQuery) -> List[str]:
+    def _read_tracker(self, tracker_query: TrackerQuery) -> List[Ticker]:
         with Session(self._engine) as session:
-            query = select(TrackerORM.symbol)
+            query = select(TrackerORM.symbol, TrackerORM.exchange, TrackerORM.source)
+            if tracker_query.exchange:
+                query = query.where(TrackerORM.exchange == tracker_query.exchange)
             if tracker_query.financials:
                 query = query.where(TrackerORM.financials == tracker_query.financials)
             if tracker_query.price:
                 query = query.where(TrackerORM.price == tracker_query.price)
             tracker_orm = session.exec(query).all()
-            return cast(List[str], tracker_orm)
+            return [
+                Ticker(symbol=t[0], exchange=t[1], source=t[2]) for t in tracker_orm
+            ]
 
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
         if not exchange_query.sources:

@@ -54,10 +54,12 @@ def remove_duplicates(value: list[Ticker]) -> list[Ticker]:
         return []
     return list({Ticker.model_validate(t) for t in value})
 
+
 def remove_duplicates_string(value: list[str]) -> list[str]:
     if not value:
         return []
     return list(set(value))
+
 
 def get_start_date(type: SeriesLength) -> Optional[str]:
     from_ = None

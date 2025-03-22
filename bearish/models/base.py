@@ -39,13 +39,13 @@ class SourceBase(BaseModel, abc.ABC):
 class TrackerQuery(BaseModel):
     financials: bool = False
     price: bool = False
-    price_date: Optional[datetime.date] = None
+    exchange: Optional[str] = None
 
 
 class Tracker(TrackerQuery):
     source: str
     symbol: str
-    exchange: Optional[str] = None
+    price_date: Optional[datetime.date] = None
 
 
 class DataSourceBase(SourceBase, Ticker):

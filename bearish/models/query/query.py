@@ -65,10 +65,14 @@ class Symbols(BaseAssets):
 
 class AssetQuery(BaseAssetQuery):
     countries: Annotated[
-        List[str], BeforeValidator(remove_duplicates_string), Field(default_factory=list)
+        List[str],
+        BeforeValidator(remove_duplicates_string),
+        Field(default_factory=list),
     ]
     exchanges: Annotated[
-        List[str], BeforeValidator(remove_duplicates_string), Field(default_factory=list)
+        List[str],
+        BeforeValidator(remove_duplicates_string),
+        Field(default_factory=list),
     ]
     symbols: Symbols = Field(default=Symbols())  # type: ignore
 

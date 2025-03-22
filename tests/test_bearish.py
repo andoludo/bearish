@@ -341,7 +341,9 @@ def test_write_assets_tiingo(bearish_db: BearishDb):
     prices = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
     )
+    tracked_ticker = bearish._get_tracked_tickers(TrackerQuery(price=True))
     assert prices
+    assert tracked_ticker
     assert all(isinstance(p, Price) for p in prices)
 
 
