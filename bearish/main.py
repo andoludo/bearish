@@ -120,6 +120,7 @@ class Bearish(BaseModel):
             cached_assets = self.read_assets(AssetQuery.model_validate(query))
             query.update_symbols(cached_assets)
         for source in asset_sources:
+
             logger.info(f"Fetching assets from source {type(source).__name__}")
             assets_ = source.read_assets(query)
             if assets_.is_empty():
@@ -133,7 +134,7 @@ class Bearish(BaseModel):
                 break
             else:
                 query = AssetQuery(
-                    symbols=Symbols(equities=[Ticker(symbol=s) for s in assets_.failed_query.symbols])  # type: ignore
+                    symbols=Symbols(equities=assets_.failed_query.symbols)  # type: ignore
                 )
 
     def read_assets(self, assets_query: AssetQuery) -> Assets:

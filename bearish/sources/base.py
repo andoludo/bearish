@@ -72,8 +72,11 @@ class AbstractSource(SourceBase, abc.ABC):
     @validate_call(validate_return=True)
     @check_api_limit
     def read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
+        query_ = None
+        if query:
+            query_ = self.exchanges.get_asset_query(query, self.countries)
         try:
-            return self._read_assets(query)
+            return self._read_assets(query_)
         except Exception as e:
             logger.error(f"Error reading assets from {type(self).__name__}: {e}")
             return Assets()

@@ -3,6 +3,7 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field, model_validator, validate_call
 
 from bearish.models.base import Ticker
+from bearish.models.query.query import AssetQuery
 from bearish.types import Sources
 
 Countries = Literal[
@@ -117,6 +118,15 @@ class Exchanges(BaseModel):
     ) -> bool:
         exchange_query = self.get_exchange_query(countries)
         return exchange_query.included(ticker)
+
+    def get_asset_query(
+        self, asset_query: AssetQuery, countries: List[Countries]
+    ) -> AssetQuery:
+        exchange_query = self.get_exchange_query(countries)
+        symbols = asset_query.symbols.filter(exchange_query.included)
+        asset_query_ = AssetQuery.model_validate(asset_query.model_dump())
+        asset_query_.symbols = symbols
+        return asset_query_
 
 
 def exchanges_factory() -> Exchanges:

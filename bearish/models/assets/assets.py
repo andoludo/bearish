@@ -10,7 +10,7 @@ from bearish.models.base import BaseAssets, Ticker
 
 
 class FailedQueryAssets(BaseModel):
-    symbols: List[str] = Field(default_factory=list)
+    symbols: List[Ticker] = Field(default_factory=list)
 
 
 class Assets(BaseAssets):

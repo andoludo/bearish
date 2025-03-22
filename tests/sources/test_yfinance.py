@@ -32,7 +32,7 @@ def test_cashflow():
 
 
 def test_get_ticker():
-    tickers = ["MSFT", "AAPL", "GOOG"]
+    tickers = [Ticker(symbol="MSFT"), Ticker(symbol="AAPL"), Ticker(symbol="GOOG")]
     equities = YfinanceEquity.from_tickers(tickers)
     assert len(equities.equities) == len(tickers)
 
@@ -78,13 +78,13 @@ def test_yFinanceSource_with_etf():
 
 
 def test_yfinance_etf():
-    ticker = "SPY"
+    ticker = Ticker(symbol="SPY")
     etf = YfinanceEtf.from_tickers([ticker])
     assert etf
 
 
 def test_yfinance_equity():
-    tickers = ["HO.PA", "GOOG"]
+    tickers = [Ticker(symbol="HO.PA"), Ticker(symbol="GOOG")]
     equities = YfinanceEquity.from_tickers(tickers)
     assert equities
     assert len(equities.equities) == len(tickers)

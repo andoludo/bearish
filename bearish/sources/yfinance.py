@@ -10,6 +10,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
+from bearish.models.base import Ticker
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
@@ -51,22 +52,22 @@ class YfinanceFinancialBase(YfinanceBase):
 
 @retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
 def get_info(
-    ticker: str, function: Callable[[str, yf.Ticker], Dict[str, Any]]
+    ticker: Ticker, function: Callable[[str, yf.Ticker], Dict[str, Any]]
 ) -> Dict[str, Any]:
-    current_ticker = yf.Ticker(ticker)
-    info = function(ticker, current_ticker)
+    current_ticker = yf.Ticker(ticker.symbol)
+    info = function(ticker.symbol, current_ticker)
     return info
 
 
 class YfinanceAssetOutput(BaseModel):
     equities: List["YfinanceAssetBase"]
-    failed_query: List[str] = Field(default_factory=list)
+    failed_query: List[Ticker] = Field(default_factory=list)
 
 
 class YfinanceAssetBase(YfinanceBase):
     @classmethod
     def _from_tickers(
-        cls, tickers: List[str], function: Callable[[str, yf.Ticker], Dict[str, Any]]
+        cls, tickers: List[Ticker], function: Callable[[str, yf.Ticker], Dict[str, Any]]
     ) -> YfinanceAssetOutput:
         equities = []
         failed_query = []
@@ -74,14 +75,14 @@ class YfinanceAssetBase(YfinanceBase):
             try:
                 info = get_info(ticker, function)
                 if not info:
-                    logger.error(f"No info found for {ticker}")
+                    logger.error(f"No info found for {ticker.symbol}")
                     failed_query.append(ticker)
                     continue
             except Exception as e:
-                logger.error(f"Error reading {ticker}: {e}")
+                logger.error(f"Error reading {ticker.symbol}: {e}")
                 failed_query.append(ticker)
                 continue
-            logger.info(f"Successfully read {ticker}")
+            logger.info(f"Successfully read {ticker.symbol}")
             equities.append(cls.model_validate(info))
         return YfinanceAssetOutput(equities=equities, failed_query=failed_query)
 
@@ -136,7 +137,7 @@ class YfinanceEquity(YfinanceAssetBase, Equity):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> YfinanceAssetOutput:
+    def from_tickers(cls, tickers: List[Ticker]) -> YfinanceAssetOutput:
         return cls._from_tickers(tickers, lambda ticker, x: x.info)
 
 
@@ -202,7 +203,7 @@ class YfinanceEtf(YfinanceAssetBase, Etf):
     }
 
     @classmethod
-    def from_tickers(cls, tickers: List[str]) -> YfinanceAssetOutput:
+    def from_tickers(cls, tickers: List[Ticker]) -> YfinanceAssetOutput:
         return cls._from_tickers(tickers, _get_etf)
 
 
@@ -341,8 +342,8 @@ class yFinanceSource(YfinanceBase, AbstractSource):
 
         if query.symbols.empty():
             return Assets()
-        equities = YfinanceEquity.from_tickers(query.symbols.equities_symbols())
-        etfs = YfinanceEtf.from_tickers(query.symbols.etfs_symbols())
+        equities = YfinanceEquity.from_tickers(query.symbols.equities)
+        etfs = YfinanceEtf.from_tickers(query.symbols.etfs)
         return Assets(
             equities=equities.equities,
             etfs=etfs.equities,

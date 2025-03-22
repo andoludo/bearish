@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 import pandas as pd
 
+from bearish.models.base import Ticker
 from bearish.types import SeriesLength
 
 
@@ -48,10 +49,10 @@ def format_capitalize(value: Any) -> Optional[str]:
     return country.capitalize()
 
 
-def remove_duplicates(value: list[str]) -> list[str]:
+def remove_duplicates(value: list[Ticker]) -> list[Ticker]:
     if not value:
         return []
-    return list(set(value))
+    return list({Ticker.model_validate(t) for t in value})
 
 
 def get_start_date(type: SeriesLength) -> Optional[str]:

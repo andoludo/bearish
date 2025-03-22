@@ -385,16 +385,16 @@ def test_detailed_assets(bearish_db: BearishDb) -> None:
     asset_query = AssetQuery(
         symbols=Symbols(
             equities=[
-                Ticker(symbol="VOW"),
-                Ticker(symbol="ACR"),
-                Ticker(symbol="1WE"),
-                Ticker(symbol="VBK"),
+                Ticker(symbol="BNP.PA"),
+                Ticker(symbol="AIR.PA"),
+                Ticker(symbol="MC.PA"),
+                Ticker(symbol="ORA.PA"),
             ]
         )
     )
     bearish.write_detailed_assets(asset_query)
     assets = bearish.read_assets(
-        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="VOW")]))
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
     )
     assert assets.equities
 
