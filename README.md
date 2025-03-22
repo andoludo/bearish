@@ -23,14 +23,14 @@ pip install bearishpy
 To get and store stock tickers from different markets and countries, run:
 
 ```sh 
-bearish tickers /path/to/sqlite/db US France Germany --api-keys=config.json
+bearish tickers /path/to/sqlite/db France Germany --api-keys=config.json
 ```
 
 ### 📌 Fetch Stock Prices
 To retrieve stock prices from different markets, use:
 
 ```sh
-bearish prices /path/to/sqlite/db US France Germany --api-keys=config.json
+bearish prices /path/to/sqlite/db France Germany --api-keys=config.json
 ```
 
 ## 🔑 API Keys Configuration
@@ -39,9 +39,12 @@ Make sure to provide a `config.json` file with your API keys to fetch data from 
 Example `config.json`:
 ```json
 {
-    "alpha_vantage": "your_api_key",
-    "yahoo_finance": "your_api_key"
+  "FMPAssets": "your Financial Modeling Prep API key", 
+  "FMP": "your Financial Modeling Prep API key", 
+  "AlphaVantage": "your Alphavantage API key",
+  "Tiingo": "yout Tiingo API key"
 }
+
 ```
 
 ## 🤝 Contributing
