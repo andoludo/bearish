@@ -40,6 +40,26 @@ logger = logging.getLogger(__name__)
 app = typer.Typer()
 
 
+class CountryEnum(str, Enum): ...
+
+
+CountriesEnum = Enum(  # type: ignore
+    "CountriesEnum",
+    {country: country for country in get_args(Countries)},
+    type=CountryEnum,
+)
+
+
+class Filter(BaseModel):
+    countries: List[CountriesEnum]
+    filters: Optional[List[str]] = None
+
+    def filter(self, tickers: List[Ticker]) -> List[Ticker]:
+        if not self.filters:
+            return tickers
+        return list({t for t in tickers if t.symbol in self.filters})
+
+
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
@@ -226,29 +246,35 @@ class Bearish(BaseModel):
     def get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:
         return self._bearish_db.get_tickers(exchange_query)
 
-    def get_detailed_tickers(self, countries: List[Countries]) -> None:
+    def get_detailed_tickers(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
-                cast(List[Countries], countries), self.get_asset_sources()  # type: ignore
+                cast(List[Countries], filter.countries), self.get_asset_sources()
             )
         )
+
+        tickers = filter.filter(tickers)
         asset_query = AssetQuery(symbols=Symbols(equities=tickers))  # type: ignore
         self.write_detailed_assets(asset_query)
 
-    def get_financials(self, countries: List[Countries]) -> None:
+    def get_financials(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
-                cast(List[Countries], countries), self.get_detailed_asset_sources()  # type: ignore
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
             )
         )
+        tickers = filter.filter(tickers)
         self.write_many_financials(tickers)
 
-    def get_prices(self, countries: List[Countries]) -> None:
+    def get_prices(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
-                cast(List[Countries], countries), self.get_detailed_asset_sources()  # type: ignore
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
             )
         )
+        tickers = filter.filter(tickers)
         self.write_many_series(tickers, "max")
 
     def update_prices(self, symbols: List[str]) -> None:
@@ -257,20 +283,11 @@ class Bearish(BaseModel):
         self.write_many_series(tickers, "max")
 
 
-class CountryEnum(str, Enum): ...
-
-
-CountriesEnum = Enum(  # type: ignore
-    "CountriesEnum",
-    {country: country for country in get_args(Countries)},
-    type=CountryEnum,
-)
-
-
 @app.command()
 def tickers(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
 
@@ -280,29 +297,34 @@ def tickers(
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.write_assets()
-    bearish.get_detailed_tickers(countries)  # type: ignore
+    filter = Filter(countries=countries, filters=filters)
+    bearish.get_detailed_tickers(filter)
 
 
 @app.command()
 def financials(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.get_financials(countries)  # type: ignore
+    filter = Filter(countries=countries, filters=filters)
+    bearish.get_financials(filter)
 
 
 @app.command()
 def prices(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.get_prices(countries)  # type: ignore
+    filter = Filter(countries=countries, filters=filters)
+    bearish.get_prices(filter)
 
 
 @app.command()

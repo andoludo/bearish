@@ -6,7 +6,7 @@ import pytest
 import requests_mock
 
 from bearish.database.crud import BearishDb
-from bearish.main import Bearish
+from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.base import Ticker, TrackerQuery
 from bearish.models.price.price import Price
@@ -425,5 +425,62 @@ def test_write_financials_yfinance(bearish_db: BearishDb):
     bearish.write_many_financials([Ticker(symbol="MLHCF.PA")])
     financials = bearish.read_financials(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="MLHCF.PA")]))
+    )
+    assert financials
+
+
+def test_get_detailed_tickers(bearish_db_with_assets: BearishDb):
+    bearish = Bearish(
+        path=bearish_db_with_assets.database_path,
+        api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
+    )
+    filter = Filter(countries=["US"], filters=["NVDA"])
+    bearish.get_detailed_tickers(filter)  # type: ignore
+    assets = bearish.read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="NVDA")]))
+    )
+    assert len(assets.equities) == 2
+
+
+def test_get_detailed_tickers_fmp(bearish_db_with_assets: BearishDb):
+    bearish = Bearish(
+        path=bearish_db_with_assets.database_path,
+        api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
+        detailed_asset_sources=[FmpSource()],
+        financials_sources=[FmpSource()],
+        price_sources=[FmpSource()],
+    )
+    filter = Filter(countries=["US"], filters=["NVDA"])
+    bearish.get_detailed_tickers(filter)  # type: ignore
+    assets = bearish.read_assets(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="NVDA")]))
+    )
+    assert len(assets.equities) > 1
+
+
+def test_get_prices(bearish_db_with_assets: BearishDb):
+    bearish = Bearish(
+        path=bearish_db_with_assets.database_path,
+        api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
+    )
+    filter = Filter(countries=["US"], filters=["DAL"])
+    bearish.get_detailed_tickers(filter)  # type: ignore
+    bearish.get_prices(filter)  # type: ignore
+    prices = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="DAL")]))
+    )
+    assert prices
+
+
+def test_get_financials(bearish_db_with_assets: BearishDb):
+    bearish = Bearish(
+        path=bearish_db_with_assets.database_path,
+        api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
+    )
+    filter = Filter(countries=["US"], filters=["DAL"])
+    bearish.get_detailed_tickers(filter)  # type: ignore
+    bearish.get_financials(filter)  # type: ignore
+    financials = bearish.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="DAL")]))
     )
     assert financials

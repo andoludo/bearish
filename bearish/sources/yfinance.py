@@ -335,6 +335,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
         "France",
         "Netherlands",
         "Belgium",
+        "US",
     ]
 
     def set_api_key(self, api_key: str) -> None: ...

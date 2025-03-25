@@ -5,12 +5,34 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+import requests_mock
 
 from bearish.database.crud import BearishDb
+from bearish.main import Bearish
+from bearish.models.query.query import AssetQuery
+from bearish.sources.financedatabase import (
+    RAW_EQUITIES_DATA_URL,
+    RAW_CRYPTO_DATA_URL,
+    RAW_CURRENCY_DATA_URL,
+    RAW_ETF_DATA_URL,
+    FinanceDatabaseSource,
+)
+from bearish.sources.investpy import (
+    RAW_EQUITIES_INVESTSPY_DATA_URL,
+    RAW_CRYPTO_INVESTSPY_DATA_URL,
+    RAW_ETF_INVESTSPY_DATA_URL,
+    InvestPySource,
+)
 
 
 @pytest.fixture(scope="session")
 def bearish_db() -> BearishDb:
+    with tempfile.NamedTemporaryFile(delete=False, suffix="db") as file:
+        return BearishDb(database_path=file.name)
+
+
+@pytest.fixture(scope="session")
+def _bearish_db_with_assets() -> BearishDb:
     with tempfile.NamedTemporaryFile(delete=False, suffix="db") as file:
         return BearishDb(database_path=file.name)
 
@@ -70,3 +92,57 @@ class FakeTimeSeries:
         path = root_path() / "daily_series.pkl"
         # path.write_bytes(pickle.dumps(data))
         return pickle.loads(path.read_bytes())
+
+
+@pytest.fixture(scope="session")
+def bearish_db_with_assets(_bearish_db_with_assets: BearishDb):
+    with requests_mock.Mocker() as req:
+        req.get(
+            RAW_EQUITIES_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/financedatabase/equities.csv")
+            .read_text(),
+        )
+        req.get(
+            RAW_CRYPTO_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/financedatabase/cryptos.csv")
+            .read_text(),
+        )
+        req.get(
+            RAW_CURRENCY_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/financedatabase/currencies.csv")
+            .read_text(),
+        )
+        req.get(
+            RAW_ETF_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/financedatabase/etfs.csv")
+            .read_text(),
+        )
+        req.get(
+            RAW_EQUITIES_INVESTSPY_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/investpy/equities.csv")
+            .read_text(),
+        )
+        req.get(
+            RAW_CRYPTO_INVESTSPY_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/investpy/cryptos.csv")
+            .read_text(),
+        )
+        req.get(
+            RAW_ETF_INVESTSPY_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/investpy/etfs.csv")
+            .read_text(),
+        )
+        bearish = Bearish(
+            path=_bearish_db_with_assets.database_path,
+            asset_sources=[FinanceDatabaseSource(), InvestPySource()],
+            price_sources=[],
+        )
+        bearish.write_assets(AssetQuery(countries=["US", "Germany"]))
+        return _bearish_db_with_assets
