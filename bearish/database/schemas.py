@@ -4,6 +4,7 @@ from typing import Optional, Dict
 from sqlalchemy import JSON, Column
 from sqlmodel import SQLModel, Field
 
+from bearish.analysis.analysis import Analysis
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
@@ -88,3 +89,7 @@ class TrackerORM(SQLModel, Tracker, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     source: str = Field(index=True)
     symbol: str = Field(index=True)
+
+
+class AnalysisORM(BaseTable, Analysis, table=True):  # type: ignore
+    __tablename__ = "analysis"

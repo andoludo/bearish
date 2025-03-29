@@ -1,16 +1,16 @@
+import logging
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Type, Union, Any
+from typing import List, TYPE_CHECKING, Type, Union, Any, Optional
 
 import pandas as pd
-from dateutil.relativedelta import relativedelta  # type: ignore
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Engine, create_engine, insert
-
 from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
 
+from bearish.analysis.analysis import Analysis
 from bearish.database.schemas import (
     EquityORM,
     CurrencyORM,
@@ -23,15 +23,15 @@ from bearish.database.schemas import (
     SourcesORM,
     TrackerORM,
     EarningsDateORM,
+    AnalysisORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.interface.interface import BearishDbBase
+from bearish.models.assets.assets import Assets
 from bearish.models.base import Tracker, TrackerQuery, Ticker
 from bearish.models.financials.balance_sheet import BalanceSheet
-
 from bearish.models.financials.base import Financials
-from bearish.models.assets.assets import Assets
 from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.financials.metrics import FinancialMetrics
@@ -39,6 +39,8 @@ from bearish.models.price.price import Price
 
 if TYPE_CHECKING:
     from bearish.models.query.query import AssetQuery
+
+logger = logging.getLogger(__name__)
 
 
 class BearishDb(BearishDbBase):
@@ -95,6 +97,7 @@ class BearishDb(BearishDbBase):
         table: Type[SQLModel],
     ) -> None:
         if not series:
+            logger.warning(f"No data found for '{[serie.symbol for serie in series]}'")
             return None
         with Session(self._engine) as session:
             stmt = (
@@ -107,7 +110,7 @@ class BearishDb(BearishDbBase):
 
     def _read_series(self, query: "AssetQuery", months: int = 1) -> List[Price]:
         end_date = datetime.now()
-        start_date = end_date - relativedelta(month=months)
+        start_date = end_date - pd.Timedelta(days=months * 31)
         with Session(self._engine) as session:
             query_ = select(PriceORM)
             query_ = query_.where(PriceORM.symbol.in_(query.symbols.all())).where(  # type: ignore
@@ -171,6 +174,8 @@ class BearishDb(BearishDbBase):
                 query_ = query_.where(orm_table.country.in_(query.countries))  # type: ignore
             if query.exchanges:
                 query_ = query_.where(orm_table.exchange.in_(query.exchanges))  # type: ignore
+        if query.excluded_sources:
+            query_ = query_.where(~orm_table.source.in_(query.excluded_sources))  # type: ignore
 
         assets = session.exec(query_).all()
         return [table.model_validate(asset) for asset in assets]
@@ -191,6 +196,25 @@ class BearishDb(BearishDbBase):
 
             session.exec(stmt)  # type: ignore
             session.commit()
+
+    def _write_analysis(self, analysis: Analysis) -> None:
+        with Session(self._engine) as session:
+            stmt = (
+                insert(AnalysisORM)
+                .prefix_with("OR REPLACE")
+                .values(analysis.model_dump())
+            )
+            session.exec(stmt)  # type: ignore
+            session.commit()
+            session.commit()
+
+    def _read_analysis(self, ticker: Ticker) -> Optional[Analysis]:
+        with Session(self._engine) as session:
+            query = select(AnalysisORM).where(AnalysisORM.symbol == ticker.symbol)
+            analysis = session.exec(query).first()
+            if not analysis:
+                return None
+            return Analysis.model_validate(analysis)
 
     def _write_tracker(self, tracker: Tracker) -> None:
         with Session(self._engine) as session:

@@ -2,6 +2,7 @@ from typing import List
 
 from pydantic import Field, BaseModel
 
+from bearish.exceptions import TickerNotFoundError
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.equity import Equity
@@ -19,6 +20,11 @@ class Assets(BaseAssets):
     etfs: List[Etf] = Field(default_factory=list)
     currencies: List[Currency] = Field(default_factory=list)
     failed_query: FailedQueryAssets = Field(default_factory=FailedQueryAssets)
+
+    def get_one_equity(self) -> Equity:
+        if not self.equities:
+            raise TickerNotFoundError("No equities found")
+        return self.equities[0]
 
     def is_empty(self) -> bool:
         return not any(

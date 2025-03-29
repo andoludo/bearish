@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import date
 
 from typing import List, Optional, Dict, Any, Callable
@@ -84,6 +85,7 @@ class YfinanceAssetBase(YfinanceBase):
                 logger.error(f"Error reading {ticker.symbol}: {e}")
                 failed_query.append(ticker)
                 continue
+            time.sleep(0.1)
             logger.info(f"Successfully read {ticker.symbol}")
             equities.append(cls.model_validate(info))
         return YfinanceAssetOutput(equities=equities, failed_query=failed_query)

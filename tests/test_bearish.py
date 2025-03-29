@@ -5,11 +5,13 @@ from pathlib import Path
 import pytest
 import requests_mock
 
+from bearish.analysis.analysis import Analysis
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.base import Ticker, TrackerQuery
 from bearish.models.price.price import Price
+from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.alphavantage import AlphaVantageBase, AlphaVantageSource
 from bearish.sources.financedatabase import (
@@ -477,10 +479,35 @@ def test_get_financials(bearish_db_with_assets: BearishDb):
         path=bearish_db_with_assets.database_path,
         api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
     )
-    filter = Filter(countries=["US"], filters=["DAL"])
+    filter = Filter(countries=["US"], filters=["DAL", "NVDA"])
     bearish.get_detailed_tickers(filter)  # type: ignore
     bearish.get_financials(filter)  # type: ignore
     financials = bearish.read_financials(
-        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="DAL")]))
+        AssetQuery(
+            symbols=Symbols(equities=[Ticker(symbol="DAL"), Ticker(symbol="NVDA")])
+        )
     )
+    financials.fundamental_analysis(Ticker(symbol="DAL"))
     assert financials
+
+
+def test_technical_analysis(bearish_db_with_assets: BearishDb):
+
+    prices = Prices.from_csv(Path(__file__).parent / "data" / "prices.csv")
+    ta = prices.technical_analysis()
+    assert ta
+
+
+def test_analysis(bearish_db_with_assets: BearishDb):
+    bearish = Bearish(
+        path=bearish_db_with_assets.database_path,
+        api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
+    )
+    filter = Filter(countries=["US"], filters=["DAL", "NVDA"])
+    bearish.get_detailed_tickers(filter)  # type: ignore
+    bearish.get_financials(filter)  # type: ignore
+    bearish.get_prices(filter)  # type: ignore
+    analysis = Analysis.from_ticker(bearish_db_with_assets, Ticker(symbol="DAL"))
+    bearish_db_with_assets.write_analysis(analysis)
+    analysis = bearish_db_with_assets.read_analysis(Ticker(symbol="DAL"))
+    assert analysis

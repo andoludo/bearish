@@ -1,5 +1,7 @@
 from typing import Literal
 
+TickerOnlySources = Literal["investpy", "FMPAssets", "FinanceDatabase"]
+
 Sources = Literal[
     "Tiingo",
     "investpy",

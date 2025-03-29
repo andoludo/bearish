@@ -13,6 +13,7 @@ from pydantic import (
     validate_call,
 )
 
+from bearish.analysis.analysis import Analysis
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import (
@@ -26,7 +27,8 @@ from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.base import Ticker, Tracker, TrackerQuery
 from bearish.models.financials.base import Financials
-from bearish.models.price.price import Price, Prices
+from bearish.models.price.price import Price
+from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
@@ -176,11 +178,8 @@ class Bearish(BaseModel):
         return self._bearish_db.read_tracker(tracker_query)
 
     def get_tickers_without_financials(self, tickers: List[Ticker]) -> List[Ticker]:
-        return [
-            t
-            for t in tickers
-            if t not in self._get_tracked_tickers(TrackerQuery(financials=True))
-        ]
+        tracked_tickers = self._get_tracked_tickers(TrackerQuery(financials=True))
+        return [t for t in tickers if t not in tracked_tickers]
 
     def get_tickers_without_price(self, tickers: List[Ticker]) -> List[Ticker]:
         return [
@@ -197,24 +196,31 @@ class Bearish(BaseModel):
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
         tickers = self.get_tickers_without_financials(tickers)
-        financials = Financials()
+        logger.warning(
+            f"Found tickers without financials: {[t.symbol for t in tickers]}"
+        )
         for ticker in tickers:
             for source in self.financials_sources:
+                logger.debug("getting data tickers")
                 try:
                     financials_ = source.read_financials(ticker)
                 except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
                     logger.error(f"Error reading data using {source.__source__}: {e}")
                     continue
+
                 if financials_.is_empty():
+                    logger.warning(f"No financial data found{ticker.symbol}")
                     continue
-                financials.add(financials_)
+                logger.error("writting data")
+                self._bearish_db.write_financials(financials_)
+                logger.error(f"financial data found{ticker.symbol}")
                 self._bearish_db.write_tracker(
                     Tracker(
                         symbol=ticker.symbol, source=source.__source__, financials=True
                     )
                 )
+
                 break
-        self._bearish_db.write_financials(financials)
 
     @validate_call
     def write_many_series(self, tickers: List[Ticker], type: SeriesLength) -> None:
@@ -227,17 +233,20 @@ class Bearish(BaseModel):
                     logger.error(f"Error reading series: {e}")
                     continue
                 if series_:
-                    price_date = Prices(prices=series_).get_last_date()
-                    self._bearish_db.write_series(series_)
-                    self._bearish_db.write_tracker(
-                        Tracker(
-                            symbol=ticker.symbol,
-                            source=source.__source__,
-                            exchange=ticker.exchange,
-                            price=True,
-                            price_date=price_date,
+                    try:
+                        price_date = Prices(prices=series_).get_last_date()
+                        self._bearish_db.write_series(series_)
+                        self._bearish_db.write_tracker(
+                            Tracker(
+                                symbol=ticker.symbol,
+                                source=source.__source__,
+                                exchange=ticker.exchange,
+                                price=True,
+                                price_date=price_date,
+                            )
                         )
-                    )
+                    except Exception as e:
+                        logger.error(f"Error writing series: {e}")
                     break
 
     def read_sources(self) -> List[str]:
@@ -265,6 +274,7 @@ class Bearish(BaseModel):
             )
         )
         tickers = filter.filter(tickers)
+        logger.error(f"Found tickers: {[t.symbol for t in tickers]}")
         self.write_many_financials(tickers)
 
     def get_prices(self, filter: Filter) -> None:
@@ -277,10 +287,43 @@ class Bearish(BaseModel):
         tickers = filter.filter(tickers)
         self.write_many_series(tickers, "max")
 
+    def run_analysis(self, filter: Filter) -> None:
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        for ticker in tickers:
+            analysis = Analysis.from_ticker(self._bearish_db, ticker)
+            self._bearish_db.write_analysis(analysis)
+
     def update_prices(self, symbols: List[str]) -> None:
         tickers = self._get_tracked_tickers(TrackerQuery(price=True))
         tickers = [t for t in tickers if t.symbol in symbols]
         self.write_many_series(tickers, "max")
+
+
+@app.command()
+def run(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[List[str]] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+
+    logger.info(
+        f"Writing assets to database for countries: {countries}",
+    )
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    bearish.write_assets()
+    filter = Filter(countries=countries, filters=filters)
+    bearish.get_detailed_tickers(filter)
+    bearish.get_financials(filter)
+    bearish.get_prices(filter)
+    bearish.run_analysis(filter)
 
 
 @app.command()
@@ -325,6 +368,19 @@ def prices(
     bearish = Bearish(path=path, api_keys=source_api_keys)
     filter = Filter(countries=countries, filters=filters)
     bearish.get_prices(filter)
+
+
+@app.command()
+def analysis(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[List[str]] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    source_api_keys = SourceApiKeys.from_file(api_keys)
+    bearish = Bearish(path=path, api_keys=source_api_keys)
+    filter = Filter(countries=countries, filters=filters)
+    bearish.run_analysis(filter)
 
 
 @app.command()
