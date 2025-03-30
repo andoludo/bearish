@@ -12,6 +12,7 @@ from pydantic import (
     PrivateAttr,
     validate_call,
 )
+from rich.console import Console
 
 from bearish.analysis.analysis import Analysis
 from bearish.database.crud import BearishDb
@@ -40,6 +41,7 @@ from bearish.types import SeriesLength, Sources
 
 logger = logging.getLogger(__name__)
 app = typer.Typer()
+console = Console()
 
 
 class CountryEnum(str, Enum): ...
@@ -211,9 +213,7 @@ class Bearish(BaseModel):
                 if financials_.is_empty():
                     logger.warning(f"No financial data found{ticker.symbol}")
                     continue
-                logger.error("writting data")
                 self._bearish_db.write_financials(financials_)
-                logger.error(f"financial data found{ticker.symbol}")
                 self._bearish_db.write_tracker(
                     Tracker(
                         symbol=ticker.symbol, source=source.__source__, financials=True
@@ -333,15 +333,18 @@ def tickers(
     filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
-
-    logger.info(
-        f"Writing assets to database for countries: {countries}",
-    )
-    source_api_keys = SourceApiKeys.from_file(api_keys)
-    bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.write_assets()
-    filter = Filter(countries=countries, filters=filters)
-    bearish.get_detailed_tickers(filter)
+    with console.status("[bold green]Fetching Tickers data..."):
+        logger.info(
+            f"Writing assets to database for countries: {countries}",
+        )
+        source_api_keys = SourceApiKeys.from_file(api_keys)
+        bearish = Bearish(path=path, api_keys=source_api_keys)
+        console.log("[green]Fetching base Tickers[/green]")
+        bearish.write_assets()
+        filter = Filter(countries=countries, filters=filters)
+        console.log("[green]Fetching detailed Tickers[/green]")
+        bearish.get_detailed_tickers(filter)
+        console.log("[bold][red]Tickers downloaded!")
 
 
 @app.command()
@@ -351,10 +354,12 @@ def financials(
     filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
-    source_api_keys = SourceApiKeys.from_file(api_keys)
-    bearish = Bearish(path=path, api_keys=source_api_keys)
-    filter = Filter(countries=countries, filters=filters)
-    bearish.get_financials(filter)
+    with console.status("[bold green]Fetching Financial data..."):
+        source_api_keys = SourceApiKeys.from_file(api_keys)
+        bearish = Bearish(path=path, api_keys=source_api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        bearish.get_financials(filter)
+        console.log("[bold][red]Financial data downloaded!")
 
 
 @app.command()
@@ -364,10 +369,12 @@ def prices(
     filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
-    source_api_keys = SourceApiKeys.from_file(api_keys)
-    bearish = Bearish(path=path, api_keys=source_api_keys)
-    filter = Filter(countries=countries, filters=filters)
-    bearish.get_prices(filter)
+    with console.status("[bold green]Fetching Price data..."):
+        source_api_keys = SourceApiKeys.from_file(api_keys)
+        bearish = Bearish(path=path, api_keys=source_api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        bearish.get_prices(filter)
+        console.log("[bold][red]Price data downloaded!")
 
 
 @app.command()
@@ -377,10 +384,12 @@ def analysis(
     filters: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
-    source_api_keys = SourceApiKeys.from_file(api_keys)
-    bearish = Bearish(path=path, api_keys=source_api_keys)
-    filter = Filter(countries=countries, filters=filters)
-    bearish.run_analysis(filter)
+    with console.status("[bold green]Running analysis..."):
+        source_api_keys = SourceApiKeys.from_file(api_keys)
+        bearish = Bearish(path=path, api_keys=source_api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        bearish.run_analysis(filter)
+        console.log("[bold][red]Analysis done!")
 
 
 @app.command()

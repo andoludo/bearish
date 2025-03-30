@@ -5,6 +5,7 @@ from sqlalchemy import JSON, Column
 from sqlmodel import SQLModel, Field
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import View
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
@@ -93,3 +94,7 @@ class TrackerORM(SQLModel, Tracker, table=True):
 
 class AnalysisORM(BaseTable, Analysis, table=True):  # type: ignore
     __tablename__ = "analysis"
+
+
+class ViewORM(BaseTable, View, table=True):  # type: ignore
+    __tablename__ = "view"

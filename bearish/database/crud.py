@@ -11,6 +11,7 @@ from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import View
 from bearish.database.schemas import (
     EquityORM,
     CurrencyORM,
@@ -24,6 +25,7 @@ from bearish.database.schemas import (
     TrackerORM,
     EarningsDateORM,
     AnalysisORM,
+    ViewORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
@@ -268,3 +270,29 @@ class BearishDb(BearishDbBase):
             Ticker(symbol=symbol["symbol"], exchange=symbol["exchange"])
             for symbol in symbols.to_dict(orient="records")
         ]
+
+    def _read_views(self, query: str) -> List[View]:
+        views = pd.read_sql(
+            query,
+            con=self._engine,
+        )
+        return [
+            View.model_validate(record) for record in views.to_dict(orient="records")
+        ]
+
+    def _write_views(self, views: List[View]) -> None:
+        with Session(self._engine) as session:
+            stmt = (
+                insert(ViewORM)
+                .prefix_with("OR REPLACE")
+                .values([view.model_dump() for view in views])
+            )
+
+            session.exec(stmt)  # type: ignore
+            session.commit()
+
+    def _read_query(self, query: str) -> pd.DataFrame:
+        return pd.read_sql(
+            query,
+            con=self._engine,
+        )
