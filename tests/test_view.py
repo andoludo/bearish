@@ -10,3 +10,4 @@ def test_base_views(bearish_db_with_analysis: BearishDb) -> None:
     views.compute(bearish_db_with_analysis)
     views = bearish_db_with_analysis.read_query("SELECT * FROM view")
     assert not views.empty
+

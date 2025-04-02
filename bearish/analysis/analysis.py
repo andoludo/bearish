@@ -1,5 +1,4 @@
-from typing import get_args
-
+from typing import get_args, Optional
 
 from bearish.interface.interface import BearishDbBase
 from bearish.models.assets.equity import BaseEquity
@@ -11,6 +10,7 @@ from bearish.types import TickerOnlySources
 
 
 class Analysis(BaseEquity, TechnicalAnalysis, FundamentalAnalysis):
+    price_per_earning_ratio: Optional[float] = None
 
     @classmethod
     def from_ticker(cls, bearish_db: BearishDbBase, ticker: Ticker) -> "Analysis":
@@ -29,4 +29,15 @@ class Analysis(BaseEquity, TechnicalAnalysis, FundamentalAnalysis):
             equity.model_dump()
             | fundamental_analysis.model_dump()
             | technical_analysis.model_dump()
+            | {
+                "price_per_earning_ratio": (
+                    (
+                        fundamental_analysis.earning_per_share
+                        / technical_analysis.last_price
+                    )
+                    if technical_analysis.last_price is not None
+                    and fundamental_analysis.earning_per_share is not None
+                    else None
+                )
+            }
         )

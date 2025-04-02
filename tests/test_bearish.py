@@ -487,8 +487,9 @@ def test_get_financials(bearish_db_with_assets: BearishDb):
             symbols=Symbols(equities=[Ticker(symbol="DAL"), Ticker(symbol="NVDA")])
         )
     )
-    financials.fundamental_analysis(Ticker(symbol="DAL"))
+    fundamental_analysis = financials.fundamental_analysis(Ticker(symbol="DAL"))
     assert financials
+    assert not fundamental_analysis.is_empty()
 
 
 def test_technical_analysis(bearish_db_with_assets: BearishDb):
