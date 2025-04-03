@@ -32,10 +32,11 @@ class Analysis(BaseEquity, TechnicalAnalysis, FundamentalAnalysis):
             | {
                 "price_per_earning_ratio": (
                     (
-                        fundamental_analysis.earning_per_share
-                        / technical_analysis.last_price
+                        technical_analysis.last_price
+                        / fundamental_analysis.earning_per_share
                     )
                     if technical_analysis.last_price is not None
+                    and fundamental_analysis.earning_per_share != 0
                     and fundamental_analysis.earning_per_share is not None
                     else None
                 )

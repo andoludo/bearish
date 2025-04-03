@@ -106,18 +106,26 @@ class Financials(BaseModel):
                 "common_stock_shares_outstanding"
             ]
             earning_per_share = (
-                financial.net_income / financial.common_stock_shares_outstanding
-            ).dropna()[-1]
+                (financial.net_income / financial.common_stock_shares_outstanding)
+                .dropna()
+                .iloc[-1]
+            )
             positive_net_income = all(financial.net_income.dropna() > 0)
             positive_operating_income = all(financial.operating_income.dropna() > 0)
-            growing_net_income = all(financial.net_income.pct_change().dropna() > 0)
+            growing_net_income = all(
+                financial.net_income.pct_change(fill_method=None).dropna() > 0  # type: ignore
+            )
             growing_operating_income = all(
-                financial.operating_income.pct_change().dropna() > 0
+                financial.operating_income.pct_change(fill_method=None).dropna() > 0  # type: ignore
             )
             positive_diluted_eps = all(financial.diluted_eps.dropna() > 0)
             positive_basic_eps = all(financial.basic_eps.dropna() > 0)
-            growing_basic_eps = all(financial.basic_eps.pct_change().dropna() > 0)
-            growing_diluted_eps = all(financial.diluted_eps.pct_change().dropna() > 0)
+            growing_basic_eps = all(
+                financial.basic_eps.pct_change(fill_method=None).dropna() > 0  # type: ignore
+            )
+            growing_diluted_eps = all(
+                financial.diluted_eps.pct_change(fill_method=None).dropna() > 0  # type: ignore
+            )
             return_on_equity = (
                 financial.net_income * 100 / financial.total_shareholder_equity
             ).dropna()
@@ -137,7 +145,8 @@ class Financials(BaseModel):
             )
             positive_free_cash_flow = all(free_cash_flow.dropna() > 0)
             growing_operating_cash_flow = all(
-                cash_flow["operating_cash_flow"].pct_change().dropna() > 0
+                cash_flow["operating_cash_flow"].pct_change(fill_method=None).dropna()  # type: ignore
+                > 0
             )
             operating_income_net_income = cash_flow[
                 ["operating_cash_flow", "net_income"]
@@ -152,12 +161,21 @@ class Financials(BaseModel):
             mean_capex_ratio = cash_flow["capex_ratio"].mean()
             max_capex_ratio = cash_flow["capex_ratio"].max()
             min_capex_ratio = cash_flow["capex_ratio"].min()
-            dividend_payout_ratio = (
-                abs(cash_flow["cash_dividends_paid"]) / free_cash_flow
-            ).dropna()
-            mean_dividend_payout_ratio = dividend_payout_ratio.mean()
-            max_dividend_payout_ratio = dividend_payout_ratio.max()
-            min_dividend_payout_ratio = dividend_payout_ratio.min()
+
+            try:
+                dividend_payout_ratio = (
+                    abs(cash_flow["cash_dividends_paid"]) / free_cash_flow
+                ).dropna()
+                mean_dividend_payout_ratio = dividend_payout_ratio.mean()
+                max_dividend_payout_ratio = dividend_payout_ratio.max()
+                min_dividend_payout_ratio = dividend_payout_ratio.min()
+            except Exception as e:
+                logger.warning(
+                    f"Cannot compute dividend for {ticker.symbol}: {e}", exc_info=True
+                )
+                mean_dividend_payout_ratio = None
+                max_dividend_payout_ratio = None
+                min_dividend_payout_ratio = None
             return FundamentalAnalysis(
                 earning_per_share=earning_per_share,
                 positive_debt_to_equity=positive_debt_to_equity,
@@ -182,7 +200,7 @@ class Financials(BaseModel):
                 min_dividend_payout_ratio=min_dividend_payout_ratio,
             )
         except Exception as e:
-            logger.error(e)
+            logger.warning(f"Error for {ticker.symbol}: {e}", exc_info=True)
             return FundamentalAnalysis()
 
     @classmethod

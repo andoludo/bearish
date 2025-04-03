@@ -67,7 +67,7 @@ class TechnicalAnalysis(BaseModel):
         prices.ta.macd(append=True)
         prices.ta.rsi(append=True)
 
-        rsi_last_value = prices.RSI_14[-1]
+        rsi_last_value = prices.RSI_14.iloc[-1]
         macd_12_26_9_buy_date = buy_opportunity(
             prices.MACDs_12_26_9, prices.MACD_12_26_9
         )
@@ -76,15 +76,15 @@ class TechnicalAnalysis(BaseModel):
             rsi_last_value=rsi_last_value,
             macd_12_26_9_buy_date=macd_12_26_9_buy_date,
             ma_50_200_buy_date=ma_50_200_buy_date,
-            last_price=prices.close[-1],
+            last_price=prices.close.iloc[-1],
             last_price_date=prices.index[-1],
-            last_adx=prices.ADX_14[-1],
-            last_dmp=prices.DMP_14[-1],
-            last_dmn=prices.DMN_14[-1],
-            slope_7=prices.SLOPE_7[-1],
-            slope_14=prices.SLOPE_14[-1],
-            slope_30=prices.SLOPE_30[-1],
-            slope_60=prices.SLOPE_60[-1],
+            last_adx=prices.ADX_14.iloc[-1],
+            last_dmp=prices.DMP_14.iloc[-1],
+            last_dmn=prices.DMN_14.iloc[-1],
+            slope_7=prices.SLOPE_7.iloc[-1],
+            slope_14=prices.SLOPE_14.iloc[-1],
+            slope_30=prices.SLOPE_30.iloc[-1],
+            slope_60=prices.SLOPE_60.iloc[-1],
         )
 
 
