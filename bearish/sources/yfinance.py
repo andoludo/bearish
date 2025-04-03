@@ -2,7 +2,7 @@ import logging
 import time
 from datetime import date
 
-from typing import List, Optional, Dict, Any, Callable
+from typing import List, Optional, Dict, Any, Callable, cast
 
 import pandas as pd
 import yfinance as yf  # type: ignore
@@ -34,21 +34,30 @@ class YfinanceBase(BaseModel):
     __source__: Sources = "Yfinance"
 
 
+def get_data_frame(
+    ticker_: yf.Ticker,
+    attribute: str,
+    transpose: bool = True,
+    prefix: Optional[str] = None,
+) -> pd.DataFrame:
+    attribute_ = attribute if not prefix else f"{prefix}_{attribute}"
+    data = getattr(ticker_, attribute_).T if transpose else getattr(ticker_, attribute_)
+    if data is None:
+        return pd.DataFrame()
+    data.index = [date(index.year, index.month, index.day) for index in data.index]
+    data = data.reset_index(names=["date"])
+    return cast(pd.DataFrame, data)
+
+
 class YfinanceFinancialBase(YfinanceBase):
     @classmethod
     def _from_ticker(
-        cls, ticker: str, attribute: str, transpose: bool = True
+        cls, ticker_: yf.Ticker, attribute: str, transpose: bool = True
     ) -> List["YfinanceFinancialBase"]:
-        ticker_ = yf.Ticker(ticker)
-        data = (
-            getattr(ticker_, attribute).T if transpose else getattr(ticker_, attribute)
-        )
-        if data is None:
-            return []
-        data.index = [date(index.year, index.month, index.day) for index in data.index]
-        data = data.reset_index(names=["date"])
+
+        data = get_data_frame(ticker_, attribute, transpose=transpose)
         return [
-            cls.model_validate(data_ | {"symbol": ticker})
+            cls.model_validate(data_ | {"symbol": ticker_.ticker})
             for data_ in data.to_dict(orient="records")
         ]
 
@@ -229,7 +238,7 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str) -> List["YfinanceFinancialMetrics"]:
+    def from_ticker(cls, ticker: yf.Ticker) -> List["YfinanceFinancialMetrics"]:
         return cls._from_ticker(ticker, "financials")  # type: ignore
 
 
@@ -241,7 +250,7 @@ class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str) -> List["yFinanceEarningsDate"]:
+    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceEarningsDate"]:
         return cls._from_ticker(ticker, "earnings_dates", transpose=False)  # type: ignore
 
 
@@ -288,7 +297,7 @@ class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str) -> List["yFinanceBalanceSheet"]:
+    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceBalanceSheet"]:
         return cls._from_ticker(ticker, "balance_sheet")  # type: ignore
 
 
@@ -314,7 +323,7 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: str) -> List["yFinanceCashFlow"]:
+    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceCashFlow"]:
         return cls._from_ticker(ticker, "cashflow")  # type: ignore
 
 
@@ -358,11 +367,12 @@ class yFinanceSource(YfinanceBase, AbstractSource):
         )
 
     def _read_financials(self, ticker: str) -> Financials:
+        ticker_ = yf.Ticker(ticker)
         return Financials(
-            financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker),
-            balance_sheets=yFinanceBalanceSheet.from_ticker(ticker),
-            cash_flows=yFinanceCashFlow.from_ticker(ticker),
-            earnings_date=yFinanceEarningsDate.from_ticker(ticker),
+            financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
+            balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
+            cash_flows=yFinanceCashFlow.from_ticker(ticker_),
+            earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
         )
 
     def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:

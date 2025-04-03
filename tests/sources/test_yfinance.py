@@ -1,4 +1,4 @@
-import yfinance
+import yfinance as yf
 
 from bearish.models.base import Ticker
 from bearish.models.query.query import AssetQuery, Symbols
@@ -14,19 +14,22 @@ from bearish.sources.yfinance import (
 
 
 def test_yfinance():
-    results = YfinanceFinancialMetrics.from_ticker("AAPL")
+    ticker_ = yf.Ticker("AAPL")
+    results = YfinanceFinancialMetrics.from_ticker(ticker_)
     assert results
     assert all(isinstance(result, YfinanceFinancialMetrics) for result in results)
 
 
 def test_balance_sheet():
-    results = yFinanceBalanceSheet.from_ticker("AAPL")
+    ticker_ = yf.Ticker("AAPL")
+    results = yFinanceBalanceSheet.from_ticker(ticker_)
     assert results
     assert all(isinstance(result, yFinanceBalanceSheet) for result in results)
 
 
 def test_cashflow():
-    results = yFinanceCashFlow.from_ticker("AAPL")
+    ticker_ = yf.Ticker("AAPL")
+    results = yFinanceCashFlow.from_ticker(ticker_)
     assert results
     assert all(isinstance(result, yFinanceCashFlow) for result in results)
 
@@ -91,20 +94,23 @@ def test_yfinance_equity():
 
 
 def test_yfinance_earnings():
-    earnings_date = yFinanceEarningsDate.from_ticker("AAPL")
+    ticker_ = yf.Ticker("AAPL")
+    earnings_date = yFinanceEarningsDate.from_ticker(ticker_)
     assert earnings_date
 
 
 def test_earnings_data():
-    earnings_data = yFinanceEarningsDate.from_ticker("MLHCF.PA")
+    ticker_ = yf.Ticker("MLHCF.PA")
+    earnings_data = yFinanceEarningsDate.from_ticker(ticker_)
     assert not earnings_data
 
 
 def test_bug_financials():
-    financial_metrics = YfinanceFinancialMetrics.from_ticker("ALHIT.PA")
-    balance_sheets = yFinanceBalanceSheet.from_ticker("ALHIT.PA")
-    cash_flows = yFinanceCashFlow.from_ticker("ALHIT.PA")
-    earnings_date = yFinanceEarningsDate.from_ticker("ALHIT.PA")
+    ticker_ = yf.Ticker("ALHIT.PA")
+    financial_metrics = YfinanceFinancialMetrics.from_ticker(ticker_)
+    balance_sheets = yFinanceBalanceSheet.from_ticker(ticker_)
+    cash_flows = yFinanceCashFlow.from_ticker(ticker_)
+    earnings_date = yFinanceEarningsDate.from_ticker(ticker_)
     assert financial_metrics
     assert balance_sheets
     assert not cash_flows
