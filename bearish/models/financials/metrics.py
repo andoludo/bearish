@@ -49,3 +49,6 @@ class FinancialMetrics(DataSourceBase):
     tax_rate: Optional[float] = Field(
         None, description="Effective tax rate used in calculations"
     )
+
+
+class QuarterlyFinancialMetrics(FinancialMetrics): ...

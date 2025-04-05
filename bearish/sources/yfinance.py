@@ -52,10 +52,14 @@ def get_data_frame(
 class YfinanceFinancialBase(YfinanceBase):
     @classmethod
     def _from_ticker(
-        cls, ticker_: yf.Ticker, attribute: str, transpose: bool = True
+        cls,
+        ticker_: yf.Ticker,
+        attribute: str,
+        transpose: bool = True,
+        prefix: Optional[str] = None,
     ) -> List["YfinanceFinancialBase"]:
 
-        data = get_data_frame(ticker_, attribute, transpose=transpose)
+        data = get_data_frame(ticker_, attribute, transpose=transpose, prefix=prefix)
         return [
             cls.model_validate(data_ | {"symbol": ticker_.ticker})
             for data_ in data.to_dict(orient="records")
@@ -250,8 +254,10 @@ class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceEarningsDate"]:
-        return cls._from_ticker(ticker, "earnings_dates", transpose=False)  # type: ignore
+    def from_ticker(
+        cls, ticker: yf.Ticker, prefix: Optional[str] = None
+    ) -> List["yFinanceEarningsDate"]:
+        return cls._from_ticker(ticker, "earnings_dates", transpose=False, prefix=prefix)  # type: ignore
 
 
 class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
@@ -297,8 +303,10 @@ class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceBalanceSheet"]:
-        return cls._from_ticker(ticker, "balance_sheet")  # type: ignore
+    def from_ticker(
+        cls, ticker: yf.Ticker, prefix: Optional[str] = None
+    ) -> List["yFinanceBalanceSheet"]:
+        return cls._from_ticker(ticker, "balance_sheet", prefix=prefix)  # type: ignore
 
 
 class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
@@ -323,8 +331,10 @@ class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceCashFlow"]:
-        return cls._from_ticker(ticker, "cashflow")  # type: ignore
+    def from_ticker(
+        cls, ticker: yf.Ticker, prefix: Optional[str] = None
+    ) -> List["yFinanceCashFlow"]:
+        return cls._from_ticker(ticker, "cashflow", prefix=prefix)  # type: ignore
 
 
 class yFinancePrice(YfinanceBase, Price):
@@ -372,6 +382,13 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
             balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
             cash_flows=yFinanceCashFlow.from_ticker(ticker_),
+            quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_, prefix="quarterly"),  # type: ignore
+            quarterly_balance_sheets=yFinanceBalanceSheet.from_ticker(
+                ticker_, prefix="quarterly"
+            ),
+            quarterly_cash_flows=yFinanceCashFlow.from_ticker(
+                ticker_, prefix="quarterly"
+            ),
             earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
         )
 

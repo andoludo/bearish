@@ -11,10 +11,13 @@ from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.base import Tracker
-from bearish.models.financials.balance_sheet import BalanceSheet
-from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
+from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
-from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.financials.metrics import (
+    FinancialMetrics,
+    QuarterlyFinancialMetrics,
+)
 from bearish.models.price.price import Price
 
 
@@ -73,6 +76,18 @@ class BalanceSheetORM(BaseFinancials, BalanceSheet, table=True):  # type: ignore
 
 class CashFlowORM(BaseFinancials, CashFlow, table=True):  # type: ignore
     __tablename__ = "cashflow"
+
+
+class QuarterlyFinancialMetricsORM(BaseFinancials, QuarterlyFinancialMetrics, table=True):  # type: ignore
+    __tablename__ = "quarterlyfinancialmetrics"
+
+
+class QuarterlyBalanceSheetORM(BaseFinancials, QuarterlyBalanceSheet, table=True):  # type: ignore
+    __tablename__ = "quarterlybalancesheet"
+
+
+class QuarterlyCashFlowORM(BaseFinancials, QuarterlyCashFlow, table=True):  # type: ignore
+    __tablename__ = "quarterlycashflow"
 
 
 class EarningsDateORM(BaseFinancials, EarningsDate, table=True):  # type: ignore

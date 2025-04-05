@@ -5,10 +5,13 @@ import pandas as pd
 from pydantic import BaseModel, Field
 
 from bearish.models.base import Ticker, DataSourceBase
-from bearish.models.financials.balance_sheet import BalanceSheet
-from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
+from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
-from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.financials.metrics import (
+    FinancialMetrics,
+    QuarterlyFinancialMetrics,
+)
 from bearish.models.query.query import AssetQuery, Symbols
 
 if TYPE_CHECKING:
@@ -77,12 +80,20 @@ class Financials(BaseModel):
     financial_metrics: List[FinancialMetrics] = Field(default_factory=list)
     balance_sheets: List[BalanceSheet] = Field(default_factory=list)
     cash_flows: List[CashFlow] = Field(default_factory=list)
+    quarterly_financial_metrics: List[QuarterlyFinancialMetrics] = Field(
+        default_factory=list
+    )
+    quarterly_balance_sheets: List[QuarterlyBalanceSheet] = Field(default_factory=list)
+    quarterly_cash_flows: List[QuarterlyCashFlow] = Field(default_factory=list)
     earnings_date: List[EarningsDate] = Field(default_factory=list)
 
     def add(self, financials: "Financials") -> None:
         self.financial_metrics.extend(financials.financial_metrics)
         self.balance_sheets.extend(financials.balance_sheets)
         self.cash_flows.extend(financials.cash_flows)
+        self.quarterly_financial_metrics.extend(financials.quarterly_financial_metrics)
+        self.quarterly_balance_sheets.extend(financials.quarterly_balance_sheets)
+        self.quarterly_cash_flows.extend(financials.quarterly_cash_flows)
         self.earnings_date.extend(financials.earnings_date)
 
     def is_empty(self) -> bool:
@@ -91,6 +102,9 @@ class Financials(BaseModel):
                 self.financial_metrics,
                 self.balance_sheets,
                 self.cash_flows,
+                self.quarterly_financial_metrics,
+                self.quarterly_balance_sheets,
+                self.quarterly_cash_flows,
                 self.earnings_date,
             ]
         )

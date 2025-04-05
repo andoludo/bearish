@@ -26,17 +26,23 @@ from bearish.database.schemas import (
     EarningsDateORM,
     AnalysisORM,
     ViewORM,
+    QuarterlyFinancialMetricsORM,
+    QuarterlyCashFlowORM,
+    QuarterlyBalanceSheetORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.interface.interface import BearishDbBase
 from bearish.models.assets.assets import Assets
 from bearish.models.base import Tracker, TrackerQuery, Ticker
-from bearish.models.financials.balance_sheet import BalanceSheet
+from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.base import Financials
-from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
-from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.financials.metrics import (
+    FinancialMetrics,
+    QuarterlyFinancialMetrics,
+)
 from bearish.models.price.price import Price
 
 if TYPE_CHECKING:
@@ -87,6 +93,15 @@ class BearishDb(BearishDbBase):
         self._write_financials_series(financials.cash_flows, CashFlowORM)
         self._write_financials_series(financials.balance_sheets, BalanceSheetORM)
         self._write_financials_series(financials.earnings_date, EarningsDateORM)
+        self._write_financials_series(
+            financials.quarterly_financial_metrics, QuarterlyFinancialMetricsORM
+        )
+        self._write_financials_series(
+            financials.quarterly_cash_flows, QuarterlyCashFlowORM
+        )
+        self._write_financials_series(
+            financials.quarterly_balance_sheets, QuarterlyBalanceSheetORM
+        )
 
     def _write_financials_series(
         self,
@@ -95,6 +110,9 @@ class BearishDb(BearishDbBase):
             List[FinancialMetrics],
             List[BalanceSheet],
             List[EarningsDate],
+            List[QuarterlyCashFlow],
+            List[QuarterlyFinancialMetrics],
+            List[QuarterlyBalanceSheet],
         ],
         table: Type[SQLModel],
     ) -> None:
