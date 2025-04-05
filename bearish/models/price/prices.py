@@ -31,13 +31,15 @@ def buy_opportunity(
 
 
 def price_growth(prices: pd.DataFrame, days: int) -> float:
-    last_index = prices.last_valid_index()
+    prices_ = prices.copy()
+    last_index = prices_.last_valid_index()
     delta = pd.Timedelta(days=days)
     start_index = last_index - delta  # type: ignore
-    return (
-        (prices.loc[start_index].open - prices.loc[last_index].open)  # type: ignore
+    closest_index = prices_.index.asof(start_index)  # type: ignore
+    return (  # type: ignore
+        (prices_.loc[closest_index].close - prices_.loc[last_index].close)
         * 100
-        / prices.loc[last_index].open
+        / prices_.loc[last_index].close
     )
 
 
@@ -144,7 +146,7 @@ class TechnicalAnalysis(BaseModel):
                 last_year_growth=last_year_growth,
             )
         except Exception as e:
-            logger.error(f"Failing to calculate technical analysis: {e}")
+            logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)
             return cls()  # type: ignore
 
 
@@ -182,7 +184,7 @@ class Prices(BaseModel):
         try:
             return TechnicalAnalysis.from_data(self.to_dataframe())
         except Exception as e:
-            logger.error(f"Failing to calculate technical analysis: {e}")
+            logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)
             return TechnicalAnalysis()  # type: ignore
 
     @classmethod

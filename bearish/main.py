@@ -318,12 +318,20 @@ def run(
     )
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.write_assets()
-    filter = Filter(countries=countries, filters=filters)
-    bearish.get_detailed_tickers(filter)
-    bearish.get_financials(filter)
-    bearish.get_prices(filter)
-    bearish.run_analysis(filter)
+    with console.status("[bold green]Fetching Tickers data..."):
+        bearish.write_assets()
+        filter = Filter(countries=countries, filters=filters)
+        bearish.get_detailed_tickers(filter)
+        console.log("[bold][red]Tickers downloaded!")
+    with console.status("[bold green]Fetching Financial data..."):
+        bearish.get_financials(filter)
+        console.log("[bold][red]Financial downloaded!")
+    with console.status("[bold green]Fetching Price data..."):
+        bearish.get_prices(filter)
+        console.log("[bold][red]Price downloaded!")
+    with console.status("[bold green]Running analysis..."):
+        bearish.run_analysis(filter)
+        console.log("[bold][red]Analysis done!")
 
 
 @app.command()
