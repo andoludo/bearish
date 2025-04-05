@@ -165,3 +165,6 @@ class BalanceSheet(DataSourceBase):
         BeforeValidator(to_float),
         Field(default=None, description="Cash and cash equivalents at carrying value"),
     ]
+
+
+class QuarterlyBalanceSheet(BalanceSheet): ...

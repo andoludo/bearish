@@ -6,21 +6,32 @@ from bearish.models.base import DataSourceBase
 from bearish.utils.utils import to_string, format_capitalize
 
 
-class BaseComponent(DataSourceBase):
+class ComponentDescription(DataSourceBase):
     symbol: str = Field(
         description="Unique ticker symbol identifying the company on the stock exchange"
-    )
-    base_symbol: str = Field(
-        description="Root symbol, primary ticker, or company identifier."
-    )
-    modifier: Optional[str] = Field(
-        None, description="Suffix, modifier, attribute, or share class indicator."
     )
     name: Annotated[
         Optional[str],
         BeforeValidator(to_string),
         Field(None, description="Full name of the company"),
     ]
+    isin: Annotated[
+        Optional[str],
+        BeforeValidator(to_string),
+        Field(
+            default=None,
+            description="International Securities Identification Number (ISIN) for the company's stock",
+        ),
+    ]
+
+
+class BaseComponent(ComponentDescription):
+    base_symbol: str = Field(
+        description="Root symbol, primary ticker, or company identifier."
+    )
+    modifier: Optional[str] = Field(
+        None, description="Suffix, modifier, attribute, or share class indicator."
+    )
     summary: Annotated[
         Optional[str],
         BeforeValidator(to_string),
@@ -50,14 +61,6 @@ class BaseComponent(DataSourceBase):
         Field(
             None,
             description="Market type or classification for the company's listing, such as 'Main Market'",
-        ),
-    ]
-    isin: Annotated[
-        Optional[str],
-        BeforeValidator(to_string),
-        Field(
-            default=None,
-            description="International Securities Identification Number (ISIN) for the company's stock",
         ),
     ]
     country: Annotated[

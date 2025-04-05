@@ -4,15 +4,20 @@ from typing import Optional, Dict
 from sqlalchemy import JSON, Column
 from sqlmodel import SQLModel, Field
 
+from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import View
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.base import Tracker
-from bearish.models.financials.balance_sheet import BalanceSheet
-from bearish.models.financials.cash_flow import CashFlow
+from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
+from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
-from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.financials.metrics import (
+    FinancialMetrics,
+    QuarterlyFinancialMetrics,
+)
 from bearish.models.price.price import Price
 
 
@@ -73,6 +78,18 @@ class CashFlowORM(BaseFinancials, CashFlow, table=True):  # type: ignore
     __tablename__ = "cashflow"
 
 
+class QuarterlyFinancialMetricsORM(BaseFinancials, QuarterlyFinancialMetrics, table=True):  # type: ignore
+    __tablename__ = "quarterlyfinancialmetrics"
+
+
+class QuarterlyBalanceSheetORM(BaseFinancials, QuarterlyBalanceSheet, table=True):  # type: ignore
+    __tablename__ = "quarterlybalancesheet"
+
+
+class QuarterlyCashFlowORM(BaseFinancials, QuarterlyCashFlow, table=True):  # type: ignore
+    __tablename__ = "quarterlycashflow"
+
+
 class EarningsDateORM(BaseFinancials, EarningsDate, table=True):  # type: ignore
     __tablename__ = "earningsdate"
 
@@ -88,3 +105,11 @@ class TrackerORM(SQLModel, Tracker, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     source: str = Field(index=True)
     symbol: str = Field(index=True)
+
+
+class AnalysisORM(BaseTable, Analysis, table=True):  # type: ignore
+    __tablename__ = "analysis"
+
+
+class ViewORM(BaseTable, View, table=True):  # type: ignore
+    __tablename__ = "view"

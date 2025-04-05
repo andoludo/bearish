@@ -104,3 +104,6 @@ class CashFlow(DataSourceBase):
         BeforeValidator(to_float),
         Field(default=None, description="Net income from continuing operations"),
     ]
+
+
+class QuarterlyCashFlow(CashFlow): ...

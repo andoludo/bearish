@@ -6,8 +6,7 @@ from bearish.models.assets.base import BaseComponent
 from bearish.utils.utils import to_string, to_float
 
 
-class Equity(BaseComponent):
-
+class BaseEquity(BaseComponent):
     sector: Annotated[
         Optional[str],
         BeforeValidator(to_string),
@@ -32,37 +31,10 @@ class Equity(BaseComponent):
             description="Detailed industry categorization for the company, like 'Real Estate Management & Development'",
         ),
     ]
-
-    state: Annotated[
-        Optional[str],
-        BeforeValidator(to_string),
-        Field(
-            default=None,
-            description="State or province where the company's headquarters is located, if applicable",
-        ),
-    ]
-    city: Annotated[
-        Optional[str],
-        BeforeValidator(to_string),
-        Field(None, description="City where the company's headquarters is located"),
-    ]
-    zipcode: Annotated[
-        Optional[str],
-        BeforeValidator(to_string),
-        Field(default=None, description="Postal code for the company's headquarters"),
-    ]
     website: Annotated[
         Optional[str],
         BeforeValidator(to_string),
         Field(default=None, description="URL of the company's official website"),
-    ]
-    market_cap: Annotated[
-        Optional[str],
-        BeforeValidator(to_string),
-        Field(
-            default=None,
-            description="Market capitalization category, such as 'Large Cap' or 'Small Cap'",
-        ),
     ]
     market_capitalization: Annotated[
         Optional[float],
@@ -72,33 +44,7 @@ class Equity(BaseComponent):
             description="Market capitalization value",
         ),
     ]
-    shares_outstanding: Annotated[
-        Optional[float],
-        BeforeValidator(to_float),
-        Field(
-            default=None,
-            description="The total number of shares that a company has issued to investors, "
-            "including those held by insiders",
-        ),
-    ]
-    float_shares: Annotated[
-        Optional[float],
-        BeforeValidator(to_float),
-        Field(
-            default=None,
-            description="The portion of Shares Outstanding that is freely available "
-            "for public trading on the open market",
-        ),
-    ]
-    short_shares: Annotated[
-        Optional[float],
-        BeforeValidator(to_float),
-        Field(
-            default=None,
-            description="Refers to the number of shares of a company that have been sold "
-            "short by investors but not yet repurchased or covered.",
-        ),
-    ]
+
     book_value: Annotated[
         Optional[float],
         BeforeValidator(to_float),
@@ -126,14 +72,7 @@ class Equity(BaseComponent):
             description="Calculated using a company's earnings over the last 12 months",
         ),
     ]
-    forward_price_to_earnings: Annotated[
-        Optional[float],
-        BeforeValidator(to_float),
-        Field(
-            default=None,
-            description="Calculated using projected earnings for the next 12 months",
-        ),
-    ]
+
     dividend_yield: Annotated[
         Optional[float],
         BeforeValidator(to_float),
@@ -198,6 +137,74 @@ class Equity(BaseComponent):
         Field(
             default=None,
             description="The percentage increase in revenue over a specific period",
+        ),
+    ]
+
+
+class Equity(BaseEquity):
+
+    state: Annotated[
+        Optional[str],
+        BeforeValidator(to_string),
+        Field(
+            default=None,
+            description="State or province where the company's headquarters is located, if applicable",
+        ),
+    ]
+    city: Annotated[
+        Optional[str],
+        BeforeValidator(to_string),
+        Field(None, description="City where the company's headquarters is located"),
+    ]
+    zipcode: Annotated[
+        Optional[str],
+        BeforeValidator(to_string),
+        Field(default=None, description="Postal code for the company's headquarters"),
+    ]
+
+    market_cap: Annotated[
+        Optional[str],
+        BeforeValidator(to_string),
+        Field(
+            default=None,
+            description="Market capitalization category, such as 'Large Cap' or 'Small Cap'",
+        ),
+    ]
+
+    shares_outstanding: Annotated[
+        Optional[float],
+        BeforeValidator(to_float),
+        Field(
+            default=None,
+            description="The total number of shares that a company has issued to investors, "
+            "including those held by insiders",
+        ),
+    ]
+    float_shares: Annotated[
+        Optional[float],
+        BeforeValidator(to_float),
+        Field(
+            default=None,
+            description="The portion of Shares Outstanding that is freely available "
+            "for public trading on the open market",
+        ),
+    ]
+    short_shares: Annotated[
+        Optional[float],
+        BeforeValidator(to_float),
+        Field(
+            default=None,
+            description="Refers to the number of shares of a company that have been sold "
+            "short by investors but not yet repurchased or covered.",
+        ),
+    ]
+
+    forward_price_to_earnings: Annotated[
+        Optional[float],
+        BeforeValidator(to_float),
+        Field(
+            default=None,
+            description="Calculated using projected earnings for the next 12 months",
         ),
     ]
     revenue_per_share: Annotated[

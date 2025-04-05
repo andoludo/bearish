@@ -61,8 +61,9 @@ class DataSourceBase(SourceBase, Ticker):
 
     @model_validator(mode="before")
     def _validate(cls, metrics: Dict[str, Any]) -> Dict[str, Any]:  # noqa: N805
-        if not cls.__source__:
+        if not hasattr(cls, "__source__") and "source" not in metrics:
             raise ValueError("No source specified for financial metrics")
+        source = cls.__source__ if hasattr(cls, "__source__") else metrics["source"]
         default_keys = {field: field for field in cls.model_fields}
         default_keys.pop("date", None)
         alias = cls.__alias__.copy()
@@ -78,6 +79,6 @@ class DataSourceBase(SourceBase, Ticker):
             }
             | {
                 "created_at": created_at,
-                "source": cls.__source__,
+                "source": source,
             }
         )

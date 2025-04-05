@@ -8,3 +8,7 @@ class LimitApiKeyReachedError(Exception):
 
 class TickerNotFoundError(Exception):
     pass
+
+
+class FinancialDataError(Exception):
+    pass

@@ -1,15 +1,20 @@
 import abc
 from pathlib import Path
-from typing import List
+from typing import List, TYPE_CHECKING, Optional
 
+import pandas as pd
 from pydantic import BaseModel, ConfigDict, validate_call
 
+from bearish.analysis.view import View
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.models.assets.assets import Assets
 from bearish.models.base import TrackerQuery, Tracker, Ticker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
+
+if TYPE_CHECKING:
+    from bearish.analysis.analysis import Analysis
 
 
 class BearishDbBase(BaseModel):
@@ -58,6 +63,21 @@ class BearishDbBase(BaseModel):
     def write_tracker(self, tracker: Tracker) -> None:
         return self._write_tracker(tracker)
 
+    def write_analysis(self, analysis: "Analysis") -> None:
+        return self._write_analysis(analysis)
+
+    def read_analysis(self, ticker: Ticker) -> Optional["Analysis"]:
+        return self._read_analysis(ticker)
+
+    def read_views(self, query: str) -> List[View]:
+        return self._read_views(query)
+
+    def read_query(self, query: str) -> pd.DataFrame:
+        return self._read_query(query)
+
+    def write_views(self, views: List[View]) -> None:
+        return self._write_views(views)
+
     @abc.abstractmethod
     def _write_assets(self, assets: Assets) -> None: ...
 
@@ -89,3 +109,18 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]: ...
+
+    @abc.abstractmethod
+    def _write_analysis(self, analysis: "Analysis") -> None: ...
+
+    @abc.abstractmethod
+    def _read_analysis(self, ticker: Ticker) -> Optional["Analysis"]: ...
+
+    @abc.abstractmethod
+    def _read_views(self, query: str) -> List[View]: ...
+
+    @abc.abstractmethod
+    def _read_query(self, query: str) -> pd.DataFrame: ...
+
+    @abc.abstractmethod
+    def _write_views(self, views: List[View]) -> None: ...
