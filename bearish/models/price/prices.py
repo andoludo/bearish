@@ -30,6 +30,17 @@ def buy_opportunity(
     return None
 
 
+def price_growth(prices: pd.DataFrame, days: int) -> float:
+    last_index = prices.last_valid_index()
+    delta = pd.Timedelta(days=days)
+    start_index = last_index - delta  # type: ignore
+    return (
+        (prices.loc[start_index].open - prices.loc[last_index].open)  # type: ignore
+        * 100
+        / prices.loc[last_index].open
+    )
+
+
 class TechnicalAnalysis(BaseModel):
     rsi_last_value: Optional[float] = None
     macd_12_26_9_buy_date: Optional[date] = None
@@ -54,38 +65,87 @@ class TechnicalAnalysis(BaseModel):
             default=None,
         ),
     ]
+    year_to_date_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_52_weeks_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_week_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_month_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_year_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
 
     @classmethod
     def from_data(cls, prices: pd.DataFrame) -> "TechnicalAnalysis":
-        prices.ta.sma(50, append=True)
-        prices.ta.sma(200, append=True)
-        prices.ta.adx(append=True)
-        prices["SLOPE_14"] = ta.linreg(prices.close, slope=True, length=14)
-        prices["SLOPE_7"] = ta.linreg(prices.close, slope=True, length=7)
-        prices["SLOPE_30"] = ta.linreg(prices.close, slope=True, length=30)
-        prices["SLOPE_60"] = ta.linreg(prices.close, slope=True, length=60)
-        prices.ta.macd(append=True)
-        prices.ta.rsi(append=True)
+        try:
+            last_index = prices.last_valid_index()
+            year_to_date_days = (
+                last_index
+                - pd.Timestamp(year=last_index.year, month=1, day=1, tz="UTC")  # type: ignore
+            ).days
+            year_to_date_growth = price_growth(prices, year_to_date_days)
+            last_52_weeks_growth = price_growth(prices=prices, days=399)
+            last_week_growth = price_growth(prices=prices, days=7)
+            last_month_growth = price_growth(prices=prices, days=31)
+            last_year_growth = price_growth(prices=prices, days=365)
+            prices.ta.sma(50, append=True)
+            prices.ta.sma(200, append=True)
+            prices.ta.adx(append=True)
+            prices["SLOPE_14"] = ta.linreg(prices.close, slope=True, length=14)
+            prices["SLOPE_7"] = ta.linreg(prices.close, slope=True, length=7)
+            prices["SLOPE_30"] = ta.linreg(prices.close, slope=True, length=30)
+            prices["SLOPE_60"] = ta.linreg(prices.close, slope=True, length=60)
+            prices.ta.macd(append=True)
+            prices.ta.rsi(append=True)
 
-        rsi_last_value = prices.RSI_14.iloc[-1]
-        macd_12_26_9_buy_date = buy_opportunity(
-            prices.MACDs_12_26_9, prices.MACD_12_26_9
-        )
-        ma_50_200_buy_date = buy_opportunity(prices.SMA_200, prices.SMA_50)
-        return cls(
-            rsi_last_value=rsi_last_value,
-            macd_12_26_9_buy_date=macd_12_26_9_buy_date,
-            ma_50_200_buy_date=ma_50_200_buy_date,
-            last_price=prices.close.iloc[-1],
-            last_price_date=prices.index[-1],
-            last_adx=prices.ADX_14.iloc[-1],
-            last_dmp=prices.DMP_14.iloc[-1],
-            last_dmn=prices.DMN_14.iloc[-1],
-            slope_7=prices.SLOPE_7.iloc[-1],
-            slope_14=prices.SLOPE_14.iloc[-1],
-            slope_30=prices.SLOPE_30.iloc[-1],
-            slope_60=prices.SLOPE_60.iloc[-1],
-        )
+            rsi_last_value = prices.RSI_14.iloc[-1]
+            macd_12_26_9_buy_date = buy_opportunity(
+                prices.MACDs_12_26_9, prices.MACD_12_26_9
+            )
+            ma_50_200_buy_date = buy_opportunity(prices.SMA_200, prices.SMA_50)
+            return cls(
+                rsi_last_value=rsi_last_value,
+                macd_12_26_9_buy_date=macd_12_26_9_buy_date,
+                ma_50_200_buy_date=ma_50_200_buy_date,
+                last_price=prices.close.iloc[-1],
+                last_price_date=prices.index[-1],
+                last_adx=prices.ADX_14.iloc[-1],
+                last_dmp=prices.DMP_14.iloc[-1],
+                last_dmn=prices.DMN_14.iloc[-1],
+                slope_7=prices.SLOPE_7.iloc[-1],
+                slope_14=prices.SLOPE_14.iloc[-1],
+                slope_30=prices.SLOPE_30.iloc[-1],
+                slope_60=prices.SLOPE_60.iloc[-1],
+                year_to_date_growth=year_to_date_growth,
+                last_52_weeks_growth=last_52_weeks_growth,
+                last_week_growth=last_week_growth,
+                last_month_growth=last_month_growth,
+                last_year_growth=last_year_growth,
+            )
+        except Exception as e:
+            logger.error(f"Failing to calculate technical analysis: {e}")
+            return cls()  # type: ignore
 
 
 class Prices(BaseModel):
