@@ -184,7 +184,8 @@ def test_update_financials(bearish_db: BearishDb):
     financials = bearish.read_financials(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
     )
-    assert financials
+    assert not financials.is_empty()
+    assert financials.quarterly_financial_metrics
 
 
 def test_update_series(bearish_db: BearishDb):

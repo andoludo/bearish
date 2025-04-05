@@ -15,9 +15,11 @@ from bearish.models.base import Ticker
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
-from bearish.models.financials.balance_sheet import BalanceSheet
-from bearish.models.financials.cash_flow import CashFlow
-from bearish.models.financials.metrics import FinancialMetrics
+from bearish.models.financials.balance_sheet import QuarterlyBalanceSheet
+from bearish.models.financials.cash_flow import QuarterlyCashFlow
+from bearish.models.financials.metrics import (
+    QuarterlyFinancialMetrics,
+)
 from bearish.models.price.price import Price
 
 from bearish.sources.base import (
@@ -224,7 +226,7 @@ class YfinanceEtf(YfinanceAssetBase, Etf):
         return cls._from_tickers(tickers, _get_etf)
 
 
-class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
+class YfinanceFinancialMetrics(YfinanceFinancialBase, QuarterlyFinancialMetrics):
     __alias__ = {
         "symbol": "symbol",
         "EBITDA": "ebitda",
@@ -242,8 +244,10 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, FinancialMetrics):
     }
 
     @classmethod
-    def from_ticker(cls, ticker: yf.Ticker) -> List["YfinanceFinancialMetrics"]:
-        return cls._from_ticker(ticker, "financials")  # type: ignore
+    def from_ticker(
+        cls, ticker: yf.Ticker, prefix: Optional[str] = None
+    ) -> List["YfinanceFinancialMetrics"]:
+        return cls._from_ticker(ticker, "financials", prefix=prefix)  # type: ignore
 
 
 class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
@@ -260,7 +264,7 @@ class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
         return cls._from_ticker(ticker, "earnings_dates", transpose=False, prefix=prefix)  # type: ignore
 
 
-class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
+class yFinanceBalanceSheet(YfinanceFinancialBase, QuarterlyBalanceSheet):
     __alias__ = {
         "symbol": "symbol",
         "Treasury Shares Number": "treasury_stock",
@@ -309,7 +313,7 @@ class yFinanceBalanceSheet(YfinanceFinancialBase, BalanceSheet):
         return cls._from_ticker(ticker, "balance_sheet", prefix=prefix)  # type: ignore
 
 
-class yFinanceCashFlow(YfinanceFinancialBase, CashFlow):
+class yFinanceCashFlow(YfinanceFinancialBase, QuarterlyCashFlow):
     __alias__ = {
         "symbol": "symbol",
         "Operating Cash Flow": "operating_cash_flow",
@@ -382,7 +386,9 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
             balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
             cash_flows=yFinanceCashFlow.from_ticker(ticker_),
-            quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_, prefix="quarterly"),  # type: ignore
+            quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(
+                ticker_, prefix="quarterly"
+            ),
             quarterly_balance_sheets=yFinanceBalanceSheet.from_ticker(
                 ticker_, prefix="quarterly"
             ),
