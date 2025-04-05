@@ -1,11 +1,10 @@
 import logging
-from typing import List, Optional, Dict, Any, TYPE_CHECKING
+from typing import List, Optional, Dict, Any, TYPE_CHECKING, Type, Sequence
 
 import pandas as pd
 from pydantic import BaseModel, Field
 
-
-from bearish.models.base import Ticker
+from bearish.models.base import Ticker, DataSourceBase
 from bearish.models.financials.balance_sheet import BalanceSheet
 from bearish.models.financials.cash_flow import CashFlow
 from bearish.models.financials.earnings_date import EarningsDate
@@ -15,6 +14,36 @@ from bearish.models.query.query import AssetQuery, Symbols
 if TYPE_CHECKING:
     from bearish.interface.interface import BearishDbBase
 logger = logging.getLogger(__name__)
+
+
+def _load_data(
+    data: Sequence[DataSourceBase], symbol: str, class_: Type[DataSourceBase]
+) -> pd.DataFrame:
+    try:
+        records = pd.DataFrame.from_records(
+            [f.model_dump() for f in data if f.symbol == symbol]
+        )
+        return records.set_index("date").sort_index()
+    except Exception as e:
+        logger.warning(f"Failed to load data from {symbol}: {e}")
+        columns = list(class_.model_fields)
+        return pd.DataFrame(columns=columns).sort_index()
+
+
+def _compute_growth(series: pd.Series) -> bool:  # type: ignore
+    if series.empty:
+        return False
+    return all(series.pct_change(fill_method=None).dropna() > 0)  # type: ignore
+
+
+def _all_positive(series: pd.Series) -> bool:  # type: ignore
+    if series.empty:
+        return False
+    return all(series.dropna() > 0)
+
+
+def _get_last(data: pd.Series) -> Optional[float]:  # type: ignore
+    return data.iloc[-1] if not data.empty else None
 
 
 class FundamentalAnalysis(BaseModel):
@@ -77,76 +106,58 @@ class Financials(BaseModel):
 
     def fundamental_analysis(self, ticker: Ticker) -> FundamentalAnalysis:
         try:
-            balance_sheet = pd.DataFrame.from_records(
-                [
-                    f.model_dump()
-                    for f in self.balance_sheets
-                    if f.symbol == ticker.symbol
-                ]
-            )
-            balance_sheet = balance_sheet.set_index("date", inplace=False)
-            balance_sheet = balance_sheet.sort_index(inplace=False)
+            symbol = ticker.symbol
+
+            balance_sheet = _load_data(self.balance_sheets, symbol, BalanceSheet)
+            financial = _load_data(self.financial_metrics, symbol, FinancialMetrics)
+            cash_flow = _load_data(self.cash_flows, symbol, CashFlow)
+
+            # Debt-to-equity
             debt_to_equity = (
                 balance_sheet.total_liabilities / balance_sheet.total_shareholder_equity
             ).dropna()
-            positive_debt_to_equity = all(debt_to_equity > 0)
-            financial = pd.DataFrame.from_records(
-                [
-                    f.model_dump()
-                    for f in self.financial_metrics
-                    if f.symbol == ticker.symbol
-                ]
-            )
-            financial = financial.set_index("date", inplace=False)
-            financial = financial.sort_index(inplace=False)
+            positive_debt_to_equity = _all_positive(debt_to_equity)
+
+            # Add relevant balance sheet data to financials
             financial["total_shareholder_equity"] = balance_sheet[
                 "total_shareholder_equity"
             ]
             financial["common_stock_shares_outstanding"] = balance_sheet[
                 "common_stock_shares_outstanding"
             ]
-            earning_per_share = (
-                (financial.net_income / financial.common_stock_shares_outstanding)
-                .dropna()
-                .iloc[-1]
+
+            # EPS and income checks
+            earning_per_share = _get_last(
+                (
+                    financial.net_income / financial.common_stock_shares_outstanding
+                ).dropna()
             )
-            positive_net_income = all(financial.net_income.dropna() > 0)
-            positive_operating_income = all(financial.operating_income.dropna() > 0)
-            growing_net_income = all(
-                financial.net_income.pct_change(fill_method=None).dropna() > 0  # type: ignore
-            )
-            growing_operating_income = all(
-                financial.operating_income.pct_change(fill_method=None).dropna() > 0  # type: ignore
-            )
-            positive_diluted_eps = all(financial.diluted_eps.dropna() > 0)
-            positive_basic_eps = all(financial.basic_eps.dropna() > 0)
-            growing_basic_eps = all(
-                financial.basic_eps.pct_change(fill_method=None).dropna() > 0  # type: ignore
-            )
-            growing_diluted_eps = all(
-                financial.diluted_eps.pct_change(fill_method=None).dropna() > 0  # type: ignore
-            )
+            positive_net_income = _all_positive(financial.net_income)
+            positive_operating_income = _all_positive(financial.operating_income)
+            growing_net_income = _compute_growth(financial.net_income)
+            growing_operating_income = _compute_growth(financial.operating_income)
+            positive_diluted_eps = _all_positive(financial.diluted_eps)
+            positive_basic_eps = _all_positive(financial.basic_eps)
+            growing_basic_eps = _compute_growth(financial.basic_eps)
+            growing_diluted_eps = _compute_growth(financial.diluted_eps)
+
+            # Profitability ratios
             return_on_equity = (
                 financial.net_income * 100 / financial.total_shareholder_equity
             ).dropna()
             return_on_assets = (
                 financial.net_income * 100 / balance_sheet.total_assets
             ).dropna()
-            positive_return_on_assets = all(return_on_assets > 0)
-            positive_return_on_equity = all(return_on_equity > 0)
-            cash_flow = pd.DataFrame.from_records(
-                [f.model_dump() for f in self.cash_flows if f.symbol == ticker.symbol]
-            )
-            cash_flow = cash_flow.set_index("date", inplace=False)
-            cash_flow = cash_flow.sort_index(inplace=False)
+            positive_return_on_assets = _all_positive(return_on_assets)
+            positive_return_on_equity = _all_positive(return_on_equity)
+            # Cash flow analysis
             cash_flow["net_income"] = financial["net_income"]
             free_cash_flow = (
                 cash_flow["operating_cash_flow"] - cash_flow["capital_expenditure"]
             )
-            positive_free_cash_flow = all(free_cash_flow.dropna() > 0)
-            growing_operating_cash_flow = all(
-                cash_flow["operating_cash_flow"].pct_change(fill_method=None).dropna()  # type: ignore
-                > 0
+            positive_free_cash_flow = _all_positive(free_cash_flow)
+            growing_operating_cash_flow = _compute_growth(
+                cash_flow["operating_cash_flow"]
             )
             operating_income_net_income = cash_flow[
                 ["operating_cash_flow", "net_income"]
@@ -161,21 +172,13 @@ class Financials(BaseModel):
             mean_capex_ratio = cash_flow["capex_ratio"].mean()
             max_capex_ratio = cash_flow["capex_ratio"].max()
             min_capex_ratio = cash_flow["capex_ratio"].min()
+            dividend_payout_ratio = (
+                abs(cash_flow["cash_dividends_paid"]) / free_cash_flow
+            ).dropna()
+            mean_dividend_payout_ratio = dividend_payout_ratio.mean()
+            max_dividend_payout_ratio = dividend_payout_ratio.max()
+            min_dividend_payout_ratio = dividend_payout_ratio.min()
 
-            try:
-                dividend_payout_ratio = (
-                    abs(cash_flow["cash_dividends_paid"]) / free_cash_flow
-                ).dropna()
-                mean_dividend_payout_ratio = dividend_payout_ratio.mean()
-                max_dividend_payout_ratio = dividend_payout_ratio.max()
-                min_dividend_payout_ratio = dividend_payout_ratio.min()
-            except Exception as e:
-                logger.warning(
-                    f"Cannot compute dividend for {ticker.symbol}: {e}", exc_info=True
-                )
-                mean_dividend_payout_ratio = None
-                max_dividend_payout_ratio = None
-                min_dividend_payout_ratio = None
             return FundamentalAnalysis(
                 earning_per_share=earning_per_share,
                 positive_debt_to_equity=positive_debt_to_equity,
@@ -200,7 +203,7 @@ class Financials(BaseModel):
                 min_dividend_payout_ratio=min_dividend_payout_ratio,
             )
         except Exception as e:
-            logger.warning(f"Error for {ticker.symbol}: {e}", exc_info=True)
+            logger.error(f"Failed to compute fundamental analysis for {ticker}: {e}")
             return FundamentalAnalysis()
 
     @classmethod

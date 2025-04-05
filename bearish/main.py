@@ -274,7 +274,7 @@ class Bearish(BaseModel):
             )
         )
         tickers = filter.filter(tickers)
-        logger.error(f"Found tickers: {[t.symbol for t in tickers]}")
+        logger.debug(f"Found tickers: {[t.symbol for t in tickers]}")
         self.write_many_financials(tickers)
 
     def get_prices(self, filter: Filter) -> None:
