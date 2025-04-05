@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional, Dict, Any, TYPE_CHECKING, Type, Sequence
 
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 
 from bearish.models.base import Ticker, DataSourceBase
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
@@ -17,6 +17,8 @@ from bearish.models.query.query import AssetQuery, Symbols
 if TYPE_CHECKING:
     from bearish.interface.interface import BearishDbBase
 logger = logging.getLogger(__name__)
+
+QUARTERLY = "quarterly"
 
 
 def _load_data(
@@ -49,7 +51,7 @@ def _get_last(data: pd.Series) -> Optional[float]:  # type: ignore
     return data.iloc[-1] if not data.empty else None
 
 
-class FundamentalAnalysis(BaseModel):
+class BaseFundamentalAnalysis(BaseModel):
     positive_free_cash_flow: Optional[float] = None
     growing_operating_cash_flow: Optional[float] = None
     operating_cash_flow_is_higher_than_net_income: Optional[float] = None
@@ -75,56 +77,31 @@ class FundamentalAnalysis(BaseModel):
     def is_empty(self) -> bool:
         return all(getattr(self, field) is None for field in self.model_fields)
 
-
-class Financials(BaseModel):
-    financial_metrics: List[FinancialMetrics] = Field(default_factory=list)
-    balance_sheets: List[BalanceSheet] = Field(default_factory=list)
-    cash_flows: List[CashFlow] = Field(default_factory=list)
-    quarterly_financial_metrics: List[QuarterlyFinancialMetrics] = Field(
-        default_factory=list
-    )
-    quarterly_balance_sheets: List[QuarterlyBalanceSheet] = Field(default_factory=list)
-    quarterly_cash_flows: List[QuarterlyCashFlow] = Field(default_factory=list)
-    earnings_date: List[EarningsDate] = Field(default_factory=list)
-
-    def add(self, financials: "Financials") -> None:
-        self.financial_metrics.extend(financials.financial_metrics)
-        self.balance_sheets.extend(financials.balance_sheets)
-        self.cash_flows.extend(financials.cash_flows)
-        self.quarterly_financial_metrics.extend(financials.quarterly_financial_metrics)
-        self.quarterly_balance_sheets.extend(financials.quarterly_balance_sheets)
-        self.quarterly_cash_flows.extend(financials.quarterly_cash_flows)
-        self.earnings_date.extend(financials.earnings_date)
-
-    def is_empty(self) -> bool:
-        return not any(
-            [
-                self.financial_metrics,
-                self.balance_sheets,
-                self.cash_flows,
-                self.quarterly_financial_metrics,
-                self.quarterly_balance_sheets,
-                self.quarterly_cash_flows,
-                self.earnings_date,
-            ]
+    @classmethod
+    def from_financials(
+        cls, financials: "Financials", ticker: Ticker
+    ) -> "BaseFundamentalAnalysis":
+        return cls._from_financials(
+            balance_sheets=financials.balance_sheets,
+            financial_metrics=financials.financial_metrics,
+            cash_flows=financials.cash_flows,
+            ticker=ticker,
         )
 
-    def _compute_growth(self, data: pd.DataFrame, field: str) -> Dict[str, Any]:
-        data[f"{field}_growth"] = data[field].pct_change() * 100
-        return {
-            f"{field}_growth_{i}": value
-            for i, value in enumerate(
-                data[f"{field}_growth"].sort_index(ascending=False).tolist()
-            )
-        }
-
-    def fundamental_analysis(self, ticker: Ticker) -> FundamentalAnalysis:
+    @classmethod
+    def _from_financials(
+        cls,
+        balance_sheets: List[BalanceSheet] | List[QuarterlyBalanceSheet],
+        financial_metrics: List[FinancialMetrics] | List[QuarterlyFinancialMetrics],
+        cash_flows: List[CashFlow] | List[QuarterlyCashFlow],
+        ticker: Ticker,
+    ) -> "BaseFundamentalAnalysis":
         try:
             symbol = ticker.symbol
 
-            balance_sheet = _load_data(self.balance_sheets, symbol, BalanceSheet)
-            financial = _load_data(self.financial_metrics, symbol, FinancialMetrics)
-            cash_flow = _load_data(self.cash_flows, symbol, CashFlow)
+            balance_sheet = _load_data(balance_sheets, symbol, BalanceSheet)
+            financial = _load_data(financial_metrics, symbol, FinancialMetrics)
+            cash_flow = _load_data(cash_flows, symbol, CashFlow)
 
             # Debt-to-equity
             debt_to_equity = (
@@ -193,7 +170,7 @@ class Financials(BaseModel):
             max_dividend_payout_ratio = dividend_payout_ratio.max()
             min_dividend_payout_ratio = dividend_payout_ratio.min()
 
-            return FundamentalAnalysis(
+            return cls(
                 earning_per_share=earning_per_share,
                 positive_debt_to_equity=positive_debt_to_equity,
                 positive_return_on_assets=positive_return_on_assets,
@@ -218,7 +195,93 @@ class Financials(BaseModel):
             )
         except Exception as e:
             logger.error(f"Failed to compute fundamental analysis for {ticker}: {e}")
-            return FundamentalAnalysis()
+            return cls()
+
+
+class YearlyFundamentalAnalysis(BaseFundamentalAnalysis): ...
+
+
+fields_with_prefix = {
+    f"{QUARTERLY}_{name}": (Optional[float], Field(default=None))
+    for name in BaseFundamentalAnalysis.model_fields
+}
+
+# Create the new model
+BaseQuarterlyFundamentalAnalysis = create_model(  # type: ignore
+    "BaseQuarterlyFundamentalAnalysis", **fields_with_prefix
+)
+
+
+class QuarterlyFundamentalAnalysis(BaseQuarterlyFundamentalAnalysis):  # type: ignore
+
+    @classmethod
+    def from_quarterly_financials(
+        cls, financials: "Financials", ticker: Ticker
+    ) -> "QuarterlyFundamentalAnalysis":
+        base_financial_analisys = BaseFundamentalAnalysis._from_financials(
+            balance_sheets=financials.quarterly_balance_sheets,
+            financial_metrics=financials.quarterly_financial_metrics,
+            cash_flows=financials.quarterly_cash_flows,
+            ticker=ticker,
+        )
+        return cls.model_validate({f"{QUARTERLY}_{k}": v for k, v in base_financial_analisys.model_dump().items()})  # type: ignore
+
+
+class FundamentalAnalysis(YearlyFundamentalAnalysis, QuarterlyFundamentalAnalysis): ...
+
+
+class Financials(BaseModel):
+    financial_metrics: List[FinancialMetrics] = Field(default_factory=list)
+    balance_sheets: List[BalanceSheet] = Field(default_factory=list)
+    cash_flows: List[CashFlow] = Field(default_factory=list)
+    quarterly_financial_metrics: List[QuarterlyFinancialMetrics] = Field(
+        default_factory=list
+    )
+    quarterly_balance_sheets: List[QuarterlyBalanceSheet] = Field(default_factory=list)
+    quarterly_cash_flows: List[QuarterlyCashFlow] = Field(default_factory=list)
+    earnings_date: List[EarningsDate] = Field(default_factory=list)
+
+    def add(self, financials: "Financials") -> None:
+        self.financial_metrics.extend(financials.financial_metrics)
+        self.balance_sheets.extend(financials.balance_sheets)
+        self.cash_flows.extend(financials.cash_flows)
+        self.quarterly_financial_metrics.extend(financials.quarterly_financial_metrics)
+        self.quarterly_balance_sheets.extend(financials.quarterly_balance_sheets)
+        self.quarterly_cash_flows.extend(financials.quarterly_cash_flows)
+        self.earnings_date.extend(financials.earnings_date)
+
+    def is_empty(self) -> bool:
+        return not any(
+            [
+                self.financial_metrics,
+                self.balance_sheets,
+                self.cash_flows,
+                self.quarterly_financial_metrics,
+                self.quarterly_balance_sheets,
+                self.quarterly_cash_flows,
+                self.earnings_date,
+            ]
+        )
+
+    def _compute_growth(self, data: pd.DataFrame, field: str) -> Dict[str, Any]:
+        data[f"{field}_growth"] = data[field].pct_change() * 100
+        return {
+            f"{field}_growth_{i}": value
+            for i, value in enumerate(
+                data[f"{field}_growth"].sort_index(ascending=False).tolist()
+            )
+        }
+
+    def fundamental_analysis(self, ticker: Ticker) -> FundamentalAnalysis:
+        yearly_analysis = YearlyFundamentalAnalysis.from_financials(
+            financials=self, ticker=ticker
+        )
+        quarterly_analysis = QuarterlyFundamentalAnalysis.from_quarterly_financials(
+            financials=self, ticker=ticker
+        )
+        return FundamentalAnalysis.model_validate(
+            yearly_analysis.model_dump() | quarterly_analysis.model_dump()
+        )
 
     @classmethod
     def from_ticker(cls, bearish_db: "BearishDbBase", ticker: Ticker) -> "Financials":

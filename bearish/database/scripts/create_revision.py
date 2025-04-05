@@ -14,5 +14,5 @@ def create_revision(database_url: str, message: str) -> None:
 
 
 if __name__ == "__main__":
-    message = "Update analysis"
+    message = "quarterly_analysis"
     create_revision("sqlite:////home/aan/Documents/bearish/test4.db", message)
