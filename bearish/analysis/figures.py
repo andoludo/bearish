@@ -3,7 +3,12 @@ from plotly.subplots import make_subplots  # type: ignore
 import plotly.graph_objects as go  # type: ignore
 
 
-def plot(data: pd.DataFrame) -> go.Figure:
+def plot(data: pd.DataFrame, symbol: str) -> go.Figure:
+    data.ta.sma(50, append=True)
+    data.ta.sma(200, append=True)
+    data.ta.adx(append=True)
+    data.ta.macd(append=True)
+    data.ta.rsi(append=True)
     fig = make_subplots(
         rows=4,
         cols=1,
@@ -15,7 +20,11 @@ def plot(data: pd.DataFrame) -> go.Figure:
             [{}],  # Row 3: RSI
             [{}],  # Row 4: MACD
         ],
-        subplot_titles=("Price + SMAs", "RSI", "MACD"),
+        subplot_titles=(
+            f"Price + SMAs ({symbol})",
+            f"RSI ({symbol})",
+            f"MACD ({symbol})",
+        ),
     )
     # Row 1: Candlestick + SMAs
     fig.add_trace(
@@ -83,6 +92,4 @@ def plot(data: pd.DataFrame) -> go.Figure:
     fig.add_hline(y=70, line_dash="dash", line_color="red", row=3, col=1)
     fig.add_hline(y=30, line_dash="dash", line_color="green", row=3, col=1)
 
-    fig.show()
-    fig.write_html("technical_indicator_dashboard.html")
     return fig

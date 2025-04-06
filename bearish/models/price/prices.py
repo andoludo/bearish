@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Optional, TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -11,9 +11,11 @@ from bearish.models.base import Ticker
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.utils.utils import to_float
-from bearish.interface.interface import BearishDbBase
+
 import pandas_ta as ta  # type: ignore
 
+if TYPE_CHECKING:
+    from bearish.interface.interface import BearishDbBase
 logger = logging.getLogger(__name__)
 
 
@@ -157,7 +159,7 @@ class Prices(BaseModel):
         return sorted(self.prices, key=lambda price: price.date)[-1].date
 
     @classmethod
-    def from_ticker(cls, bearish_db: BearishDbBase, ticker: Ticker) -> "Prices":
+    def from_ticker(cls, bearish_db: "BearishDbBase", ticker: Ticker) -> "Prices":
         prices = bearish_db.read_series(
             AssetQuery(symbols=Symbols(equities=[ticker])), months=12 * 5  # type: ignore
         )

@@ -6,6 +6,7 @@ import pytest
 import requests_mock
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import TestView
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
@@ -513,3 +514,12 @@ def test_analysis(bearish_db_with_assets: BearishDb):
     bearish_db_with_assets.write_analysis(analysis)
     analysis = bearish_db_with_assets.read_analysis(Ticker(symbol="DAL"))
     assert analysis
+
+
+def test_views(bear_db: BearishDb):
+    TestView().compute(bear_db)
+    query = """
+    SELECT * FROM view;
+    """
+    data = bear_db.read_query(query)
+    assert not data.empty

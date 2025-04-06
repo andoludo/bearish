@@ -54,3 +54,6 @@ Contributions are welcome! Feel free to submit a pull request or open an issue.
 This project is licensed under the **MIT License**.
 
 🚀 Happy Investing! 📈
+
+
+poetry run python ./bearish/main.py run  ./test.db Germany US --filters NVDA,RHM.DE --api-keys=config.json
