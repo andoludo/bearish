@@ -32,16 +32,19 @@ def buy_opportunity(
     return None
 
 
-def price_growth(prices: pd.DataFrame, days: int) -> float:
+def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> float:
     prices_ = prices.copy()
     last_index = prices_.last_valid_index()
     delta = pd.Timedelta(days=days)
     start_index = last_index - delta  # type: ignore
     closest_index = prices_.index.asof(start_index)  # type: ignore
+    price = (
+        prices_.loc[closest_index].close
+        if not max
+        else prices_[closest_index:].close.max()
+    )
     return (  # type: ignore
-        (prices_.loc[closest_index].close - prices_.loc[last_index].close)
-        * 100
-        / prices_.loc[last_index].close
+        (price - prices_.loc[last_index].close) * 100 / prices_.loc[last_index].close
     )
 
 
@@ -99,6 +102,30 @@ class TechnicalAnalysis(BaseModel):
             default=None,
         ),
     ]
+    year_to_date_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_week_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_month_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_year_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
 
     @classmethod
     def from_data(cls, prices: pd.DataFrame) -> "TechnicalAnalysis":
@@ -113,6 +140,10 @@ class TechnicalAnalysis(BaseModel):
             last_week_growth = price_growth(prices=prices, days=7)
             last_month_growth = price_growth(prices=prices, days=31)
             last_year_growth = price_growth(prices=prices, days=365)
+            year_to_date_max_growth = price_growth(prices, year_to_date_days, max=True)
+            last_week_max_growth = price_growth(prices=prices, days=7, max=True)
+            last_month_max_growth = price_growth(prices=prices, days=31, max=True)
+            last_year_max_growth = price_growth(prices=prices, days=365, max=True)
             prices.ta.sma(50, append=True)
             prices.ta.sma(200, append=True)
             prices.ta.adx(append=True)
@@ -146,6 +177,10 @@ class TechnicalAnalysis(BaseModel):
                 last_week_growth=last_week_growth,
                 last_month_growth=last_month_growth,
                 last_year_growth=last_year_growth,
+                year_to_date_max_growth=year_to_date_max_growth,
+                last_week_max_growth=last_week_max_growth,
+                last_month_max_growth=last_month_max_growth,
+                last_year_max_growth=last_year_max_growth,
             )
         except Exception as e:
             logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)

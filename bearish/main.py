@@ -16,6 +16,7 @@ from pydantic import (
 from rich.console import Console
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import ViewsFactory
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import (
@@ -404,6 +405,7 @@ def analysis(
         bearish = Bearish(path=path, api_keys=source_api_keys)
         filter = Filter(countries=countries, filters=filters)
         bearish.run_analysis(filter)
+        ViewsFactory().compute(bearish_db=bearish._bearish_db)
         console.log("[bold][red]Analysis done!")
 
 

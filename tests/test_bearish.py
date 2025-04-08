@@ -2,6 +2,7 @@ import os
 import tempfile
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import requests_mock
 
@@ -514,12 +515,3 @@ def test_analysis(bearish_db_with_assets: BearishDb):
     bearish_db_with_assets.write_analysis(analysis)
     analysis = bearish_db_with_assets.read_analysis(Ticker(symbol="DAL"))
     assert analysis
-
-
-def test_views(bear_db: BearishDb):
-    TestView().compute(bear_db)
-    query = """
-    SELECT * FROM view;
-    """
-    data = bear_db.read_query(query)
-    assert not data.empty

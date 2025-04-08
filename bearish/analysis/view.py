@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, TYPE_CHECKING
 
 import plotly.graph_objects as go  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from bearish.analysis.figures import plot
 from bearish.models.assets.base import ComponentDescription
@@ -123,7 +123,7 @@ class TestView(BaseViews):
 
 class DefensiveIndustries(BaseViews):
     view_name: str = "defensive_industries"
-    query: str = """SELECT symbol, name FROM analysis 
+    query: str = """SELECT symbol, name, source, isin, rsi_last_value FROM analysis 
     WHERE positive_free_cash_flow=1 
     AND positive_net_income=1 
     AND positive_operating_income=1 
@@ -132,4 +132,14 @@ class DefensiveIndustries(BaseViews):
     AND quarterly_positive_operating_income=1 
     AND growing_net_income=1 
     AND quarterly_operating_cash_flow_is_higher_than_net_income=1 
-    AND operating_cash_flow_is_higher_than_net_income=1"""
+    AND operating_cash_flow_is_higher_than_net_income=1
+	AND rsi_last_value IS NOT NULL
+	ORDER BY rsi_last_value LIMIT 4"""
+
+
+class ViewsFactory(BaseModel):
+    views: list[BaseViews] = Field(default_factory=lambda: [DefensiveIndustries()])  # type: ignore
+
+    def compute(self, bearish_db: "BearishDbBase") -> None:
+        for view in self.views:
+            view.compute(bearish_db)
