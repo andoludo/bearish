@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Optional, TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -11,9 +11,11 @@ from bearish.models.base import Ticker
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.utils.utils import to_float
-from bearish.interface.interface import BearishDbBase
+
 import pandas_ta as ta  # type: ignore
 
+if TYPE_CHECKING:
+    from bearish.interface.interface import BearishDbBase
 logger = logging.getLogger(__name__)
 
 
@@ -30,14 +32,27 @@ def buy_opportunity(
     return None
 
 
-def price_growth(prices: pd.DataFrame, days: int) -> float:
-    last_index = prices.last_valid_index()
+def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> Optional[float]:
+    prices_ = prices.copy()
+    last_index = prices_.last_valid_index()
     delta = pd.Timedelta(days=days)
     start_index = last_index - delta  # type: ignore
-    return (
-        (prices.loc[start_index].open - prices.loc[last_index].open)  # type: ignore
-        * 100
-        / prices.loc[last_index].open
+    closest_index = prices_.index.asof(start_index)  # type: ignore
+    try:
+        price = (
+            prices_.loc[closest_index].close
+            if not max
+            else prices_[closest_index:].close.max()
+        )
+    except Exception as e:
+        logger.warning(
+            f"""Failing to calculate price growth: {e}. 
+        Closest_index: {closest_index}""",
+            exc_info=True,
+        )
+        return None
+    return (  # type: ignore
+        (prices_.loc[last_index].close - price) * 100 / prices_.loc[last_index].close
     )
 
 
@@ -95,6 +110,36 @@ class TechnicalAnalysis(BaseModel):
             default=None,
         ),
     ]
+    year_to_date_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_week_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_month_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    last_year_max_growth: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    macd_12_26_9_buy: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
 
     @classmethod
     def from_data(cls, prices: pd.DataFrame) -> "TechnicalAnalysis":
@@ -109,6 +154,10 @@ class TechnicalAnalysis(BaseModel):
             last_week_growth = price_growth(prices=prices, days=7)
             last_month_growth = price_growth(prices=prices, days=31)
             last_year_growth = price_growth(prices=prices, days=365)
+            year_to_date_max_growth = price_growth(prices, year_to_date_days, max=True)
+            last_week_max_growth = price_growth(prices=prices, days=7, max=True)
+            last_month_max_growth = price_growth(prices=prices, days=31, max=True)
+            last_year_max_growth = price_growth(prices=prices, days=365, max=True)
             prices.ta.sma(50, append=True)
             prices.ta.sma(200, append=True)
             prices.ta.adx(append=True)
@@ -123,10 +172,20 @@ class TechnicalAnalysis(BaseModel):
             macd_12_26_9_buy_date = buy_opportunity(
                 prices.MACDs_12_26_9, prices.MACD_12_26_9
             )
+            try:
+                macd_12_26_9_buy = (
+                    prices.MACD_12_26_9.iloc[-1] > prices.MACDs_12_26_9.iloc[-1]
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failing to calculate MACD buy date: {e}", exc_info=True
+                )
+                macd_12_26_9_buy = None
             ma_50_200_buy_date = buy_opportunity(prices.SMA_200, prices.SMA_50)
             return cls(
                 rsi_last_value=rsi_last_value,
                 macd_12_26_9_buy_date=macd_12_26_9_buy_date,
+                macd_12_26_9_buy=macd_12_26_9_buy,
                 ma_50_200_buy_date=ma_50_200_buy_date,
                 last_price=prices.close.iloc[-1],
                 last_price_date=prices.index[-1],
@@ -142,9 +201,13 @@ class TechnicalAnalysis(BaseModel):
                 last_week_growth=last_week_growth,
                 last_month_growth=last_month_growth,
                 last_year_growth=last_year_growth,
+                year_to_date_max_growth=year_to_date_max_growth,
+                last_week_max_growth=last_week_max_growth,
+                last_month_max_growth=last_month_max_growth,
+                last_year_max_growth=last_year_max_growth,
             )
         except Exception as e:
-            logger.error(f"Failing to calculate technical analysis: {e}")
+            logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)
             return cls()  # type: ignore
 
 
@@ -155,7 +218,7 @@ class Prices(BaseModel):
         return sorted(self.prices, key=lambda price: price.date)[-1].date
 
     @classmethod
-    def from_ticker(cls, bearish_db: BearishDbBase, ticker: Ticker) -> "Prices":
+    def from_ticker(cls, bearish_db: "BearishDbBase", ticker: Ticker) -> "Prices":
         prices = bearish_db.read_series(
             AssetQuery(symbols=Symbols(equities=[ticker])), months=12 * 5  # type: ignore
         )
@@ -182,7 +245,7 @@ class Prices(BaseModel):
         try:
             return TechnicalAnalysis.from_data(self.to_dataframe())
         except Exception as e:
-            logger.error(f"Failing to calculate technical analysis: {e}")
+            logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)
             return TechnicalAnalysis()  # type: ignore
 
     @classmethod

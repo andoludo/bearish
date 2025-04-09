@@ -11,10 +11,12 @@ from pydantic import (
     ConfigDict,
     PrivateAttr,
     validate_call,
+    model_validator,
 )
 from rich.console import Console
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import ViewsFactory
 from bearish.database.crud import BearishDb
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import (
@@ -56,7 +58,13 @@ CountriesEnum = Enum(  # type: ignore
 
 class Filter(BaseModel):
     countries: List[CountriesEnum]
-    filters: Optional[List[str]] = None
+    filters: Optional[List[str] | str] = None
+
+    @model_validator(mode="after")
+    def _model_validator(self) -> "Filter":
+        if self.filters is not None and isinstance(self.filters, str):
+            self.filters = [t.strip() for t in self.filters.split(",")]
+        return self
 
     def filter(self, tickers: List[Ticker]) -> List[Ticker]:
         if not self.filters:
@@ -309,28 +317,36 @@ class Bearish(BaseModel):
 def run(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
-    filters: Optional[List[str]] = None,
+    filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
 
-    logger.info(
-        f"Writing assets to database for countries: {countries}",
+    console.log(
+        f"Fetching assets to database for countries: {countries}, with filters: {filters}",
     )
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.write_assets()
-    filter = Filter(countries=countries, filters=filters)
-    bearish.get_detailed_tickers(filter)
-    bearish.get_financials(filter)
-    bearish.get_prices(filter)
-    bearish.run_analysis(filter)
+    with console.status("[bold green]Fetching Tickers data..."):
+        bearish.write_assets()
+        filter = Filter(countries=countries, filters=filters)
+        bearish.get_detailed_tickers(filter)
+        console.log("[bold][red]Tickers downloaded!")
+    with console.status("[bold green]Fetching Financial data..."):
+        bearish.get_financials(filter)
+        console.log("[bold][red]Financial downloaded!")
+    with console.status("[bold green]Fetching Price data..."):
+        bearish.get_prices(filter)
+        console.log("[bold][red]Price downloaded!")
+    with console.status("[bold green]Running analysis..."):
+        bearish.run_analysis(filter)
+        console.log("[bold][red]Analysis done!")
 
 
 @app.command()
 def tickers(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
-    filters: Optional[List[str]] = None,
+    filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Fetching Tickers data..."):
@@ -351,7 +367,7 @@ def tickers(
 def financials(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
-    filters: Optional[List[str]] = None,
+    filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Fetching Financial data..."):
@@ -366,7 +382,7 @@ def financials(
 def prices(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
-    filters: Optional[List[str]] = None,
+    filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Fetching Price data..."):
@@ -381,7 +397,7 @@ def prices(
 def analysis(
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
-    filters: Optional[List[str]] = None,
+    filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Running analysis..."):
@@ -389,6 +405,7 @@ def analysis(
         bearish = Bearish(path=path, api_keys=source_api_keys)
         filter = Filter(countries=countries, filters=filters)
         bearish.run_analysis(filter)
+        ViewsFactory().compute(bearish_db=bearish._bearish_db)
         console.log("[bold][red]Analysis done!")
 
 

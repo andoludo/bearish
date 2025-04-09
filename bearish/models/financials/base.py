@@ -51,6 +51,14 @@ def _get_last(data: pd.Series) -> Optional[float]:  # type: ignore
     return data.iloc[-1] if not data.empty else None
 
 
+def _abs(data: pd.Series) -> pd.Series:  # type: ignore
+    try:
+        return abs(data)
+    except Exception as e:
+        logger.warning(f"Failed to compute absolute value: {e}")
+        return data
+
+
 class BaseFundamentalAnalysis(BaseModel):
     positive_free_cash_flow: Optional[float] = None
     growing_operating_cash_flow: Optional[float] = None
@@ -164,7 +172,7 @@ class BaseFundamentalAnalysis(BaseModel):
             max_capex_ratio = cash_flow["capex_ratio"].max()
             min_capex_ratio = cash_flow["capex_ratio"].min()
             dividend_payout_ratio = (
-                abs(cash_flow["cash_dividends_paid"]) / free_cash_flow
+                _abs(cash_flow["cash_dividends_paid"]) / free_cash_flow
             ).dropna()
             mean_dividend_payout_ratio = dividend_payout_ratio.mean()
             max_dividend_payout_ratio = dividend_payout_ratio.max()
@@ -194,7 +202,10 @@ class BaseFundamentalAnalysis(BaseModel):
                 min_dividend_payout_ratio=min_dividend_payout_ratio,
             )
         except Exception as e:
-            logger.error(f"Failed to compute fundamental analysis for {ticker}: {e}")
+            logger.error(
+                f"Failed to compute fundamental analysis for {ticker}: {e}",
+                exc_info=True,
+            )
             return cls()
 
 

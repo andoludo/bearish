@@ -2,10 +2,12 @@ import os
 import tempfile
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import requests_mock
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.view import TestView
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
