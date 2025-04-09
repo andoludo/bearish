@@ -32,19 +32,27 @@ def buy_opportunity(
     return None
 
 
-def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> float:
+def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> Optional[float]:
     prices_ = prices.copy()
     last_index = prices_.last_valid_index()
     delta = pd.Timedelta(days=days)
     start_index = last_index - delta  # type: ignore
     closest_index = prices_.index.asof(start_index)  # type: ignore
-    price = (
-        prices_.loc[closest_index].close
-        if not max
-        else prices_[closest_index:].close.max()
-    )
+    try:
+        price = (
+            prices_.loc[closest_index].close
+            if not max
+            else prices_[closest_index:].close.max()
+        )
+    except Exception as e:
+        logger.warning(
+            f"""Failing to calculate price growth: {e}. 
+        Closest_index: {closest_index}""",
+            exc_info=True,
+        )
+        return None
     return (  # type: ignore
-        (price - prices_.loc[last_index].close) * 100 / prices_.loc[last_index].close
+        (prices_.loc[last_index].close - price) * 100 / prices_.loc[last_index].close
     )
 
 
@@ -126,6 +134,12 @@ class TechnicalAnalysis(BaseModel):
             default=None,
         ),
     ]
+    macd_12_26_9_buy: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
 
     @classmethod
     def from_data(cls, prices: pd.DataFrame) -> "TechnicalAnalysis":
@@ -158,10 +172,20 @@ class TechnicalAnalysis(BaseModel):
             macd_12_26_9_buy_date = buy_opportunity(
                 prices.MACDs_12_26_9, prices.MACD_12_26_9
             )
+            try:
+                macd_12_26_9_buy = (
+                    prices.MACD_12_26_9.iloc[-1] > prices.MACDs_12_26_9.iloc[-1]
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failing to calculate MACD buy date: {e}", exc_info=True
+                )
+                macd_12_26_9_buy = None
             ma_50_200_buy_date = buy_opportunity(prices.SMA_200, prices.SMA_50)
             return cls(
                 rsi_last_value=rsi_last_value,
                 macd_12_26_9_buy_date=macd_12_26_9_buy_date,
+                macd_12_26_9_buy=macd_12_26_9_buy,
                 ma_50_200_buy_date=ma_50_200_buy_date,
                 last_price=prices.close.iloc[-1],
                 last_price_date=prices.index[-1],

@@ -15,51 +15,6 @@ from bearish.models.query.query import AssetQuery, Symbols
 if TYPE_CHECKING:
     from bearish.interface.interface import BearishDbBase
 
-DEFENSIVE_INDUSTRIES = [
-    "Food & Staples Retailing",
-    "Packaged Foods",
-    "Grocery Stores",
-    "Household Products",
-    "Household & Personal Products",
-    "Confectioners",
-    "Beverages",
-    "Beverages - Non - Alcoholic",
-    "Beverages - Wineries & Distilleries",
-    "Pharmaceuticals",
-    "Health Care Providers & Services",
-    "Health Care Equipment & Supplies",
-    "Healthcare Plans",
-    "Medical Devices",
-    "Medical Instruments & Supplies",
-    "Medical Care Facilities",
-    "Diagnostics & Research",
-    "Drug Manufacturers - General",
-    "Drug Manufacturers - Specialty & Generic",
-    "Pharmaceutical Retailers",
-    "Health Information Services",
-    "Medical Distribution",
-    "Electric Utilities",
-    "Gas Utilities",
-    "Water Utilities",
-    "Utilities - Diversified",
-    "Utilities - Regulated Electric",
-    "Utilities - Regulated Gas",
-    "Utilities - Renewable",
-    "Utilities - Independent Power Producers",
-    "Waste Management",
-    "Pollution & Treatment Controls",
-    "Security & Protection Services",
-    "Insurance",
-    "Insurance - Property & Casualty",
-    "Insurance - Diversified",
-    "Insurance - Life",
-    "Insurance - Specialty",
-    "Insurance - Reinsurance",
-    "Insurance Brokers",
-    "REIT - Healthcare Facilities",
-    "REIT - Residential",
-]
-
 
 def _remove_alpha_numeric(string: Optional[str] = None) -> str:
     if not string:
@@ -89,7 +44,7 @@ class View(ComponentDescription):
             months=12,
         )
         prices = Prices(prices=prices_).to_dataframe()
-        figure = plot(prices, self.symbol)
+        figure = plot(prices, self.symbol, self.name)
         self.save_figure(figure)
 
     def save_figure(self, figure: go.Figure) -> None:
@@ -123,7 +78,7 @@ class TestView(BaseViews):
 
 class DefensiveIndustries(BaseViews):
     view_name: str = "defensive_industries"
-    query: str = """SELECT symbol, name, source, isin, rsi_last_value FROM analysis 
+    query: str = """SELECT symbol, name, source, isin FROM analysis 
     WHERE positive_free_cash_flow=1 
     AND positive_net_income=1 
     AND positive_operating_income=1 
@@ -134,7 +89,44 @@ class DefensiveIndustries(BaseViews):
     AND quarterly_operating_cash_flow_is_higher_than_net_income=1 
     AND operating_cash_flow_is_higher_than_net_income=1
 	AND rsi_last_value IS NOT NULL
-	ORDER BY rsi_last_value LIMIT 4"""
+	AND market_capitalization > 3000000000
+	AND industry IN (
+  'Food & Staples Retailing',
+  'Packaged Foods',
+  'Grocery Stores',
+  'Household Products',
+  'Household & Personal Products',
+  'Confectioners',
+  'Beverages',
+  'Beverages - Non - Alcoholic',
+  'Beverages - Wineries & Distilleries',
+  'Pharmaceuticals',
+  'Health Care Providers & Services',
+  'Health Care Equipment & Supplies',
+  'Healthcare Plans',
+  'Medical Devices',
+  'Medical Instruments & Supplies',
+  'Medical Care Facilities',
+  'Diagnostics & Research',
+  'Drug Manufacturers - General',
+  'Drug Manufacturers - Specialty & Generic',
+  'Pharmaceutical Retailers',
+  'Health Information Services',
+  'Medical Distribution',
+  'Electric Utilities',
+  'Gas Utilities',
+  'Water Utilities',
+  'Utilities - Diversified',
+  'Utilities - Regulated Electric',
+  'Utilities - Regulated Gas',
+  'Utilities - Renewable',
+  'Utilities - Independent Power Producers',
+  'Waste Management',
+  'Pollution & Treatment Controls',
+  'Security & Protection Services',
+  'Insurance',
+  'Insurance - Property & Casual')
+	ORDER BY price_per_earning_ratio"""
 
 
 class ViewsFactory(BaseModel):

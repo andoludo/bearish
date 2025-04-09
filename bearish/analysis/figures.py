@@ -1,9 +1,11 @@
+from typing import Optional
+
 import pandas as pd
 from plotly.subplots import make_subplots  # type: ignore
 import plotly.graph_objects as go  # type: ignore
 
 
-def plot(data: pd.DataFrame, symbol: str) -> go.Figure:
+def plot(data: pd.DataFrame, symbol: str, name: Optional[str] = None) -> go.Figure:
     data.ta.sma(50, append=True)
     data.ta.sma(200, append=True)
     data.ta.adx(append=True)
@@ -21,9 +23,9 @@ def plot(data: pd.DataFrame, symbol: str) -> go.Figure:
             [{}],  # Row 4: MACD
         ],
         subplot_titles=(
-            f"Price + SMAs ({symbol})",
-            f"RSI ({symbol})",
-            f"MACD ({symbol})",
+            f"Price + SMAs ({symbol} [{name}])",
+            f"RSI ({symbol} [{name}])",
+            f"MACD ({symbol} [{name}])",
         ),
     )
     # Row 1: Candlestick + SMAs
