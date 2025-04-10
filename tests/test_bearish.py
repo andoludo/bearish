@@ -7,6 +7,7 @@ import pytest
 import requests_mock
 
 from bearish.analysis.analysis import Analysis
+from bearish.analysis.figures import plot
 from bearish.analysis.view import TestView
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish, Filter

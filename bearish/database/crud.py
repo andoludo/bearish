@@ -148,6 +148,9 @@ class BearishDb(BearishDbBase):
             balance_sheets = self._read_asset_type(
                 session, BalanceSheet, BalanceSheetORM, query
             )
+            earnings_date = self._read_asset_type(
+                session, EarningsDate, EarningsDateORM, query
+            )
             quarterly_financial_metrics = self._read_asset_type(
                 session, QuarterlyFinancialMetrics, QuarterlyFinancialMetricsORM, query
             )
@@ -164,6 +167,7 @@ class BearishDb(BearishDbBase):
                 quarterly_financial_metrics=quarterly_financial_metrics,
                 quarterly_cash_flows=quarterly_cash_flows,
                 quarterly_balance_sheets=quarterly_balance_sheets,
+                earnings_date=earnings_date,
             )
 
     def _read_assets(self, query: "AssetQuery") -> Assets:
@@ -197,6 +201,7 @@ class BearishDb(BearishDbBase):
                 QuarterlyBalanceSheetORM,
                 QuarterlyCashFlowORM,
                 QuarterlyFinancialMetricsORM,
+                EarningsDateORM,
             ]
         ],
         query: "AssetQuery",

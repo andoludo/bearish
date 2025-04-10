@@ -10,6 +10,7 @@ from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.models.assets.assets import Assets
 from bearish.models.base import TrackerQuery, Tracker, Ticker
 from bearish.models.financials.base import Financials
+from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
 
@@ -40,6 +41,10 @@ class BearishDbBase(BaseModel):
     @validate_call
     def read_financials(self, query: AssetQuery) -> Financials:
         return self._read_financials(query)
+
+    def read_earnings_date(self, query: AssetQuery) -> List[EarningsDate]:
+        financials = self.read_financials(query)
+        return financials.earnings_date
 
     @validate_call
     def read_assets(self, query: AssetQuery) -> Assets:

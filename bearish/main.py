@@ -348,6 +348,7 @@ def tickers(
     countries: Annotated[List[CountriesEnum], typer.Argument()],
     filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
+    skip_base_tickers: Optional[bool] = False,
 ) -> None:
     with console.status("[bold green]Fetching Tickers data..."):
         logger.info(
@@ -355,8 +356,9 @@ def tickers(
         )
         source_api_keys = SourceApiKeys.from_file(api_keys)
         bearish = Bearish(path=path, api_keys=source_api_keys)
-        console.log("[green]Fetching base Tickers[/green]")
-        bearish.write_assets()
+        if not skip_base_tickers:
+            console.log("[green]Fetching base Tickers[/green]")
+            bearish.write_assets()
         filter = Filter(countries=countries, filters=filters)
         console.log("[green]Fetching detailed Tickers[/green]")
         bearish.get_detailed_tickers(filter)
@@ -407,6 +409,18 @@ def analysis(
         bearish.run_analysis(filter)
         ViewsFactory().compute(bearish_db=bearish._bearish_db)
         console.log("[bold][red]Analysis done!")
+
+
+@app.command()
+def views(
+    path: Path,
+    api_keys: Optional[Path] = None,
+) -> None:
+    with console.status("[bold green]Running views..."):
+        source_api_keys = SourceApiKeys.from_file(api_keys)
+        bearish = Bearish(path=path, api_keys=source_api_keys)
+        ViewsFactory().compute(bearish_db=bearish._bearish_db)
+        console.log("[bold][red]views done!")
 
 
 @app.command()

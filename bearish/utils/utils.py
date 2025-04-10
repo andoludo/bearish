@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from math import isnan
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 import pandas as pd
 
@@ -67,3 +67,14 @@ def get_start_date(type: SeriesLength) -> Optional[str]:
         past_date = datetime.today() - timedelta(days=int(type.replace("d", "")))
         from_ = str(past_date.strftime("%Y-%m-%d"))
     return from_
+
+
+def to_dataframe(datas: List[Any]) -> pd.DataFrame:
+    data = pd.DataFrame.from_records([p.model_dump() for p in datas])
+    if data.empty:
+        return data
+    data = data.set_index("date", inplace=False)
+    data = data.sort_index(inplace=False)
+
+    data.index = pd.to_datetime(data.index, utc=True)
+    return data
