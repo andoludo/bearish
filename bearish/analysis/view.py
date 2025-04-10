@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, TYPE_CHECKING
 
+import pandas as pd
 import plotly.graph_objects as go  # type: ignore
 from pydantic import BaseModel, Field
 
@@ -11,6 +12,7 @@ from bearish.models.assets.base import ComponentDescription
 from bearish.models.base import Ticker
 from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
+from bearish.utils.utils import to_dataframe
 
 if TYPE_CHECKING:
     from bearish.interface.interface import BearishDbBase
@@ -28,57 +30,67 @@ class View(ComponentDescription):
     def set_view_name(self, view_name: str) -> None:
         self.view_name = view_name
 
-    def plot(self, bearish_db: "BearishDbBase") -> None:
+    def plot(
+        self, bearish_db: "BearishDbBase", view_path: Path, show: bool = False
+    ) -> None:
+        query = AssetQuery(  # type: ignore
+            symbols=Symbols(  # type: ignore
+                equities=[
+                    Ticker(
+                        symbol=self.symbol,
+                        source=self.source,
+                        exchange=self.exchange,
+                    )
+                ]
+            )
+        )
         prices_ = bearish_db.read_series(
-            AssetQuery(  # type: ignore
-                symbols=Symbols(  # type: ignore
-                    equities=[
-                        Ticker(
-                            symbol=self.symbol,
-                            source=self.source,
-                            exchange=self.exchange,
-                        )
-                    ]
-                )
-            ),
+            query,
             months=12,
         )
         prices = Prices(prices=prices_).to_dataframe()
-        figure = plot(prices, self.symbol, self.name)
-        self.save_figure(figure)
+        earnings_date = to_dataframe(bearish_db.read_earnings_date(query))
 
-    def save_figure(self, figure: go.Figure) -> None:
-        now = datetime.now()
-        formatted = now.strftime("%Y_%m_%d_%H_%M_%S")
-        view_path = Path.cwd().joinpath(
-            f"view_{_remove_alpha_numeric(self.view_name).lower()}_{formatted}"
+        figure = plot(
+            prices,
+            self.symbol,
+            self.name,
+            dates=earnings_date.index.to_series()[
+                (earnings_date.index >= prices.index[0])
+                & (earnings_date.index <= prices.index[-1] + pd.Timedelta(days=100))
+            ],
         )
-        view_path.mkdir(parents=True, exist_ok=True)
-        figure.write_html(
-            view_path.joinpath(f"{_remove_alpha_numeric(self.symbol).lower()}.html")
-        )
+        if show:
+            figure.show()
+        else:
+            self.save_figure(figure, view_path)
+
+    def save_figure(self, figure: go.Figure, view_path: Path) -> None:
+
+        figure.write_html(view_path.joinpath(f"{self.name}.html"))
 
 
 class BaseViews(BaseModel):
-    view_name: str
     query: str
 
-    def compute(self, bearish_db: "BearishDbBase") -> None:
+    def compute(self, bearish_db: "BearishDbBase", view_path: Path) -> None:
         views = bearish_db.read_views(self.query)
         for view in views:
             view.set_view_name(self.view_name)
-            view.plot(bearish_db)
+            view.plot(bearish_db, view_path)
         bearish_db.write_views(views)
+
+    @property
+    def view_name(self) -> str:
+        return self.__class__.__name__.lower()
 
 
 class TestView(BaseViews):
-    view_name: str = "Test views"
     query: str = """SELECT symbol, name, source, isin FROM analysis"""
 
 
-class DefensiveIndustries(BaseViews):
-    view_name: str = "defensive_industries"
-    query: str = """SELECT symbol, name, source, isin FROM analysis 
+class DefensiveLargeCapLoser(BaseViews):
+    query: str = """SELECT symbol, name, source , last_month_max_growth FROM analysis 
     WHERE positive_free_cash_flow=1 
     AND positive_net_income=1 
     AND positive_operating_income=1 
@@ -89,7 +101,9 @@ class DefensiveIndustries(BaseViews):
     AND quarterly_operating_cash_flow_is_higher_than_net_income=1 
     AND operating_cash_flow_is_higher_than_net_income=1
 	AND rsi_last_value IS NOT NULL
-	AND market_capitalization > 3000000000
+	AND market_capitalization > 10000000000
+	AND last_month_max_growth <0
+	AND price_per_earning_ratio < 30
 	AND industry IN (
   'Food & Staples Retailing',
   'Packaged Foods',
@@ -126,12 +140,56 @@ class DefensiveIndustries(BaseViews):
   'Security & Protection Services',
   'Insurance',
   'Insurance - Property & Casual')
-	ORDER BY price_per_earning_ratio"""
+	ORDER BY last_month_max_growth ASC"""
+
+
+class EuropeanLargeCapLoser(BaseViews):
+    query: str = """SELECT symbol, name, source , last_month_max_growth, last_year_max_growth FROM analysis 
+    WHERE positive_free_cash_flow=1 
+    AND positive_net_income=1 
+    AND positive_operating_income=1 
+    AND quarterly_positive_free_cash_flow=1 
+    AND quarterly_positive_net_income=1 
+    AND quarterly_positive_operating_income=1 
+    AND growing_net_income=1 
+    AND quarterly_operating_cash_flow_is_higher_than_net_income=1 
+    AND operating_cash_flow_is_higher_than_net_income=1
+	AND rsi_last_value IS NOT NULL
+	AND market_capitalization > 10000000000
+	AND last_month_max_growth <0
+	AND price_per_earning_ratio < 30
+	AND country IN (
+    'Germany',
+    'France',
+    'Netherlands',
+    'Belgium',
+    'Italy',
+    'Spain',
+    'Switzerland',
+    'Sweden',
+    'Denmark',
+    'Norway',
+    'Finland',
+    'Portugal',
+    'Austria'
+)
+	ORDER BY last_month_max_growth ASC"""
 
 
 class ViewsFactory(BaseModel):
-    views: list[BaseViews] = Field(default_factory=lambda: [DefensiveIndustries()])  # type: ignore
+    views: list[BaseViews] = Field(
+        default_factory=lambda: [DefensiveLargeCapLoser(), EuropeanLargeCapLoser()]
+    )
 
     def compute(self, bearish_db: "BearishDbBase") -> None:
         for view in self.views:
-            view.compute(bearish_db)
+            view.compute(bearish_db, self.view_path(view.view_name))
+
+    def view_path(self, view_name: str) -> Path:
+        now = datetime.now()
+        formatted = now.strftime("%Y_%m_%d_%H_%M")
+        view_path = Path.cwd().joinpath(
+            f"view_{_remove_alpha_numeric(view_name).lower()}_{formatted}"
+        )
+        view_path.mkdir(parents=True, exist_ok=True)
+        return view_path

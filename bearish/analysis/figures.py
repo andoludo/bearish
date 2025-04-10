@@ -5,7 +5,12 @@ from plotly.subplots import make_subplots  # type: ignore
 import plotly.graph_objects as go  # type: ignore
 
 
-def plot(data: pd.DataFrame, symbol: str, name: Optional[str] = None) -> go.Figure:
+def plot(
+    data: pd.DataFrame,
+    symbol: str,
+    name: Optional[str] = None,
+    dates: Optional[pd.Series] = None,  # type: ignore
+) -> go.Figure:
     data.ta.sma(50, append=True)
     data.ta.sma(200, append=True)
     data.ta.adx(append=True)
@@ -81,6 +86,11 @@ def plot(data: pd.DataFrame, symbol: str, name: Optional[str] = None) -> go.Figu
         row=4,
         col=1,
     )
+    if dates is not None and not dates.empty:
+        for date in dates:
+            fig.add_vline(
+                x=date, line_dash="dashdot", line_color="MediumPurple", line_width=3
+            )
 
     # Layout tweaks
     fig.update_layout(

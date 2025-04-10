@@ -10,7 +10,7 @@ from pydantic import BeforeValidator, Field, BaseModel
 from bearish.models.base import Ticker
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery, Symbols
-from bearish.utils.utils import to_float
+from bearish.utils.utils import to_float, to_dataframe
 
 import pandas_ta as ta  # type: ignore
 
@@ -225,15 +225,7 @@ class Prices(BaseModel):
         return cls(prices=prices)
 
     def to_dataframe(self) -> pd.DataFrame:
-
-        data = pd.DataFrame.from_records([p.model_dump() for p in self.prices])
-        if data.empty:
-            return data
-        data = data.set_index("date", inplace=False)
-        data = data.sort_index(inplace=False)
-
-        data.index = pd.to_datetime(data.index, utc=True)
-        return data
+        return to_dataframe(self.prices)
 
     def to_csv(self, json_path: Path | str) -> None:
         self.to_dataframe().to_csv(json_path)
