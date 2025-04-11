@@ -62,8 +62,10 @@ def perc(data: pd.Series) -> float:  # type: ignore
 
 def yoy(prices: pd.DataFrame) -> pd.Series:  # type: ignore
     return prices.close.resample("Y").apply(perc)  # type: ignore
-
-
+def mom(prices: pd.DataFrame) -> pd.Series:  # type: ignore
+    return prices.close.resample("M").apply(perc)  # type: ignore
+def wow(prices: pd.DataFrame) -> pd.Series:  # type: ignore
+    return prices.close.resample("W").apply(perc)  # type: ignore
 class TechnicalAnalysis(BaseModel):
     rsi_last_value: Optional[float] = None
     macd_12_26_9_buy_date: Optional[date] = None
@@ -154,6 +156,18 @@ class TechnicalAnalysis(BaseModel):
             default=None,
         ),
     ]
+    star_wow: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
+    star_mom: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
 
     @classmethod
     def from_data(cls, prices: pd.DataFrame) -> "TechnicalAnalysis":
@@ -186,7 +200,9 @@ class TechnicalAnalysis(BaseModel):
             macd_12_26_9_buy_date = buy_opportunity(
                 prices.MACDs_12_26_9, prices.MACD_12_26_9
             )
-            star_yoy = yoy(prices).median() > 25  # noqa: PLR2004
+            star_yoy = yoy(prices).median()
+            star_mom = mom(prices).median()
+            star_wow = wow(prices).median()
             try:
                 macd_12_26_9_buy = (
                     prices.MACD_12_26_9.iloc[-1] > prices.MACDs_12_26_9.iloc[-1]
@@ -221,6 +237,8 @@ class TechnicalAnalysis(BaseModel):
                 last_month_max_growth=last_month_max_growth,
                 last_year_max_growth=last_year_max_growth,
                 star_yoy=star_yoy,
+                star_mom=star_mom,
+                star_wow=star_wow,
             )
         except Exception as e:
             logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)
