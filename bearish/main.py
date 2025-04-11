@@ -181,8 +181,8 @@ class Bearish(BaseModel):
     def read_financials(self, assets_query: AssetQuery) -> Financials:
         return self._bearish_db.read_financials(assets_query)
 
-    def read_series(self, assets_query: AssetQuery) -> List[Price]:
-        return self._bearish_db.read_series(assets_query)
+    def read_series(self, assets_query: AssetQuery, months: int = 1) -> List[Price]:
+        return self._bearish_db.read_series(assets_query, months=months)
 
     def _get_tracked_tickers(self, tracker_query: TrackerQuery) -> List[Ticker]:
         return self._bearish_db.read_tracker(tracker_query)

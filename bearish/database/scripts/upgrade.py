@@ -14,4 +14,4 @@ def upgrade(database_url: str) -> None:
 
 
 if __name__ == "__main__":
-    upgrade("sqlite:////home/aan/Documents/bearish/test4.db")
+    upgrade("sqlite:////home/aan/Documents/bearish/france_germany.db")

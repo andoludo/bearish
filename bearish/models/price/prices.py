@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Optional, TYPE_CHECKING
+from typing import Annotated, Optional, TYPE_CHECKING, cast
 
 import numpy as np
 import pandas as pd
@@ -54,6 +54,14 @@ def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> Optional
     return (  # type: ignore
         (prices_.loc[last_index].close - price) * 100 / prices_.loc[last_index].close
     )
+
+
+def perc(data: pd.Series) -> float:  # type: ignore
+    return cast(float, ((data[-1] - data[0]) / data[0]) * 100)
+
+
+def yoy(prices: pd.DataFrame) -> pd.Series:  # type: ignore
+    return prices.close.resample("Y").apply(perc)  # type: ignore
 
 
 class TechnicalAnalysis(BaseModel):
@@ -140,6 +148,12 @@ class TechnicalAnalysis(BaseModel):
             default=None,
         ),
     ]
+    star_yoy: Annotated[
+        Optional[float],
+        Field(
+            default=None,
+        ),
+    ]
 
     @classmethod
     def from_data(cls, prices: pd.DataFrame) -> "TechnicalAnalysis":
@@ -172,6 +186,7 @@ class TechnicalAnalysis(BaseModel):
             macd_12_26_9_buy_date = buy_opportunity(
                 prices.MACDs_12_26_9, prices.MACD_12_26_9
             )
+            star_yoy = yoy(prices).median() > 25  # noqa: PLR2004
             try:
                 macd_12_26_9_buy = (
                     prices.MACD_12_26_9.iloc[-1] > prices.MACDs_12_26_9.iloc[-1]
@@ -205,6 +220,7 @@ class TechnicalAnalysis(BaseModel):
                 last_week_max_growth=last_week_max_growth,
                 last_month_max_growth=last_month_max_growth,
                 last_year_max_growth=last_year_max_growth,
+                star_yoy=star_yoy,
             )
         except Exception as e:
             logger.error(f"Failing to calculate technical analysis: {e}", exc_info=True)
@@ -220,7 +236,7 @@ class Prices(BaseModel):
     @classmethod
     def from_ticker(cls, bearish_db: "BearishDbBase", ticker: Ticker) -> "Prices":
         prices = bearish_db.read_series(
-            AssetQuery(symbols=Symbols(equities=[ticker])), months=12 * 5  # type: ignore
+            AssetQuery(symbols=Symbols(equities=[ticker])), months=12 * 8  # type: ignore
         )
         return cls(prices=prices)
 

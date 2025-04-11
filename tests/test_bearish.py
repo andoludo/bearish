@@ -14,7 +14,7 @@ from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.base import Ticker, TrackerQuery
 from bearish.models.price.price import Price
-from bearish.models.price.prices import Prices
+from bearish.models.price.prices import Prices, yoy
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.sources.alphavantage import AlphaVantageBase, AlphaVantageSource
 from bearish.sources.financedatabase import (
@@ -516,3 +516,14 @@ def test_analysis(bearish_db_with_assets: BearishDb):
     bearish_db_with_assets.write_analysis(analysis)
     analysis = bearish_db_with_assets.read_analysis(Ticker(symbol="DAL"))
     assert analysis
+
+
+def test_star_prices() -> None:
+    yoy_ = []
+    for ticker in ["NVDA", "RHM.DE", "TSM", "PLTR", "SMCI", "MSFT"]:
+        prices = Prices.from_csv(
+            Path(__file__).parent / "data" / f"prices_{ticker.lower()}.csv"
+        ).to_dataframe()
+        yoy_.append(yoy(prices))
+    median = pd.concat(yoy_).median()
+    assert median > 30
