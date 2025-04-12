@@ -62,10 +62,16 @@ def perc(data: pd.Series) -> float:  # type: ignore
 
 def yoy(prices: pd.DataFrame) -> pd.Series:  # type: ignore
     return prices.close.resample("Y").apply(perc)  # type: ignore
+
+
 def mom(prices: pd.DataFrame) -> pd.Series:  # type: ignore
     return prices.close.resample("M").apply(perc)  # type: ignore
+
+
 def wow(prices: pd.DataFrame) -> pd.Series:  # type: ignore
     return prices.close.resample("W").apply(perc)  # type: ignore
+
+
 class TechnicalAnalysis(BaseModel):
     rsi_last_value: Optional[float] = None
     macd_12_26_9_buy_date: Optional[date] = None
