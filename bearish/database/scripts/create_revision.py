@@ -15,4 +15,4 @@ def create_revision(database_url: str, message: str) -> None:
 
 if __name__ == "__main__":
     message = "price growth"
-    create_revision("sqlite:////home/aan/Documents/bearish/test4.db", message)
+    create_revision("sqlite:////home/aan/Documents/bearish/france_germany.db", message)

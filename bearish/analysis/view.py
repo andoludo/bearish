@@ -176,9 +176,35 @@ class EuropeanLargeCapLoser(BaseViews):
 	ORDER BY last_month_max_growth ASC"""
 
 
+class RisingStars(BaseViews):
+    query: str = """SELECT 
+    symbol, 
+    name, 
+    star_wow, 
+    star_mom, 
+    star_yoy, 
+    country, 
+    last_price
+FROM 
+    ANALYSIS
+WHERE 
+    positive_free_cash_flow = 1
+    AND operating_cash_flow_is_higher_than_net_income = 1
+    AND market_capitalization > 1000000000
+    AND country IN ('Germany', 'United states','France')
+ORDER BY 
+    star_yoy DESC,
+    last_price ASC
+LIMIT 50;"""
+
+
 class ViewsFactory(BaseModel):
     views: list[BaseViews] = Field(
-        default_factory=lambda: [DefensiveLargeCapLoser(), EuropeanLargeCapLoser()]
+        default_factory=lambda: [
+            DefensiveLargeCapLoser(),
+            EuropeanLargeCapLoser(),
+            RisingStars(),
+        ]
     )
 
     def compute(self, bearish_db: "BearishDbBase") -> None:
