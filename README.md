@@ -79,7 +79,9 @@ bearish run /path/to/sqlite/db Belgium France --api-keys=config.json
 > ⏱️ This operation can take some time depending on the size of the country’s exchange — data is fetched "politely", not in bulk.
 
 Once your database is populated, future updates are quicker.
+
 ![img.png](docs/img/img.png)
+
 ---
 
 
