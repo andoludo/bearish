@@ -68,7 +68,7 @@ class YfinanceFinancialBase(YfinanceBase):
         ]
 
 
-@retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(10))
 def get_info(
     ticker: Ticker, function: Callable[[str, yf.Ticker], Dict[str, Any]]
 ) -> Dict[str, Any]:
@@ -100,7 +100,7 @@ class YfinanceAssetBase(YfinanceBase):
                 logger.error(f"Error reading {ticker.symbol}: {e}")
                 failed_query.append(ticker)
                 continue
-            time.sleep(0.1)
+            time.sleep(1)
             logger.info(f"Successfully read {ticker.symbol}")
             equities.append(cls.model_validate(info))
         return YfinanceAssetOutput(equities=equities, failed_query=failed_query)
