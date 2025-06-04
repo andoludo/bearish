@@ -27,7 +27,7 @@ def to_datetime(value: Any) -> datetime:
     elif isinstance(value, pd.Timestamp):
         if value.tz is not None:
             value = value.tz_convert(None)
-        return value.to_pydatetime()
+        return value.to_pydatetime()  # type: ignore
     elif isinstance(value, datetime):
         return value
     else:

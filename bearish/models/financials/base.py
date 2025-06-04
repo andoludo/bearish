@@ -38,7 +38,7 @@ def _load_data(
 def _compute_growth(series: pd.Series) -> bool:  # type: ignore
     if series.empty:
         return False
-    return all(series.pct_change(fill_method=None).dropna() > 0)  # type: ignore
+    return all(series.pct_change(fill_method=None).dropna() > 0)
 
 
 def _all_positive(series: pd.Series) -> bool:  # type: ignore
