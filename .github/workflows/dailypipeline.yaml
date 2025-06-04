@@ -1,0 +1,33 @@
+name: DailyPipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          ref: ${{ github.ref_name }}
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install graphviz
+        run: |
+          sudo apt update
+          sudo apt install graphviz
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Install nox dependencies
+        run: poetry run nox -s install
+      - name: Run tests
+        run: poetry run nox -s tests
