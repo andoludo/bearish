@@ -83,56 +83,46 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @validate_call(validate_return=True)
     @check_api_limit
-    def read_financials(self, ticker: Ticker) -> Financials:
-        if not self.exchanges.ticker_belongs_to_countries(
+    def read_financials(self, tickers: List[Ticker]) -> List[Financials]:
+
+        tickers = [ticker for ticker in tickers if self.exchanges.ticker_belongs_to_countries(
             ticker, countries=self.countries
-        ):
-            logger.warning(
-                f"Trying to access Financials from {type(self).__name__} "
-                f"for tickers ({ticker.symbol}) not in {self.countries}"
-            )
-            return Financials()
+        )]
         try:
-            logger.info(f"Reading Financials from {type(self).__name__}: for {ticker}")
-            return self._read_financials(ticker.symbol)
+            logger.info(f"Reading Financials from {type(self).__name__}")
+            return self._read_financials([t.symbol for t in tickers])
         except InvalidApiKeyError as e:
             raise e
         except Exception as e:
             logger.error(
-                f"Error reading Financials ({ticker.symbol})from {type(self).__name__}: {e}"
+                f"Error reading Financials from {type(self).__name__}: {e}"
             )
-            return Financials()
+            return []
 
     @validate_call(validate_return=True)
     @check_api_limit
-    def read_series(self, ticker: Ticker, type_: SeriesLength) -> List[Price]:
-        if not self.exchanges.ticker_belongs_to_countries(
+    def read_series(self, tickers: List[Ticker], type_: SeriesLength) -> List[Price]:
+        tickers = [ticker  for ticker in tickers if self.exchanges.ticker_belongs_to_countries(
             ticker, countries=self.countries
-        ):
-            logger.warning(
-                f"Trying to access prices from {type(self).__name__} "
-                f"for tickers ({ticker.symbol}) not in {self.countries}"
-            )
-            return []
+        )]
         try:
-            logger.info(f"Reading Prices from {type(self).__name__}: for {ticker}")
-            return self._read_series(ticker.symbol, type_)
+            return self._read_series([t.symbol for t in tickers], type_)
         except InvalidApiKeyError as e:
             raise e
         except Exception as e:
             logger.error(
-                f"Error reading prices ({ticker.symbol}) from {type(self).__name__}: {e}"
+                f"Error reading prices from {type(self).__name__}: {e}"
             )
             return []
 
     @abc.abstractmethod
-    def _read_financials(self, ticker: str) -> Financials: ...
+    def _read_financials(self, tickers: List[str]) -> List[Financials]: ...
 
     @abc.abstractmethod
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets: ...
 
     @abc.abstractmethod
-    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]: ...
+    def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]: ...
 
     @abc.abstractmethod
     def set_api_key(self, api_key: str) -> None: ...

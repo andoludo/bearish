@@ -60,12 +60,15 @@ class YfinanceFinancialBase(YfinanceBase):
         transpose: bool = True,
         prefix: Optional[str] = None,
     ) -> List["YfinanceFinancialBase"]:
-
-        data = get_data_frame(ticker_, attribute, transpose=transpose, prefix=prefix)
-        return [
-            cls.model_validate(data_ | {"symbol": ticker_.ticker})
-            for data_ in data.to_dict(orient="records")
-        ]
+        try:
+            data = get_data_frame(ticker_, attribute, transpose=transpose, prefix=prefix)
+            return [
+                cls.model_validate(data_ | {"symbol": ticker_.ticker})
+                for data_ in data.to_dict(orient="records")
+            ]
+        except Exception as e:
+            logger.error(f"Error reading {ticker_.ticker} {attribute}: {e}")
+            return []
 
 
 @retry(stop=stop_after_attempt(2), wait=wait_fixed(10))
@@ -380,26 +383,36 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             ),
         )
 
-    def _read_financials(self, ticker: str) -> Financials:
-        ticker_ = yf.Ticker(ticker)
-        return Financials(
-            financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
-            balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
-            cash_flows=yFinanceCashFlow.from_ticker(ticker_),
-            quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(
-                ticker_, prefix="quarterly"
-            ),
-            quarterly_balance_sheets=yFinanceBalanceSheet.from_ticker(
-                ticker_, prefix="quarterly"
-            ),
-            quarterly_cash_flows=yFinanceCashFlow.from_ticker(
-                ticker_, prefix="quarterly"
-            ),
-            earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
-        )
+    def _read_financials(self, tickers: List[str]) -> List[Financials]:
+        financials = []
+        for ticker in tickers:
+            try:
+                ticker_ = yf.Ticker(ticker)
+            except Exception as e:
+                logger.error(f"Error reading financials for {ticker}: {e}")
+                continue
+            financials.append(Financials(
+                financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
+                balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
+                cash_flows=yFinanceCashFlow.from_ticker(ticker_),
+                quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(
+                    ticker_, prefix="quarterly"
+                ),
+                quarterly_balance_sheets=yFinanceBalanceSheet.from_ticker(
+                    ticker_, prefix="quarterly"
+                ),
+                quarterly_cash_flows=yFinanceCashFlow.from_ticker(
+                    ticker_, prefix="quarterly"
+                ),
+                earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
+            ))
+        return financials
 
-    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:
-        ticker_ = yf.Ticker(ticker)
-        data = ticker_.history(period=type)
-        records = data.reset_index().to_dict(orient="records")
-        return [yFinancePrice(**(record | {"symbol": ticker})) for record in records]
+    def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]:
+        data = yf.download(tickers, period="5y", group_by="ticker", auto_adjust=True)
+        records_final = []
+        for ticker in tickers:
+            if ticker in data.columns:
+                records = data[ticker].reset_index().to_dict(orient="records")
+                records_final.extend([yFinancePrice(**(record | {"symbol": ticker})) for record in records])
+        return records_final

@@ -182,7 +182,7 @@ def test_update_financials(bearish_db: BearishDb):
         financials_sources=[yFinanceSource()],
     )
     bearish.write_many_financials(
-        [Ticker(symbol="AAPL", source="Yfinance", exchange="NASDAQ")]
+        [Ticker(symbol="AAPL", source="Yfinance", exchange="NASDAQ"),Ticker(symbol="AIR.PA")]
     )
     financials = bearish.read_financials(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
@@ -377,7 +377,10 @@ def test_write_assets_yfinance(bearish_db: BearishDb):
         asset_sources=[],
         price_sources=[yFinanceSource()],
     )
-    bearish.write_many_series(tickers=[Ticker(symbol="AIR.PA")], type="1d")
+    bearish.write_many_series(tickers=[Ticker(symbol="AIR.PA"),Ticker(symbol="BNP.PA"),
+                Ticker(symbol="AIR.PA"),
+                Ticker(symbol="MC.PA"),
+                Ticker(symbol="ORA.PA"),], type="1d")
     prices = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
     )
@@ -428,7 +431,12 @@ def test_write_financials_yfinance(bearish_db: BearishDb):
         price_sources=[],
         financials_sources=[yFinanceSource()],
     )
-    bearish.write_many_financials([Ticker(symbol="MLHCF.PA")])
+    bearish.write_many_financials([Ticker(symbol="MLHCF.PA"),
+                Ticker(symbol="BNP.PA"),
+                Ticker(symbol="AIR.PA"),
+                Ticker(symbol="MC.PA"),
+                Ticker(symbol="ORA.PA"),
+            ])
     financials = bearish.read_financials(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="MLHCF.PA")]))
     )

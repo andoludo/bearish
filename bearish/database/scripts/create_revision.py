@@ -4,6 +4,8 @@ from pathlib import Path
 from alembic import command
 from alembic.config import Config
 
+from bearish.database.settings import DATABASE_URL
+
 
 def create_revision(database_url: str, message: str) -> None:
     os.environ.update({"DATABASE_URL": database_url})
@@ -15,4 +17,4 @@ def create_revision(database_url: str, message: str) -> None:
 
 if __name__ == "__main__":
     message = "price growth"
-    create_revision("sqlite:////home/aan/Documents/bearish/france_germany.db", message)
+    create_revision(DATABASE_URL, message)

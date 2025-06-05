@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Optional
+from typing import List, TYPE_CHECKING, Optional, Type, Union
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, validate_call
@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, validate_call
 from bearish.analysis.view import View
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.models.assets.assets import Assets
-from bearish.models.base import TrackerQuery, Tracker, Ticker
+from bearish.models.base import TrackerQuery,  Ticker, PriceTracker, FinancialsTracker, BaseTracker
 from bearish.models.financials.base import Financials
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.price.price import Price
@@ -31,7 +31,7 @@ class BearishDbBase(BaseModel):
         return self._write_series(series)
 
     @validate_call
-    def write_financials(self, financials: Financials) -> None:
+    def write_financials(self, financials: List[Financials]) -> None:
         return self._write_financials(financials)
 
     @validate_call
@@ -62,11 +62,12 @@ class BearishDbBase(BaseModel):
         return self._write_source(source)
 
     @validate_call
-    def read_tracker(self, tracker_query: TrackerQuery) -> List[Ticker]:
-        return self._read_tracker(tracker_query)
+    def read_tracker(self, tracker_query: TrackerQuery, tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]]) -> List[Ticker]:
+        return self._read_tracker(tracker_query, tracker_type)
 
-    def write_tracker(self, tracker: Tracker) -> None:
-        return self._write_tracker(tracker)
+    def write_trackers(self, trackers: List[FinancialsTracker] | List[PriceTracker]) -> None:
+        tracker_type = type(trackers[0])
+        return self._write_trackers(trackers, tracker_type)
 
     def write_analysis(self, analysis: "Analysis") -> None:
         return self._write_analysis(analysis)
@@ -90,7 +91,7 @@ class BearishDbBase(BaseModel):
     def _write_series(self, series: List[Price]) -> None: ...
 
     @abc.abstractmethod
-    def _write_financials(self, financials: Financials) -> None: ...
+    def _write_financials(self, financials: List[Financials]) -> None: ...
 
     @abc.abstractmethod
     def _read_series(self, query: AssetQuery, months: int = 1) -> List[Price]: ...
@@ -108,9 +109,9 @@ class BearishDbBase(BaseModel):
     def _read_sources(self) -> List[str]: ...
 
     @abc.abstractmethod
-    def _read_tracker(self, tracker_query: TrackerQuery) -> List[Ticker]: ...
+    def _read_tracker(self, tracker_query: TrackerQuery, tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]]) -> List[Ticker]: ...
     @abc.abstractmethod
-    def _write_tracker(self, tracker: Tracker) -> None: ...
+    def _write_trackers(self, trackers: List[PriceTracker] | List[FinancialsTracker], tracker_type: Type[BaseTracker]) -> None: ...
 
     @abc.abstractmethod
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]: ...

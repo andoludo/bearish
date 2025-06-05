@@ -7,7 +7,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     model_validator,
-    field_validator,
+    field_validator, Field,
 )
 
 from bearish.types import Sources
@@ -37,17 +37,17 @@ class SourceBase(BaseModel, abc.ABC):
 
 
 class TrackerQuery(BaseModel):
-    financials: bool = False
-    price: bool = False
     exchange: Optional[str] = None
 
 
-class Tracker(TrackerQuery):
+class BaseTracker(TrackerQuery):
     source: str
     symbol: str
-    price_date: Optional[datetime.date] = None
+    date: datetime.date = Field(default_factory=date.today)
 
 
+class PriceTracker(BaseTracker):...
+class FinancialsTracker(BaseTracker):...
 class DataSourceBase(SourceBase, Ticker):
     source: Sources
     date: datetime.date
@@ -69,9 +69,13 @@ class DataSourceBase(SourceBase, Ticker):
         alias = cls.__alias__.copy()
         alias = {**alias, **default_keys}
 
+
         created_at = date.today()
+        current_date = metrics.get("date", created_at)
+        if isinstance(current_date, datetime.datetime):
+            current_date = current_date.date()
         return (
-            {"date": metrics.get("date", created_at)}
+            {"date": current_date}
             | {
                 alias.get(key, key): value
                 for key, value in metrics.items()
