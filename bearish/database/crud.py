@@ -51,6 +51,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
+from bearish.utils.utils import batch
 
 if TYPE_CHECKING:
     from bearish.models.query.query import AssetQuery
@@ -86,13 +87,11 @@ class BearishDb(BearishDbBase):
 
     def _write_series(self, series: List["Price"]) -> None:
         with Session(self._engine) as session:
-            stmt = (
-                insert(PriceORM)
-                .prefix_with("OR REPLACE")
-                .values([serie.model_dump() for serie in series])
-            )
-
-            session.exec(stmt)  # type: ignore
+            data = [serie.model_dump() for serie in series]
+            chunks = batch(data, 1000)
+            for chunk in chunks:
+                stmt = insert(PriceORM).prefix_with("OR REPLACE").values(chunk)
+                session.exec(stmt)  # type: ignore
             session.commit()
 
     def _write_financials(self, financials: List[Financials]) -> None:
