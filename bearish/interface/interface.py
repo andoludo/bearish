@@ -8,7 +8,13 @@ from pydantic import BaseModel, ConfigDict, validate_call
 from bearish.analysis.view import View
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.models.assets.assets import Assets
-from bearish.models.base import TrackerQuery,  Ticker, PriceTracker, FinancialsTracker, BaseTracker
+from bearish.models.base import (
+    TrackerQuery,
+    Ticker,
+    PriceTracker,
+    FinancialsTracker,
+    BaseTracker,
+)
 from bearish.models.financials.base import Financials
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.price.price import Price
@@ -62,10 +68,16 @@ class BearishDbBase(BaseModel):
         return self._write_source(source)
 
     @validate_call
-    def read_tracker(self, tracker_query: TrackerQuery, tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]]) -> List[Ticker]:
+    def read_tracker(
+        self,
+        tracker_query: TrackerQuery,
+        tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
+    ) -> List[Ticker]:
         return self._read_tracker(tracker_query, tracker_type)
 
-    def write_trackers(self, trackers: List[FinancialsTracker] | List[PriceTracker]) -> None:
+    def write_trackers(
+        self, trackers: List[FinancialsTracker] | List[PriceTracker]
+    ) -> None:
         tracker_type = type(trackers[0])
         return self._write_trackers(trackers, tracker_type)
 
@@ -109,9 +121,17 @@ class BearishDbBase(BaseModel):
     def _read_sources(self) -> List[str]: ...
 
     @abc.abstractmethod
-    def _read_tracker(self, tracker_query: TrackerQuery, tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]]) -> List[Ticker]: ...
+    def _read_tracker(
+        self,
+        tracker_query: TrackerQuery,
+        tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
+    ) -> List[Ticker]: ...
     @abc.abstractmethod
-    def _write_trackers(self, trackers: List[PriceTracker] | List[FinancialsTracker], tracker_type: Type[BaseTracker]) -> None: ...
+    def _write_trackers(
+        self,
+        trackers: List[PriceTracker] | List[FinancialsTracker],
+        tracker_type: Type[BaseTracker],
+    ) -> None: ...
 
     @abc.abstractmethod
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]: ...

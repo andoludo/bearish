@@ -17,6 +17,7 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.types import Sources, SeriesLength
+from bearish.utils.utils import batch
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class AbstractSource(SourceBase, abc.ABC):
     countries: List[Countries]
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
     api_usage: ApiUsage = Field(default_factory=ApiUsage)
+    batch_size: int = 100
 
     @validate_call(validate_return=True)
     @check_api_limit
@@ -85,35 +87,48 @@ class AbstractSource(SourceBase, abc.ABC):
     @check_api_limit
     def read_financials(self, tickers: List[Ticker]) -> List[Financials]:
 
-        tickers = [ticker for ticker in tickers if self.exchanges.ticker_belongs_to_countries(
-            ticker, countries=self.countries
-        )]
-        try:
-            logger.info(f"Reading Financials from {type(self).__name__}")
-            return self._read_financials([t.symbol for t in tickers])
-        except InvalidApiKeyError as e:
-            raise e
-        except Exception as e:
-            logger.error(
-                f"Error reading Financials from {type(self).__name__}: {e}"
+        tickers = [
+            ticker
+            for ticker in tickers
+            if self.exchanges.ticker_belongs_to_countries(
+                ticker, countries=self.countries
             )
-            return []
+        ]
+        chunks = batch(tickers, size=self.batch_size)
+        financials = []
+        for chunk in chunks:
+            try:
+                logger.info(f"Reading Financials from {type(self).__name__}")
+                financials.extend(self._read_financials([t.symbol for t in chunk]))
+            except InvalidApiKeyError as e:  # noqa: PERF203
+                raise e
+            except Exception as e:
+                logger.error(
+                    f"Error reading Financials from {type(self).__name__}: {e}"
+                )
+
+        return financials
 
     @validate_call(validate_return=True)
     @check_api_limit
     def read_series(self, tickers: List[Ticker], type_: SeriesLength) -> List[Price]:
-        tickers = [ticker  for ticker in tickers if self.exchanges.ticker_belongs_to_countries(
-            ticker, countries=self.countries
-        )]
-        try:
-            return self._read_series([t.symbol for t in tickers], type_)
-        except InvalidApiKeyError as e:
-            raise e
-        except Exception as e:
-            logger.error(
-                f"Error reading prices from {type(self).__name__}: {e}"
+        tickers = [
+            ticker
+            for ticker in tickers
+            if self.exchanges.ticker_belongs_to_countries(
+                ticker, countries=self.countries
             )
-            return []
+        ]
+        chunks = batch(tickers, size=self.batch_size)
+        prices = []
+        for chunk in chunks:
+            try:
+                prices.extend(self._read_series([t.symbol for t in chunk], type_))
+            except InvalidApiKeyError as e:  # noqa: PERF203
+                raise e
+            except Exception as e:
+                logger.error(f"Error reading prices from {type(self).__name__}: {e}")
+        return prices
 
     @abc.abstractmethod
     def _read_financials(self, tickers: List[str]) -> List[Financials]: ...
@@ -193,8 +208,8 @@ class DatabaseCsvSource(AbstractSource):
         equities_mapping = [equity.to_dict() for _, equity in data.iterrows()]
         return [databaseclass(**equity_mapping) for equity_mapping in equities_mapping]
 
-    def _read_financials(self, ticker: str) -> Financials:
-        return Financials()
+    def _read_financials(self, tickers: List[str]) -> List[Financials]:
+        return [Financials()]
 
-    def _read_series(self, ticker: str, type: str) -> List[Price]:
+    def _read_series(self, tickers: List[str], type: str) -> List[Price]:
         return []

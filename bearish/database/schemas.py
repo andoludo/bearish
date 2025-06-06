@@ -106,12 +106,14 @@ class PriceTrackerORM(SQLModel, PriceTracker, table=True):
     source: str = Field(index=True)
     symbol: str = Field(index=True)
 
+
 class FinancialsTrackerORM(SQLModel, FinancialsTracker, table=True):
     __tablename__ = "financialstracker"
     __table_args__ = {"sqlite_autoincrement": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     source: str = Field(index=True)
     symbol: str = Field(index=True)
+
 
 class AnalysisORM(BaseTable, Analysis, table=True):  # type: ignore
     __tablename__ = "analysis"

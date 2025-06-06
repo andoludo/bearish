@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from math import isnan
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Dict
 
 import pandas as pd
 
@@ -78,3 +78,12 @@ def to_dataframe(datas: List[Any]) -> pd.DataFrame:
 
     data.index = pd.to_datetime(data.index, utc=True)
     return data
+
+
+def batch(objects: List[Any], size: int) -> List[List[Any]]:
+    return [objects[i : i + size] for i in range(0, len(objects), size)]
+
+
+def safe_get(data: Dict[str, Any], attribute: str) -> Dict[str, Any]:
+    value = data.get(attribute, {})
+    return value if isinstance(value, dict) else {}

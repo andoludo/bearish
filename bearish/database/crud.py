@@ -27,13 +27,21 @@ from bearish.database.schemas import (
     ViewORM,
     QuarterlyFinancialMetricsORM,
     QuarterlyCashFlowORM,
-    QuarterlyBalanceSheetORM, PriceTrackerORM, FinancialsTrackerORM,
+    QuarterlyBalanceSheetORM,
+    PriceTrackerORM,
+    FinancialsTrackerORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.interface.interface import BearishDbBase
 from bearish.models.assets.assets import Assets
-from bearish.models.base import TrackerQuery, Ticker, BaseTracker, FinancialsTracker, PriceTracker
+from bearish.models.base import (
+    TrackerQuery,
+    Ticker,
+    BaseTracker,
+    FinancialsTracker,
+    PriceTracker,
+)
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.base import Financials, ManyFinancials
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
@@ -89,18 +97,25 @@ class BearishDb(BearishDbBase):
 
     def _write_financials(self, financials: List[Financials]) -> None:
         many_financials = ManyFinancials(financials=financials)
-        self._write_financials_series(many_financials.get("financial_metrics"), FinancialMetricsORM)
-        self._write_financials_series(many_financials.get("cash_flows"), CashFlowORM)
-        self._write_financials_series(many_financials.get("balance_sheets"), BalanceSheetORM)
-        self._write_financials_series(many_financials.get("earnings_date"), EarningsDateORM)
         self._write_financials_series(
-             many_financials.get("quarterly_financial_metrics"), QuarterlyFinancialMetricsORM
+            many_financials.get("financial_metrics"), FinancialMetricsORM  # type: ignore
+        )
+        self._write_financials_series(many_financials.get("cash_flows"), CashFlowORM)  # type: ignore
+        self._write_financials_series(
+            many_financials.get("balance_sheets"), BalanceSheetORM  # type: ignore
         )
         self._write_financials_series(
-           many_financials.get("quarterly_cash_flows"), QuarterlyCashFlowORM
+            many_financials.get("earnings_date"), EarningsDateORM  # type: ignore
         )
         self._write_financials_series(
-          many_financials.get("quarterly_balance_sheets"), QuarterlyBalanceSheetORM
+            many_financials.get("quarterly_financial_metrics"),  # type: ignore
+            QuarterlyFinancialMetricsORM,
+        )
+        self._write_financials_series(
+            many_financials.get("quarterly_cash_flows"), QuarterlyCashFlowORM  # type: ignore
+        )
+        self._write_financials_series(
+            many_financials.get("quarterly_balance_sheets"), QuarterlyBalanceSheetORM  # type: ignore
         )
 
     def _write_financials_series(
@@ -256,22 +271,42 @@ class BearishDb(BearishDbBase):
                 return None
             return Analysis.model_validate(analysis)
 
-    def _write_trackers(self, trackers: List[FinancialsTracker] | List[PriceTracker], tracker_type: Type[BaseTracker]) -> None:
+    def _write_trackers(
+        self,
+        trackers: List[FinancialsTracker] | List[PriceTracker],
+        tracker_type: Type[BaseTracker],
+    ) -> None:
         with Session(self._engine) as session:
-            orm_class = PriceTrackerORM if tracker_type is PriceTracker else FinancialsTrackerORM
-            stmt = insert(orm_class).prefix_with("OR REPLACE").values(trackers)
+            orm_class = (
+                PriceTrackerORM
+                if tracker_type is PriceTracker
+                else FinancialsTrackerORM
+            )
+            stmt = (
+                insert(orm_class)
+                .prefix_with("OR REPLACE")
+                .values([t.model_dump() for t in trackers])
+            )
             session.exec(stmt)  # type: ignore
             session.commit()
 
-    def _read_tracker(self, tracker_query: TrackerQuery, tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]]) -> List[Ticker]:
+    def _read_tracker(
+        self,
+        tracker_query: TrackerQuery,
+        tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
+    ) -> List[Ticker]:
         with Session(self._engine) as session:
-            tracker_orm  = PriceTrackerORM if tracker_type is PriceTracker else FinancialsTrackerORM
+            tracker_orm = (
+                PriceTrackerORM
+                if tracker_type is PriceTracker
+                else FinancialsTrackerORM
+            )
             query = select(tracker_orm.symbol, tracker_orm.exchange, tracker_orm.source)
             if tracker_query.exchange:
                 query = query.where(tracker_orm.exchange == tracker_query.exchange)
-            tracker_orm = session.exec(query).all()
+            tracker_orm = session.exec(query).all()  # type: ignore
             return [
-                Ticker(symbol=t[0], exchange=t[1], source=t[2]) for t in tracker_orm
+                Ticker(symbol=t[0], exchange=t[1], source=t[2]) for t in tracker_orm  # type: ignore
             ]
 
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]:

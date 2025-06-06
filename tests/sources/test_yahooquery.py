@@ -8,12 +8,18 @@ def test_yahooquery_equity():
     assert equities
     assert len(equities.equities) == len(tickers)
 
+
 def test_read_financials():
     tickers = [Ticker(symbol="HO.PA"), Ticker(symbol="GOOG")]
-    financials = YahooQuerySource()._read_financials(tickers= [t.symbol for t in tickers])
+    financials = YahooQuerySource()._read_financials(
+        tickers=[t.symbol for t in tickers]
+    )
     assert financials
+
 
 def test_read_series():
     tickers = [Ticker(symbol="HO.PA"), Ticker(symbol="GOOG")]
-    prices = YahooQuerySource()._read_series(tickers= [t.symbol for t in tickers], type="7d")
+    prices = YahooQuerySource()._read_series(
+        tickers=[t.symbol for t in tickers], type="7d"
+    )
     assert prices

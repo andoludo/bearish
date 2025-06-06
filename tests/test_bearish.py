@@ -12,11 +12,11 @@ from bearish.analysis.view import TestView
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
-from bearish.models.base import Ticker, TrackerQuery
+from bearish.models.base import Ticker, TrackerQuery, PriceTracker, FinancialsTracker
 from bearish.models.price.price import Price
 from bearish.models.price.prices import Prices, yoy, wow, mom
 from bearish.models.query.query import AssetQuery, Symbols
-from bearish.sources.alphavantage import AlphaVantageBase, AlphaVantageSource
+
 from bearish.sources.financedatabase import (
     FinanceDatabaseSource,
     RAW_EQUITIES_DATA_URL,
@@ -182,7 +182,10 @@ def test_update_financials(bearish_db: BearishDb):
         financials_sources=[yFinanceSource()],
     )
     bearish.write_many_financials(
-        [Ticker(symbol="AAPL", source="Yfinance", exchange="NASDAQ"),Ticker(symbol="AIR.PA")]
+        [
+            Ticker(symbol="AAPL", source="Yfinance", exchange="NASDAQ"),
+            Ticker(symbol="AIR.PA"),
+        ]
     )
     financials = bearish.read_financials(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
@@ -215,7 +218,7 @@ def test_trackers(bearish_db: BearishDb):
     bearish.write_many_financials([Ticker(symbol="AIR.PA")])
     bearish.write_many_series([Ticker(symbol="AIR.PA")], "max")
     financials = bearish._bearish_db.read_tracker(
-        TrackerQuery(source="Yfinance", financials=True)
+        TrackerQuery(source="Yfinance"), tracker_type=FinancialsTracker
     )
     assert financials
 
@@ -230,39 +233,6 @@ def test_update_series_multiple_times(bearish_db: BearishDb):
     bearish.write_many_series([Ticker(symbol="AIR.PA", source="Yfinance")], "5d")
     series = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
-    )
-    assert series
-    assert len(series) > 1
-
-
-def test_update_financials_alphavantage(bearish_db: BearishDb):
-    AlphaVantageBase.fundamentals = FakeFundamentalData()
-    AlphaVantageBase.timeseries = FakeTimeSeries()
-    bearish = Bearish(
-        path=bearish_db.database_path,
-        api_keys=SourceApiKeys(keys={"AlphaVantage": "AlphaVantage"}),
-        asset_sources=[],
-        financials_sources=[AlphaVantageSource()],
-    )
-    bearish.write_many_financials([Ticker(symbol="AAPL")])
-    financials = bearish.read_financials(
-        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
-    )
-    assert financials
-
-
-def test_update_series_alphavantage(bearish_db: BearishDb):
-    AlphaVantageBase.fundamentals = FakeFundamentalData()
-    AlphaVantageBase.timeseries = FakeTimeSeries()
-    bearish = Bearish(
-        path=bearish_db.database_path,
-        api_keys=SourceApiKeys(keys={"AlphaVantage": "AlphaVantage"}),
-        asset_sources=[],
-        price_sources=[AlphaVantageSource()],
-    )
-    bearish.write_many_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "max")
-    series = bearish.read_series(
-        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
     )
     assert series
     assert len(series) > 1
@@ -347,7 +317,7 @@ def test_write_assets_tiingo(bearish_db: BearishDb):
     prices = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
     )
-    tracked_ticker = bearish._get_tracked_tickers(TrackerQuery(price=True))
+    tracked_ticker = bearish._get_tracked_tickers(TrackerQuery(), PriceTracker)
     assert prices
     assert tracked_ticker
     assert all(isinstance(p, Price) for p in prices)
@@ -377,10 +347,16 @@ def test_write_assets_yfinance(bearish_db: BearishDb):
         asset_sources=[],
         price_sources=[yFinanceSource()],
     )
-    bearish.write_many_series(tickers=[Ticker(symbol="AIR.PA"),Ticker(symbol="BNP.PA"),
-                Ticker(symbol="AIR.PA"),
-                Ticker(symbol="MC.PA"),
-                Ticker(symbol="ORA.PA"),], type="1d")
+    bearish.write_many_series(
+        tickers=[
+            Ticker(symbol="AIR.PA"),
+            Ticker(symbol="BNP.PA"),
+            Ticker(symbol="AIR.PA"),
+            Ticker(symbol="MC.PA"),
+            Ticker(symbol="ORA.PA"),
+        ],
+        type="1d",
+    )
     prices = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AIR.PA")]))
     )
@@ -431,12 +407,15 @@ def test_write_financials_yfinance(bearish_db: BearishDb):
         price_sources=[],
         financials_sources=[yFinanceSource()],
     )
-    bearish.write_many_financials([Ticker(symbol="MLHCF.PA"),
-                Ticker(symbol="BNP.PA"),
-                Ticker(symbol="AIR.PA"),
-                Ticker(symbol="MC.PA"),
-                Ticker(symbol="ORA.PA"),
-            ])
+    bearish.write_many_financials(
+        [
+            Ticker(symbol="MLHCF.PA"),
+            Ticker(symbol="BNP.PA"),
+            Ticker(symbol="AIR.PA"),
+            Ticker(symbol="MC.PA"),
+            Ticker(symbol="ORA.PA"),
+        ]
+    )
     financials = bearish.read_financials(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="MLHCF.PA")]))
     )

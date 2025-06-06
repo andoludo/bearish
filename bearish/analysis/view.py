@@ -50,15 +50,17 @@ class View(ComponentDescription):
         )
         prices = Prices(prices=prices_).to_dataframe()
         earnings_date = to_dataframe(bearish_db.read_earnings_date(query))
-
+        dates = None
+        if not earnings_date.empty:
+            dates = earnings_date.index.to_series()[
+                (earnings_date.index >= prices.index[0])
+                & (earnings_date.index <= prices.index[-1] + pd.Timedelta(days=100))
+            ]
         figure = plot(
             prices,
             self.symbol,
             self.name,
-            dates=earnings_date.index.to_series()[
-                (earnings_date.index >= prices.index[0])
-                & (earnings_date.index <= prices.index[-1] + pd.Timedelta(days=100))
-            ],
+            dates=dates,
         )
         if show:
             figure.show()

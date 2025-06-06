@@ -241,8 +241,6 @@ class QuarterlyFundamentalAnalysis(BaseQuarterlyFundamentalAnalysis):  # type: i
 class FundamentalAnalysis(YearlyFundamentalAnalysis, QuarterlyFundamentalAnalysis): ...
 
 
-
-
 class Financials(BaseModel):
     financial_metrics: List[FinancialMetrics] = Field(default_factory=list)
     balance_sheets: List[BalanceSheet] = Field(default_factory=list)
@@ -302,8 +300,14 @@ class Financials(BaseModel):
             AssetQuery(symbols=Symbols(equities=[ticker]))  # type: ignore
         )
 
+
 class ManyFinancials(BaseModel):
     financials: List[Financials] = Field(default_factory=list)
 
     def get(self, attribute: str) -> List[DataSourceBase]:
-        return [a for financial in self.financials if hasattr(financial, attribute) for a in getattr(financial, attribute)]
+        return [
+            a
+            for financial in self.financials
+            if hasattr(financial, attribute)
+            for a in getattr(financial, attribute)
+        ]

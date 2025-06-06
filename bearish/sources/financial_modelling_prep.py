@@ -237,51 +237,65 @@ class FmpSource(FmpSourceBase, AbstractSource):
         equities = FmpEquity.from_tickers(query.symbols.equities_symbols())
         return Assets(equities=equities)
 
-    def _read_financials(self, ticker: str) -> Financials:
+    def _read_financials(self, tickers: List[str]) -> List[Financials]:
+        financials = []
+        for ticker in tickers:
+            balance_sheet_statement = read_api(
+                API_URL,
+                "balance-sheet-statement",
+                self.__api_key__,
+                ticker,
+                period="annual",
+            )
+            cash_flow_statement = read_api(
+                API_URL,
+                "cash-flow-statement",
+                self.__api_key__,
+                ticker,
+                period="annual",
+            )
+            ratio_ttm = read_api(API_URL, "ratios-ttm", self.__api_key__, ticker)
+            key_metrics = read_api(API_URL, "key-metrics-ttm", self.__api_key__, ticker)
+            self.api_usage.add_api_calls(4)
+            datas = [*ratio_ttm, *key_metrics]
+            financial_metrics = {k: v for data in datas for k, v in data.items()}
+            financial_metrics.update({"symbol": ticker})
+            financials.append(
+                Financials(
+                    financial_metrics=[
+                        FmpFinancialMetrics.model_validate(financial_metrics)
+                    ],
+                    balance_sheets=[
+                        FmpBalanceSheet.model_validate(balance_sheet_statement_)
+                        for balance_sheet_statement_ in balance_sheet_statement
+                    ],
+                    cash_flows=[
+                        FmpCashFlow.model_validate(cash_flow_statement_)
+                        for cash_flow_statement_ in cash_flow_statement
+                    ],
+                )
+            )
+        return financials
 
-        balance_sheet_statement = read_api(
-            API_URL,
-            "balance-sheet-statement",
-            self.__api_key__,
-            ticker,
-            period="annual",
-        )
-        cash_flow_statement = read_api(
-            API_URL, "cash-flow-statement", self.__api_key__, ticker, period="annual"
-        )
-        ratio_ttm = read_api(API_URL, "ratios-ttm", self.__api_key__, ticker)
-        key_metrics = read_api(API_URL, "key-metrics-ttm", self.__api_key__, ticker)
-        self.api_usage.add_api_calls(4)
-        datas = [*ratio_ttm, *key_metrics]
-        financial_metrics = {k: v for data in datas for k, v in data.items()}
-        financial_metrics.update({"symbol": ticker})
-        return Financials(
-            financial_metrics=[FmpFinancialMetrics.model_validate(financial_metrics)],
-            balance_sheets=[
-                FmpBalanceSheet.model_validate(balance_sheet_statement_)
-                for balance_sheet_statement_ in balance_sheet_statement
-            ],
-            cash_flows=[
-                FmpCashFlow.model_validate(cash_flow_statement_)
-                for cash_flow_statement_ in cash_flow_statement
-            ],
-        )
-
-    def _read_series(self, ticker: str, type: SeriesLength) -> List[FmpPrice]:  # type: ignore
+    def _read_series(self, tickers: List[str], type: SeriesLength) -> List[FmpPrice]:  # type: ignore
         from_ = get_start_date(type)
-
-        historical_price = read_api(
-            API_URL,
-            "historical-price-full",
-            self.__api_key__,
-            ticker,
-            period=None,
-            from_=from_,
-        )
-        self.api_usage.add_api_calls(1)
-        symbol = historical_price["symbol"]
-        datas = historical_price["historical"]
-        return [FmpPrice.model_validate({**data, "symbol": symbol}) for data in datas]
+        prices = []
+        for ticker in tickers:
+            historical_price = read_api(
+                API_URL,
+                "historical-price-full",
+                self.__api_key__,
+                ticker,
+                period=None,
+                from_=from_,
+            )
+            self.api_usage.add_api_calls(1)
+            symbol = historical_price["symbol"]
+            datas = historical_price["historical"]
+            prices.extend(
+                [FmpPrice.model_validate({**data, "symbol": symbol}) for data in datas]
+            )
+        return prices
 
 
 class FmpAssetsSource(FmpAssetsSourceBase, AbstractSource):
@@ -297,10 +311,10 @@ class FmpAssetsSource(FmpAssetsSourceBase, AbstractSource):
             etfs=[FmpAssetsEtf.model_validate(etf) for etf in etfs],
         )
 
-    def _read_financials(self, ticker: str) -> Financials:
-        return Financials()
+    def _read_financials(self, tickers: List[str]) -> List[Financials]:
+        return [Financials()]
 
-    def _read_series(self, ticker: str, type: SeriesLength) -> List[Price]:
+    def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]:
         return []
 
     def set_api_key(self, api_key: str) -> None:

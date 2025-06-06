@@ -61,7 +61,9 @@ class YfinanceFinancialBase(YfinanceBase):
         prefix: Optional[str] = None,
     ) -> List["YfinanceFinancialBase"]:
         try:
-            data = get_data_frame(ticker_, attribute, transpose=transpose, prefix=prefix)
+            data = get_data_frame(
+                ticker_, attribute, transpose=transpose, prefix=prefix
+            )
             return [
                 cls.model_validate(data_ | {"symbol": ticker_.ticker})
                 for data_ in data.to_dict(orient="records")
@@ -391,28 +393,37 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             except Exception as e:
                 logger.error(f"Error reading financials for {ticker}: {e}")
                 continue
-            financials.append(Financials(
-                financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
-                balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
-                cash_flows=yFinanceCashFlow.from_ticker(ticker_),
-                quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(
-                    ticker_, prefix="quarterly"
-                ),
-                quarterly_balance_sheets=yFinanceBalanceSheet.from_ticker(
-                    ticker_, prefix="quarterly"
-                ),
-                quarterly_cash_flows=yFinanceCashFlow.from_ticker(
-                    ticker_, prefix="quarterly"
-                ),
-                earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
-            ))
+            financials.append(
+                Financials(
+                    financial_metrics=YfinanceFinancialMetrics.from_ticker(ticker_),
+                    balance_sheets=yFinanceBalanceSheet.from_ticker(ticker_),
+                    cash_flows=yFinanceCashFlow.from_ticker(ticker_),
+                    quarterly_financial_metrics=YfinanceFinancialMetrics.from_ticker(
+                        ticker_, prefix="quarterly"
+                    ),
+                    quarterly_balance_sheets=yFinanceBalanceSheet.from_ticker(
+                        ticker_, prefix="quarterly"
+                    ),
+                    quarterly_cash_flows=yFinanceCashFlow.from_ticker(
+                        ticker_, prefix="quarterly"
+                    ),
+                    earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
+                )
+            )
         return financials
 
-    def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]:
-        data = yf.download(tickers, period="5y", group_by="ticker", auto_adjust=True)
+    def _read_series(  # type: ignore
+        self, tickers: List[str], type: SeriesLength
+    ) -> List[yFinancePrice]:
+        data = yf.download(tickers, period=type, group_by="ticker", auto_adjust=True)
         records_final = []
         for ticker in tickers:
             if ticker in data.columns:
                 records = data[ticker].reset_index().to_dict(orient="records")
-                records_final.extend([yFinancePrice(**(record | {"symbol": ticker})) for record in records])
+                records_final.extend(
+                    [
+                        yFinancePrice(**(record | {"symbol": ticker}))
+                        for record in records
+                    ]
+                )
         return records_final

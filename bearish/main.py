@@ -28,7 +28,7 @@ from bearish.exchanges.exchanges import (
 from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
-from bearish.models.base import Ticker,  TrackerQuery, FinancialsTracker, PriceTracker
+from bearish.models.base import Ticker, TrackerQuery, FinancialsTracker, PriceTracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.price.prices import Prices
@@ -38,6 +38,7 @@ from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import InvestPySource
 from bearish.sources.tiingo import TiingoSource
+from bearish.sources.yahooquery import YahooQuerySource
 from bearish.sources.yfinance import yFinanceSource
 from bearish.types import SeriesLength, Sources
 
@@ -71,7 +72,7 @@ class Filter(BaseModel):
             return tickers
         return list({t for t in tickers if t.symbol in self.filters})
 
-import yfinance as yf
+
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
@@ -86,16 +87,18 @@ class Bearish(BaseModel):
         ]
     )
     detailed_asset_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [yFinanceSource(), FmpSource()]
+        default_factory=lambda: [YahooQuerySource(), yFinanceSource(), FmpSource()]
     )
     financials_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
+            YahooQuerySource(),
             yFinanceSource(),
             FmpSource(),
         ]
     )
     price_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
+            YahooQuerySource(),
             yFinanceSource(),
             TiingoSource(),
         ]
@@ -184,7 +187,11 @@ class Bearish(BaseModel):
     def read_series(self, assets_query: AssetQuery, months: int = 1) -> List[Price]:
         return self._bearish_db.read_series(assets_query, months=months)
 
-    def _get_tracked_tickers(self, tracker_query: TrackerQuery, tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]]) -> List[Ticker]:
+    def _get_tracked_tickers(
+        self,
+        tracker_query: TrackerQuery,
+        tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
+    ) -> List[Ticker]:
         return self._bearish_db.read_tracker(tracker_query, tracker_type)
 
     def get_tickers_without_financials(self, tickers: List[Ticker]) -> List[Ticker]:
@@ -201,7 +208,7 @@ class Bearish(BaseModel):
     def get_ticker_with_price(self) -> List[Ticker]:
         return [
             Ticker(symbol=t)
-            for t in self._get_tracked_tickers(TrackerQuery(price=True))
+            for t in self._get_tracked_tickers(TrackerQuery(), PriceTracker)
         ]
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
@@ -219,21 +226,19 @@ class Bearish(BaseModel):
                 continue
 
             if not financials_:
-                logger.warning(f"No financial data found.")
+                logger.warning("No financial data found.")
                 continue
             self._bearish_db.write_financials(financials_)
             self._bearish_db.write_trackers(
-                [FinancialsTracker(
-                    symbol=t.symbol,
-                    source=source.__source__,
-                    exchange=t.exchange,
-                ).model_dump() for t in tickers]
+                [
+                    FinancialsTracker(
+                        symbol=t.symbol,
+                        source=source.__source__,
+                        exchange=t.exchange,
+                    )
+                    for t in tickers
+                ]
             )
-            # self._bearish_db.write_trackers(
-            #     Tracker(
-            #         symbol=ticker.symbol, source=source.__source__, financials=True
-            #     )
-            # )
 
             break
 
@@ -250,15 +255,17 @@ class Bearish(BaseModel):
                 price_date = Prices(prices=series_).get_last_date()
                 self._bearish_db.write_series(series_)
                 self._bearish_db.write_trackers(
-                    [PriceTracker(
-                        symbol=t.symbol,
-                        source=source.__source__,
-                        exchange=t.exchange,
-                        date=price_date,
-                    ).model_dump() for t in tickers]
+                    [
+                        PriceTracker(
+                            symbol=t.symbol,
+                            source=source.__source__,
+                            exchange=t.exchange,
+                            date=price_date,
+                        )
+                        for t in tickers
+                    ]
                 )
                 break
-
 
     def read_sources(self) -> List[str]:
         return self._bearish_db.read_sources()
@@ -311,7 +318,7 @@ class Bearish(BaseModel):
             self._bearish_db.write_analysis(analysis)
 
     def update_prices(self, symbols: List[str]) -> None:
-        tickers = self._get_tracked_tickers(TrackerQuery(price=True))
+        tickers = self._get_tracked_tickers(TrackerQuery(), PriceTracker)
         tickers = [t for t in tickers if t.symbol in symbols]
         self.write_many_series(tickers, "max")
 

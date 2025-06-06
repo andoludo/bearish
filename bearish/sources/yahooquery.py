@@ -1,18 +1,13 @@
 import logging
-import time
-from datetime import date
 
-from typing import List, Optional, Dict, Any, Callable, cast
+from typing import List, Optional, Dict, Any, Callable
 
 import pandas as pd
 import yfinance as yf  # type: ignore
 from pydantic import BaseModel, Field
-from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bearish.exchanges.exchanges import Countries
-from bearish.models.assets.etfs import Etf
 from bearish.models.base import Ticker
-from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
 from bearish.models.financials.balance_sheet import QuarterlyBalanceSheet
@@ -28,14 +23,15 @@ from bearish.sources.base import (
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets, FailedQueryAssets
 from bearish.types import Sources, SeriesLength
+from yahooquery import Ticker as YahooQueryTicker  # type: ignore
+
+from bearish.utils.utils import batch, safe_get
 
 logger = logging.getLogger(__name__)
-from yahooquery import Ticker as YahooQueryTicker
+
 
 class YahooQueryBase(BaseModel):
     __source__: Sources = "YahooQuery"
-
-
 
 
 class YahooQueryFinancialBase(YahooQueryBase):
@@ -51,7 +47,6 @@ class YahooQueryFinancialBase(YahooQueryBase):
         ]
 
 
-
 class YahooQueryAssetOutput(BaseModel):
     equities: List["YahooQueryAssetBase"]
     failed_query: List[Ticker] = Field(default_factory=list)
@@ -63,95 +58,116 @@ class YahooQueryAssetBase(YahooQueryBase):
         cls, tickers: List[Ticker], function: Callable[[str, yf.Ticker], Dict[str, Any]]
     ) -> YahooQueryAssetOutput:
         equities = []
-        failed_query = []
-        yahoo_tickers = YahooQueryTicker(" ".join([ticker.symbol for ticker in tickers]))
-        asset_profile = yahoo_tickers.asset_profile
-        summary_detail = yahoo_tickers.summary_detail
-        summary_profile = yahoo_tickers.summary_profile
-        key_stats = yahoo_tickers.key_stats
-        financial_data = yahoo_tickers.financial_data
-        for ticker in tickers:
-            data = (asset_profile.get(ticker.symbol, {}) | summary_detail.get(ticker.symbol, {}) | summary_profile.get(ticker.symbol, {}) | key_stats.get(ticker.symbol, {}) | financial_data.get(ticker.symbol, {}) | {"symbol": ticker.symbol})
-            equities.append(cls.model_validate(data))
+        failed_query: List[Ticker] = []
+        chunks = batch(tickers, size=100)
+        for chunk in chunks:
+            yahoo_tickers = YahooQueryTicker(
+                " ".join([ticker.symbol for ticker in chunk])
+            )
+            asset_profile = yahoo_tickers.asset_profile
+            summary_detail = yahoo_tickers.summary_detail
+            summary_profile = yahoo_tickers.summary_profile
+            key_stats = yahoo_tickers.key_stats
+            financial_data = yahoo_tickers.financial_data
+            quotes = yahoo_tickers.quotes
+            for ticker in tickers:
+                data = (
+                    safe_get(asset_profile, ticker.symbol)
+                    | safe_get(summary_detail, ticker.symbol)
+                    | safe_get(summary_profile, ticker.symbol)
+                    | safe_get(key_stats, ticker.symbol)
+                    | safe_get(financial_data, ticker.symbol)
+                    | safe_get(quotes, ticker.symbol)
+                    | {"symbol": ticker.symbol}
+                )
+                equities.append(cls.model_validate(data))
         return YahooQueryAssetOutput(equities=equities, failed_query=failed_query)
 
 
 class YahooQueryEquity(YahooQueryAssetBase, Equity):
     __alias__ = {
-    "city": "city",
-    "zip": "zipcode",
-    "marketCap": "market_cap",
-    "floatShares": "float_shares",
-    "sharesOutstanding": "shares_outstanding",
-    "forwardPE": "forward_price_to_earnings",
-    "revenuePerShare": "revenue_per_share",
-    "quickRatio": "quick_ratio",
-    "currentRatio": "current_ratio",
-    "earningsGrowth": "earning_growth",
-    "priceToSalesTrailing12Months": "trailing_price_to_sales",
-    "returnOnAssets": "return_on_assets",
-    "latestShareClass": "shareclass_figi"
-}
-
+        "symbol": "symbol",
+        "exchange": "exchange",
+        "currency": "currency",
+        "market": "market",
+        "country": "country",
+        "sector": "sector",
+        "industry": "industry_group",
+        "website": "website",
+        "bookValue": "book_value",
+        "priceToBook": "price_to_book",
+        "dividendYield": "dividend_yield",
+        "dividendRate": "dividend_rate",
+        "returnOnEquity": "return_on_equity",
+        "operatingMargins": "operating_margins",
+        "grossMargins": "gross_margins",
+        "revenueGrowth": "revenue_growth",
+        "city": "city",
+        "marketCap": "market_cap",
+        "sharesOutstanding": "shares_outstanding",
+        "floatShares": "float_shares",
+        "revenuePerShare": "revenue_per_share",
+        "quickRatio": "quick_ratio",
+        "currentRatio": "current_ratio",
+        "earningsGrowth": "earning_growth",
+        "returnOnAssets": "return_on_assets",
+    }
 
     @classmethod
     def from_tickers(cls, tickers: List[Ticker]) -> YahooQueryAssetOutput:
         return cls._from_tickers(tickers, lambda ticker, x: x.info)
 
 
-
 class YahooQueryFinancialMetrics(YahooQueryFinancialBase, QuarterlyFinancialMetrics):
     __alias__ = {
         "symbol": "symbol",
-    "asOfDate": "date",
-    "EBITDA": "ebitda",
-    "NetIncome": "net_income",
-    "BasicEPS": "basic_eps",
-    "DilutedEPS": "diluted_eps",
-    "TotalRevenue": "total_revenue",
-    "OperatingRevenue": "operating_revenue",
-    "GrossProfit": "gross_profit",
-    "TotalExpenses": "total_expenses",
-    "OperatingIncome": "operating_income",
-    "CostOfRevenue": "cost_of_revenue",
-    "TaxProvision": "tax_provision",
-    "TaxRateForCalcs": "tax_rate"
-}
-
+        "asOfDate": "date",
+        "EBITDA": "ebitda",
+        "NetIncome": "net_income",
+        "BasicEPS": "basic_eps",
+        "DilutedEPS": "diluted_eps",
+        "TotalRevenue": "total_revenue",
+        "OperatingRevenue": "operating_revenue",
+        "GrossProfit": "gross_profit",
+        "TotalExpenses": "total_expenses",
+        "OperatingIncome": "operating_income",
+        "CostOfRevenue": "cost_of_revenue",
+        "TaxProvision": "tax_provision",
+        "TaxRateForCalcs": "tax_rate",
+    }
 
 
 class YahooQueryBalanceSheet(YahooQueryFinancialBase, QuarterlyBalanceSheet):
     __alias__ = {
         "symbol": "symbol",
-    "asOfDate": "date",
-    "TreasuryStock": "treasury_stock",
-    "OrdinarySharesNumber": "common_stock_shares_outstanding",
-    "CommonStock": "common_stock",
-    "TotalDebt": "short_long_term_debt_total",
-    "CapitalLeaseObligations": "capital_lease_obligations",
-    "StockholdersEquity": "total_shareholder_equity",
-    "RetainedEarnings": "retained_earnings",
-    "TotalLiabilitiesNetMinorityInterest": "total_liabilities",
-    "TotalNonCurrentLiabilitiesNetMinorityInterest": "total_non_current_liabilities",
-    "OtherNonCurrentLiabilities": "other_non_current_liabilities",
-    "LongTermDebt": "long_term_debt",
-    "CurrentLiabilities": "total_current_liabilities",
-    "OtherCurrentLiabilities": "other_current_liabilities",
-    "CurrentDebt": "current_debt",
-    "AccountsPayable": "current_accounts_payable",
-    "TotalAssets": "total_assets",
-    "TotalNonCurrentAssets": "total_non_current_assets",
-    "OtherNonCurrentAssets": "other_non_current_assets",
-    "AccumulatedDepreciation": "accumulated_depreciation_amortization_ppe",
-    "GrossPPE": "property_plant_equipment",
-    "CurrentAssets": "total_current_assets",
-    "OtherCurrentAssets": "other_current_assets",
-    "Inventory": "inventory",
-    "AccountsReceivable": "current_net_receivables",
-    "CashCashEquivalentsAndShortTermInvestments": "cash_and_short_term_investments",
-    "CashAndCashEquivalents": "cash_and_cash_equivalents_at_carrying_value"
-}
-
+        "asOfDate": "date",
+        "TreasuryStock": "treasury_stock",
+        "OrdinarySharesNumber": "common_stock_shares_outstanding",
+        "CommonStock": "common_stock",
+        "TotalDebt": "short_long_term_debt_total",
+        "CapitalLeaseObligations": "capital_lease_obligations",
+        "StockholdersEquity": "total_shareholder_equity",
+        "RetainedEarnings": "retained_earnings",
+        "TotalLiabilitiesNetMinorityInterest": "total_liabilities",
+        "TotalNonCurrentLiabilitiesNetMinorityInterest": "total_non_current_liabilities",
+        "OtherNonCurrentLiabilities": "other_non_current_liabilities",
+        "LongTermDebt": "long_term_debt",
+        "CurrentLiabilities": "total_current_liabilities",
+        "OtherCurrentLiabilities": "other_current_liabilities",
+        "CurrentDebt": "current_debt",
+        "AccountsPayable": "current_accounts_payable",
+        "TotalAssets": "total_assets",
+        "TotalNonCurrentAssets": "total_non_current_assets",
+        "OtherNonCurrentAssets": "other_non_current_assets",
+        "AccumulatedDepreciation": "accumulated_depreciation_amortization_ppe",
+        "GrossPPE": "property_plant_equipment",
+        "CurrentAssets": "total_current_assets",
+        "OtherCurrentAssets": "other_current_assets",
+        "Inventory": "inventory",
+        "AccountsReceivable": "current_net_receivables",
+        "CashCashEquivalentsAndShortTermInvestments": "cash_and_short_term_investments",
+        "CashAndCashEquivalents": "cash_and_cash_equivalents_at_carrying_value",
+    }
 
 
 class YahooQueryCashFlow(YahooQueryFinancialBase, QuarterlyCashFlow):
@@ -173,9 +189,8 @@ class YahooQueryCashFlow(YahooQueryFinancialBase, QuarterlyCashFlow):
         "CommonStockDividendPaid": "common_stock_dividend_paid",
         "CommonStockIssuance": "proceeds_from_issuance_of_common_stock",
         "ChangesInCash": "changes_in_cash",
-        "NetIncomeFromContinuingOperations": "net_income_from_continuing_operations"
+        "NetIncomeFromContinuingOperations": "net_income_from_continuing_operations",
     }
-
 
 
 class YahooQueryPrice(YahooQueryBase, Price):
@@ -210,26 +225,34 @@ class YahooQuerySource(YahooQueryBase, AbstractSource):
         equities = YahooQueryEquity.from_tickers(query.symbols.equities)
         return Assets(
             equities=equities.equities,
-            failed_query=FailedQueryAssets(
-                symbols=equities.failed_query
-            ),
+            failed_query=FailedQueryAssets(symbols=equities.failed_query),
         )
 
     def _read_financials(self, tickers: List[str]) -> List[Financials]:
         financials = []
         yahoo_tickers = YahooQueryTicker(" ".join(tickers))
-        cash_flow= yahoo_tickers.cash_flow()
+        cash_flow = yahoo_tickers.cash_flow()
         balance_sheet = yahoo_tickers.balance_sheet()
         income_statement = yahoo_tickers.income_statement()
         for ticker in tickers:
-            current_cash_flow= cash_flow[cash_flow.index == ticker]
-            current_balance_sheet= balance_sheet[balance_sheet.index == ticker]
-            current_income_statement= income_statement[income_statement.index== ticker]
-            financials.append(Financials(
-                financial_metrics=YahooQueryFinancialMetrics.from_data_frame(ticker, current_income_statement),
-                balance_sheets=YahooQueryBalanceSheet.from_data_frame(ticker,current_balance_sheet),
-                cash_flows=YahooQueryCashFlow.from_data_frame(ticker,current_cash_flow)
-            ))
+            current_cash_flow = cash_flow[cash_flow.index == ticker]
+            current_balance_sheet = balance_sheet[balance_sheet.index == ticker]
+            current_income_statement = income_statement[
+                income_statement.index == ticker
+            ]
+            financials.append(
+                Financials(
+                    financial_metrics=YahooQueryFinancialMetrics.from_data_frame(
+                        ticker, current_income_statement
+                    ),
+                    balance_sheets=YahooQueryBalanceSheet.from_data_frame(
+                        ticker, current_balance_sheet
+                    ),
+                    cash_flows=YahooQueryCashFlow.from_data_frame(
+                        ticker, current_cash_flow
+                    ),
+                )
+            )
         return financials
 
     def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]:
@@ -237,4 +260,3 @@ class YahooQuerySource(YahooQueryBase, AbstractSource):
         data = yahoo_tickers.history(period=type)
         records = data.reset_index().to_dict(orient="records")
         return [YahooQueryPrice(**(record)) for record in records]
-
