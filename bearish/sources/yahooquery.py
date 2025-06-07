@@ -97,7 +97,7 @@ class YahooQueryEquity(YahooQueryAssetBase, Equity):
         "sector": "sector",
         "dividendRate": "dividend_rate",
         "dividendYield": "dividend_yield",
-        "marketCap": "market_cap",
+        "marketCap": "market_capitalization",
         "currency": "currency",
         "market": "market",
         "profitMargins": "gross_margins",
