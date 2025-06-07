@@ -17,7 +17,7 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.types import Sources, SeriesLength
-from bearish.utils.utils import batch
+from bearish.utils.utils import batch, observability
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,7 @@ def check_api_limit(func: Callable[..., Any]) -> Callable[..., Any]:
             raise LimitApiKeyReachedError(
                 f"API '{self.__source__}' Limit reached : {self.api_usage.calls_limit}"
             )
+        logger.debug(f"API '{self.__source__}' call count: {self.api_usage.calls}")
         return func(self, *args, **kwargs)
 
     return cast(Callable[..., Any], wrapper)
@@ -73,10 +74,14 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @validate_call(validate_return=True)
     @check_api_limit
+    @observability
     def read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         query_ = None
         if query:
             query_ = self.exchanges.get_asset_query(query, self.countries)
+            logger.debug(
+                f"Reading assets from {type(self).__name__} with {query_.symbols.all()} tickers"
+            )
         try:
             return self._read_assets(query_)
         except Exception as e:
@@ -85,6 +90,7 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @validate_call(validate_return=True)
     @check_api_limit
+    @observability
     def read_financials(self, tickers: List[Ticker]) -> List[Financials]:
 
         tickers = [
@@ -111,6 +117,7 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @validate_call(validate_return=True)
     @check_api_limit
+    @observability
     def read_series(self, tickers: List[Ticker], type_: SeriesLength) -> List[Price]:
         tickers = [
             ticker

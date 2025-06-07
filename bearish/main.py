@@ -144,6 +144,7 @@ class Bearish(BaseModel):
             for asset_source in self.asset_sources
             if asset_source.__source__ not in existing_sources
         ]
+        logger.debug(f"Found asset sources: {[s.__source__ for s in asset_sources]}")
         return self._write_base_assets(asset_sources, query)
 
     def write_detailed_assets(self, query: Optional[AssetQuery] = None) -> None:
@@ -157,6 +158,7 @@ class Bearish(BaseModel):
         query: Optional[AssetQuery] = None,
         use_all_sources: bool = True,
     ) -> None:
+
         if query:
             cached_assets = self.read_assets(AssetQuery.model_validate(query))
             query.update_symbols(cached_assets)
@@ -167,6 +169,9 @@ class Bearish(BaseModel):
             if assets_.is_empty():
                 logger.warning(f"No assets found from {type(source).__name__}")
                 continue
+            logger.debug(
+                f"writing assets from {type(source).__name__}. Number of symbols: {len(assets_.symbols())}"
+            )
             self._bearish_db.write_assets(assets_)
             self._bearish_db.write_source(source.__source__)
             if use_all_sources:

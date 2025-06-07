@@ -60,6 +60,7 @@ class YahooQueryAssetBase(YahooQueryBase):
         equities = []
         failed_query: List[Ticker] = []
         chunks = batch(tickers, size=100)
+        logger.debug(f"Retrieving {len(tickers)} assets.")
         for chunk in chunks:
             yahoo_tickers = YahooQueryTicker(
                 " ".join([ticker.symbol for ticker in chunk])
@@ -70,7 +71,7 @@ class YahooQueryAssetBase(YahooQueryBase):
             key_stats = yahoo_tickers.key_stats
             financial_data = yahoo_tickers.financial_data
             quotes = yahoo_tickers.quotes
-            for ticker in tickers:
+            for ticker in chunk:
                 data = (
                     safe_get(asset_profile, ticker.symbol)
                     | safe_get(summary_detail, ticker.symbol)
@@ -81,6 +82,7 @@ class YahooQueryAssetBase(YahooQueryBase):
                     | {"symbol": ticker.symbol}
                 )
                 equities.append(cls.model_validate(data))
+        logger.debug(f"Retrieved {len(equities)} assets.")
         return YahooQueryAssetOutput(equities=equities, failed_query=failed_query)
 
 

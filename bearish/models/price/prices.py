@@ -57,15 +57,15 @@ def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> Optional
 
 
 def perc(data: pd.Series) -> float:  # type: ignore
-    return cast(float, ((data[-1] - data[0]) / data[0]) * 100)
+    return cast(float, ((data.iloc[-1] - data.iloc[0]) / data.iloc[0]) * 100)
 
 
 def yoy(prices: pd.DataFrame) -> pd.Series:  # type: ignore
-    return prices.close.resample("Y").apply(perc)  # type: ignore
+    return prices.close.resample("YE").apply(perc)  # type: ignore
 
 
 def mom(prices: pd.DataFrame) -> pd.Series:  # type: ignore
-    return prices.close.resample("M").apply(perc)  # type: ignore
+    return prices.close.resample("ME").apply(perc)  # type: ignore
 
 
 def wow(prices: pd.DataFrame) -> pd.Series:  # type: ignore

@@ -58,6 +58,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+BATCH_SIZE = 5000
+
 
 class BearishDb(BearishDbBase):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -81,6 +83,9 @@ class BearishDb(BearishDbBase):
                 + [CryptoORM(**object.model_dump()) for object in assets.cryptos]
                 + [EtfORM(**object.model_dump()) for object in assets.etfs]
             )
+            logger.debug(
+                f"writing assets to database. Number of assets: {len(objects_orm)}"
+            )
 
             session.add_all(objects_orm)
             session.commit()
@@ -88,7 +93,7 @@ class BearishDb(BearishDbBase):
     def _write_series(self, series: List["Price"]) -> None:
         with Session(self._engine) as session:
             data = [serie.model_dump() for serie in series]
-            chunks = batch(data, 1000)
+            chunks = batch(data, BATCH_SIZE)
             for chunk in chunks:
                 stmt = insert(PriceORM).prefix_with("OR REPLACE").values(chunk)
                 session.exec(stmt)  # type: ignore
@@ -134,12 +139,11 @@ class BearishDb(BearishDbBase):
             logger.warning(f"No data found for '{[serie.symbol for serie in series]}'")
             return None
         with Session(self._engine) as session:
-            stmt = (
-                insert(table)
-                .prefix_with("OR REPLACE")
-                .values([serie.model_dump() for serie in series])
-            )
-            session.exec(stmt)  # type: ignore
+            data = [serie.model_dump() for serie in series]
+            chunks = batch(data, BATCH_SIZE)
+            for chunk in chunks:
+                stmt = insert(table).prefix_with("OR REPLACE").values(chunk)
+                session.exec(stmt)  # type: ignore
             session.commit()
 
     def _read_series(self, query: "AssetQuery", months: int = 1) -> List[Price]:

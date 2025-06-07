@@ -1,4 +1,5 @@
 import abc
+import logging
 from pathlib import Path
 from typing import List, TYPE_CHECKING, Optional, Type, Union
 
@@ -19,9 +20,11 @@ from bearish.models.financials.base import Financials
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
+from bearish.utils.utils import observability
 
 if TYPE_CHECKING:
     from bearish.analysis.analysis import Analysis
+logger = logging.getLogger(__name__)
 
 
 class BearishDbBase(BaseModel):
@@ -32,10 +35,12 @@ class BearishDbBase(BaseModel):
     def write_assets(self, assets: Assets) -> None:
         return self._write_assets(assets)
 
+    @observability
     @validate_call
     def write_series(self, series: List[Price]) -> None:
         return self._write_series(series)
 
+    @observability
     @validate_call
     def write_financials(self, financials: List[Financials]) -> None:
         return self._write_financials(financials)
@@ -94,6 +99,9 @@ class BearishDbBase(BaseModel):
         return self._read_query(query)
 
     def write_views(self, views: List[View]) -> None:
+        if not views:
+            logger.warning("No views to write.")
+            return
         return self._write_views(views)
 
     @abc.abstractmethod
