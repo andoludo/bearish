@@ -91,15 +91,15 @@ class Bearish(BaseModel):
     )
     financials_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
-            YahooQuerySource(),
             yFinanceSource(),
+            YahooQuerySource(),
             FmpSource(),
         ]
     )
     price_sources: List[AbstractSource] = Field(
         default_factory=lambda: [
-            YahooQuerySource(),
             yFinanceSource(),
+            YahooQuerySource(),
             TiingoSource(),
         ]
     )
