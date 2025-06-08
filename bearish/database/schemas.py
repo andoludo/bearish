@@ -10,7 +10,7 @@ from bearish.models.assets.equity import Equity
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
-from bearish.models.base import Tracker
+from bearish.models.base import PriceTracker, FinancialsTracker
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
@@ -99,8 +99,16 @@ class SourcesORM(SQLModel, table=True):
     source: str = Field(primary_key=True, index=True)
 
 
-class TrackerORM(SQLModel, Tracker, table=True):
-    __tablename__ = "tracker"
+class PriceTrackerORM(SQLModel, PriceTracker, table=True):
+    __tablename__ = "pricetracker"
+    __table_args__ = {"sqlite_autoincrement": True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    source: str = Field(index=True)
+    symbol: str = Field(index=True)
+
+
+class FinancialsTrackerORM(SQLModel, FinancialsTracker, table=True):
+    __tablename__ = "financialstracker"
     __table_args__ = {"sqlite_autoincrement": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     source: str = Field(index=True)

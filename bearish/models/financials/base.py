@@ -299,3 +299,15 @@ class Financials(BaseModel):
         return bearish_db.read_financials(
             AssetQuery(symbols=Symbols(equities=[ticker]))  # type: ignore
         )
+
+
+class ManyFinancials(BaseModel):
+    financials: List[Financials] = Field(default_factory=list)
+
+    def get(self, attribute: str) -> List[DataSourceBase]:
+        return [
+            a
+            for financial in self.financials
+            if hasattr(financial, attribute)
+            for a in getattr(financial, attribute)
+        ]

@@ -1,11 +1,16 @@
+import functools
+import logging
+import time
 from datetime import datetime, timedelta
 from math import isnan
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Dict, Callable
 
 import pandas as pd
 
 from bearish.models.base import Ticker
 from bearish.types import SeriesLength
+
+logger = logging.getLogger(__name__)
 
 
 def to_float(value: Any) -> Optional[float]:
@@ -52,7 +57,8 @@ def format_capitalize(value: Any) -> Optional[str]:
 def remove_duplicates(value: list[Ticker]) -> list[Ticker]:
     if not value:
         return []
-    return list({Ticker.model_validate(t) for t in value})
+    tickers = [Ticker.model_validate(t) for t in value]
+    return list({t.symbol: t for t in tickers}.values())
 
 
 def remove_duplicates_string(value: list[str]) -> list[str]:
@@ -78,3 +84,30 @@ def to_dataframe(datas: List[Any]) -> pd.DataFrame:
 
     data.index = pd.to_datetime(data.index, utc=True)
     return data
+
+
+def batch(objects: List[Any], size: int) -> List[List[Any]]:
+    return [objects[i : i + size] for i in range(0, len(objects), size)]
+
+
+def safe_get(data: Dict[str, Any], attribute: str) -> Dict[str, Any]:
+    value = data.get(attribute, {})
+    return value if isinstance(value, dict) else {}
+
+
+def observability(func: Callable[..., Any]) -> Callable[..., Any]:
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            start = time.perf_counter()
+            result = func(*args, **kwargs)
+            time_elapsed = time.perf_counter() - start
+            logger.debug("=========================================================")
+            logger.debug(f"Function {func.__name__} took {time_elapsed:.2f} seconds")
+            logger.debug("=========================================================")
+            return result
+        except Exception as e:
+            logger.error(e)
+            raise e
+
+    return wrapper

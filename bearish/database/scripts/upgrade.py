@@ -4,6 +4,8 @@ from pathlib import Path
 from alembic import command
 from alembic.config import Config
 
+from bearish.database.settings import DATABASE_URL
+
 
 def upgrade(database_url: str) -> None:
     root_folder = Path(__file__).parents[1]
@@ -14,4 +16,4 @@ def upgrade(database_url: str) -> None:
 
 
 if __name__ == "__main__":
-    upgrade("sqlite:////home/aan/Documents/bearish/france_germany.db")
+    upgrade(DATABASE_URL)

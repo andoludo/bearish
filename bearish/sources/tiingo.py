@@ -55,21 +55,26 @@ class TiingoSource(TiingoSourceBase, AbstractSource):
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         return Assets()
 
-    def _read_financials(self, ticker: str) -> Financials:
-        return Financials()
+    def _read_financials(self, tickers: List[str]) -> List[Financials]:
+        return [Financials()]
 
-    def _read_series(self, ticker: str, type: SeriesLength) -> List[TiingoPrice]:  # type: ignore
+    def _read_series(self, tickers: List[str], type: SeriesLength) -> List[TiingoPrice]:  # type: ignore
         from_ = get_start_date(type)
-        datas = read_api(self.__api_key__, ticker, from_)
-        return [
-            TiingoPrice.model_validate(
-                {
-                    **data,
-                    "symbol": ticker,
-                    "date": datetime.strptime(
-                        data["date"], "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ).date(),
-                }
+        prices = []
+        for ticker in tickers:
+            datas = read_api(self.__api_key__, ticker, from_)
+            prices.extend(
+                [
+                    TiingoPrice.model_validate(
+                        {
+                            **data,
+                            "symbol": ticker,
+                            "date": datetime.strptime(
+                                data["date"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                            ).date(),
+                        }
+                    )
+                    for data in datas
+                ]
             )
-            for data in datas
-        ]
+        return prices

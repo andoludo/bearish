@@ -121,22 +121,22 @@ def test_fmp_equity_integration() -> None:
 def test_fmp_financials(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    assets = fmp._read_financials("AAPL")
+    assets = fmp._read_financials(["AAPL"])
     assert assets
-    assert not assets.is_empty()
+    assert not assets[0].is_empty()
 
 
 def test_fmp_series(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    prices = fmp.read_series(Ticker(symbol="AAPL", exchange="NASDAQ"), "max")
+    prices = fmp.read_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "max")
     assert prices
 
 
 def test_fmp_series_limited(fmp_api_fixture: requests_mock.Mocker) -> None:
     fmp = FmpSource()
     fmp.set_api_key(API_KEY)
-    prices = fmp.read_series(Ticker(symbol="AAPL", exchange="NASDAQ"), "5d")
+    prices = fmp.read_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "5d")
     assert prices
 
 
