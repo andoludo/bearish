@@ -130,7 +130,8 @@ class AbstractSource(SourceBase, abc.ABC):
         prices = []
         for chunk in chunks:
             try:
-                prices.extend(self._read_series([t.symbol for t in chunk], type_))
+                prices_ = self._read_series([t.symbol for t in chunk], type_)
+                prices.extend([p for p in prices_ if p.valid()])
             except InvalidApiKeyError as e:  # noqa: PERF203
                 raise e
             except Exception as e:

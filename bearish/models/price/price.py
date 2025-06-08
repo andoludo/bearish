@@ -1,3 +1,4 @@
+from math import isnan
 from typing import Annotated, Optional
 
 from pydantic import BeforeValidator, Field
@@ -14,3 +15,9 @@ class Price(DataSourceBase):
     volume: Annotated[float, BeforeValidator(to_float), Field(None)]
     dividends: Annotated[Optional[float], BeforeValidator(to_float), Field(None)]
     stock_splits: Annotated[Optional[float], BeforeValidator(to_float), Field(None)]
+
+    def valid(self) -> bool:
+        return not any(
+            isnan(field)
+            for field in [self.open, self.high, self.low, self.close, self.volume]
+        )
