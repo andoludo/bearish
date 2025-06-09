@@ -23,7 +23,7 @@ from bearish.sources.base import (
 )
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets, FailedQueryAssets
-from bearish.types import Sources, SeriesLength
+from bearish.types import Sources, SeriesLength, DELAY
 from yahooquery import Ticker as YahooQueryTicker  # type: ignore
 
 from bearish.utils.utils import batch, safe_get
@@ -83,7 +83,7 @@ class YahooQueryAssetBase(YahooQueryBase):
                     | {"symbol": ticker.symbol}
                 )
                 equities.append(cls.model_validate(data))
-            time.sleep(2)  # Avoid hitting API rate limits
+            time.sleep(DELAY)  # Avoid hitting API rate limits
         logger.debug(f"Retrieved {len(equities)} assets.")
         return YahooQueryAssetOutput(equities=equities, failed_query=failed_query)
 

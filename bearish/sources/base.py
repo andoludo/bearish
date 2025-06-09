@@ -1,5 +1,6 @@
 import abc
 import logging
+import time
 from functools import wraps
 from io import StringIO
 from typing import List, Optional, Type, Callable, Any, cast
@@ -16,7 +17,7 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.types import Sources, SeriesLength
+from bearish.types import Sources, SeriesLength, DELAY
 from bearish.utils.utils import batch, observability
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ class AbstractSource(SourceBase, abc.ABC):
     countries: List[Countries]
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
     api_usage: ApiUsage = Field(default_factory=ApiUsage)
-    batch_size: int = 100
+    batch_size: int = 10
 
     @validate_call(validate_return=True)
     @check_api_limit
@@ -108,12 +109,14 @@ class AbstractSource(SourceBase, abc.ABC):
             try:
                 logger.info(f"Reading Financials from {type(self).__name__}")
                 financials.extend(self._read_financials([t.symbol for t in chunk]))
-            except InvalidApiKeyError as e:  # noqa: PERF203
+
+            except InvalidApiKeyError as e:
                 raise e
             except Exception as e:
                 logger.error(
                     f"Error reading Financials from {type(self).__name__}: {e}"
                 )
+            time.sleep(DELAY)
 
         return financials
 
@@ -134,10 +137,11 @@ class AbstractSource(SourceBase, abc.ABC):
             try:
                 prices_ = self._read_series([t.symbol for t in chunk], type_)
                 prices.extend([p for p in prices_ if p.valid()])
-            except InvalidApiKeyError as e:  # noqa: PERF203
+            except InvalidApiKeyError as e:
                 raise e
             except Exception as e:
                 logger.error(f"Error reading prices from {type(self).__name__}: {e}")
+            time.sleep(DELAY)
         return prices
 
     @abc.abstractmethod

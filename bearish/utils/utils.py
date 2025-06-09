@@ -92,7 +92,9 @@ def batch(objects: List[Any], size: int) -> List[List[Any]]:
 
 def safe_get(data: Dict[str, Any], attribute: str) -> Dict[str, Any]:
     if not isinstance(data, dict):
-        logger.warning(f"Expected a dictionary, got {type(data)} instead.")
+        logger.warning(
+            f"Expected a dictionary, got {type(data)} instead with value {data}"
+        )
         return {}
     value = data.get(attribute, {})
     return value if isinstance(value, dict) else {}

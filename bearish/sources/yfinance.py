@@ -27,7 +27,7 @@ from bearish.sources.base import (
 )
 from bearish.models.financials.base import Financials
 from bearish.models.assets.assets import Assets, FailedQueryAssets
-from bearish.types import Sources, SeriesLength
+from bearish.types import Sources, SeriesLength, DELAY
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +64,12 @@ class YfinanceFinancialBase(YfinanceBase):
             data = get_data_frame(
                 ticker_, attribute, transpose=transpose, prefix=prefix
             )
+            time.sleep(DELAY)
             return [
                 cls.model_validate(data_ | {"symbol": ticker_.ticker})
                 for data_ in data.to_dict(orient="records")
             ]
+
         except Exception as e:
             logger.error(f"Error reading {ticker_.ticker} {attribute}: {e}")
             return []
@@ -107,7 +109,7 @@ class YfinanceAssetBase(YfinanceBase):
                 logger.error(f"Error reading ticker: {e}", exc_info=True)
                 failed_query.append(ticker)
                 continue
-            time.sleep(2)  # To avoid hitting API limits
+            time.sleep(DELAY)  # To avoid hitting API limits
         return YfinanceAssetOutput(equities=equities, failed_query=failed_query)
 
 
