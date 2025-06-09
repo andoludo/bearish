@@ -80,12 +80,14 @@ class AbstractSource(SourceBase, abc.ABC):
         if query:
             query_ = self.exchanges.get_asset_query(query, self.countries)
             logger.debug(
-                f"Reading assets from {type(self).__name__} with {query_.symbols.all()} tickers"
+                f"Reading assets from {type(self).__name__} with {len(query_.symbols.all())} tickers"
             )
         try:
             return self._read_assets(query_)
         except Exception as e:
-            logger.error(f"Error reading assets from {type(self).__name__}: {e}")
+            logger.error(
+                f"Error reading assets from {type(self).__name__}: {e}", exc_info=True
+            )
             return Assets()
 
     @validate_call(validate_return=True)

@@ -98,16 +98,16 @@ class YfinanceAssetBase(YfinanceBase):
             try:
                 info = get_info(ticker, function)
                 if not info:
-                    logger.error(f"No info found for {ticker.symbol}")
+                    logger.error(f"No info found for {ticker.symbol}", exc_info=True)
                     failed_query.append(ticker)
                     continue
+                logger.info(f"Successfully read {ticker.symbol}")
+                equities.append(cls.model_validate(info))
             except Exception as e:
-                logger.error(f"Error reading {ticker.symbol}: {e}")
+                logger.error(f"Error reading ticker: {e}", exc_info=True)
                 failed_query.append(ticker)
                 continue
-            time.sleep(1)
-            logger.info(f"Successfully read {ticker.symbol}")
-            equities.append(cls.model_validate(info))
+            time.sleep(2)  # To avoid hitting API limits
         return YfinanceAssetOutput(equities=equities, failed_query=failed_query)
 
 

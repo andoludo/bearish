@@ -1,4 +1,5 @@
 import logging
+import time
 
 from typing import List, Optional, Dict, Any, Callable
 
@@ -82,6 +83,7 @@ class YahooQueryAssetBase(YahooQueryBase):
                     | {"symbol": ticker.symbol}
                 )
                 equities.append(cls.model_validate(data))
+            time.sleep(2)  # Avoid hitting API rate limits
         logger.debug(f"Retrieved {len(equities)} assets.")
         return YahooQueryAssetOutput(equities=equities, failed_query=failed_query)
 

@@ -91,6 +91,9 @@ def batch(objects: List[Any], size: int) -> List[List[Any]]:
 
 
 def safe_get(data: Dict[str, Any], attribute: str) -> Dict[str, Any]:
+    if not isinstance(data, dict):
+        logger.warning(f"Expected a dictionary, got {type(data)} instead.")
+        return {}
     value = data.get(attribute, {})
     return value if isinstance(value, dict) else {}
 
@@ -107,7 +110,7 @@ def observability(func: Callable[..., Any]) -> Callable[..., Any]:
             logger.debug("=========================================================")
             return result
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=True, stack_info=True)
             raise e
 
     return wrapper
