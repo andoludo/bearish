@@ -6,7 +6,7 @@ from bearish.database.crud import BearishDb
 
 
 def test_base_views(bearish_db_with_analysis: BearishDb) -> None:
-
+    """Test the BaseViews class with a simple query."""
     views = BaseViews(
         view_name="test", query="SELECT symbol, name, source FROM analysis"
     )
