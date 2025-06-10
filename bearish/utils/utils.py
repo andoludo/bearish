@@ -83,6 +83,7 @@ def to_dataframe(datas: List[Any]) -> pd.DataFrame:
     data = data.sort_index(inplace=False)
 
     data.index = pd.to_datetime(data.index, utc=True)
+    data = data[~data.index.duplicated(keep="first")]
     return data
 
 

@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Annotated, Any, Dict
 
 from pydantic import Field, BeforeValidator, model_validator
@@ -72,6 +73,10 @@ class BaseComponent(ComponentDescription):
     @model_validator(mode="before")
     @classmethod
     def _validator(cls, value: Dict[str, Any]) -> Dict[str, Any]:
+        if "symbol" not in value:
+            raise ValueError(
+                f"Symbol is required for BaseComponent. Provided data {json.dumps(value, indent=4)}"
+            )
         base_symbol, *modifier = value["symbol"].split(".")
         value["base_symbol"] = base_symbol
         value["modifier"] = modifier[0] if modifier else None

@@ -41,6 +41,7 @@ from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yahooquery import YahooQuerySource
 from bearish.sources.yfinance import yFinanceSource
 from bearish.types import SeriesLength, Sources
+from bearish.utils.utils import batch
 
 logger = logging.getLogger(__name__)
 app = typer.Typer()
@@ -76,6 +77,7 @@ class Filter(BaseModel):
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
+    batch_size: int = Field(default=500)
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
@@ -221,55 +223,58 @@ class Bearish(BaseModel):
         logger.warning(
             f"Found tickers without financials: {[t.symbol for t in tickers]}"
         )
-
+        chunks = batch(tickers, size=self.batch_size)
         for source in self.financials_sources:
             logger.debug("getting data tickers")
-            try:
-                financials_ = source.read_financials(tickers)
-            except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
-                logger.error(f"Error reading data using {source.__source__}: {e}")
-                continue
+            for chunk in chunks:
+                try:
+                    financials_ = source.read_financials(chunk)
+                except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
+                    logger.error(f"Error reading data using {source.__source__}: {e}")
+                    continue
 
-            if not financials_:
-                logger.warning("No financial data found.")
-                continue
-            self._bearish_db.write_financials(financials_)
-            self._bearish_db.write_trackers(
-                [
-                    FinancialsTracker(
-                        symbol=t.symbol,
-                        source=source.__source__,
-                        exchange=t.exchange,
-                    )
-                    for t in tickers
-                ]
-            )
+                if not financials_:
+                    logger.warning("No financial data found.")
+                    continue
+                self._bearish_db.write_financials(financials_)
+                self._bearish_db.write_trackers(
+                    [
+                        FinancialsTracker(
+                            symbol=t.symbol,
+                            source=source.__source__,
+                            exchange=t.exchange,
+                        )
+                        for t in tickers
+                    ]
+                )
 
             break
 
     @validate_call
     def write_many_series(self, tickers: List[Ticker], type: SeriesLength) -> None:
         tickers = self.get_tickers_without_price(tickers)
+        chunks = batch(tickers, self.batch_size)
         for source in self.price_sources:
-            try:
-                series_ = source.read_series(tickers, type)
-            except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
-                logger.error(f"Error reading series: {e}")
-                continue
-            if series_:
-                price_date = Prices(prices=series_).get_last_date()
-                self._bearish_db.write_series(series_)
-                self._bearish_db.write_trackers(
-                    [
-                        PriceTracker(
-                            symbol=t.symbol,
-                            source=source.__source__,
-                            exchange=t.exchange,
-                            date=price_date,
-                        )
-                        for t in tickers
-                    ]
-                )
+            for chunk in chunks:
+                try:
+                    series_ = source.read_series(chunk, type)
+                except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
+                    logger.error(f"Error reading series: {e}")
+                    continue
+                if series_:
+                    price_date = Prices(prices=series_).get_last_date()
+                    self._bearish_db.write_series(series_)
+                    self._bearish_db.write_trackers(
+                        [
+                            PriceTracker(
+                                symbol=t.symbol,
+                                source=source.__source__,
+                                exchange=t.exchange,
+                                date=price_date,
+                            )
+                            for t in tickers
+                        ]
+                    )
                 break
 
     def read_sources(self) -> List[str]:

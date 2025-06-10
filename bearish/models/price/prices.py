@@ -37,8 +37,9 @@ def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> Optional
     last_index = prices_.last_valid_index()
     delta = pd.Timedelta(days=days)
     start_index = last_index - delta  # type: ignore
-    closest_index = prices_.index.asof(start_index)  # type: ignore
+
     try:
+        closest_index = prices_.index.unique().asof(start_index)  # type: ignore
         price = (
             prices_.loc[closest_index].close
             if not max
@@ -46,8 +47,7 @@ def price_growth(prices: pd.DataFrame, days: int, max: bool = False) -> Optional
         )
     except Exception as e:
         logger.warning(
-            f"""Failing to calculate price growth: {e}. 
-        Closest_index: {closest_index}""",
+            f"""Failing to calculate price growth: {e}.""",
             exc_info=True,
         )
         return None

@@ -1,6 +1,5 @@
 import abc
 import logging
-import time
 from functools import wraps
 from io import StringIO
 from typing import List, Optional, Type, Callable, Any, cast
@@ -17,8 +16,8 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.types import Sources, SeriesLength, DELAY
-from bearish.utils.utils import batch, observability
+from bearish.types import Sources, SeriesLength
+from bearish.utils.utils import observability
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,6 @@ class AbstractSource(SourceBase, abc.ABC):
     countries: List[Countries]
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
     api_usage: ApiUsage = Field(default_factory=ApiUsage)
-    batch_size: int = 10
 
     @validate_call(validate_return=True)
     @check_api_limit
@@ -103,22 +101,17 @@ class AbstractSource(SourceBase, abc.ABC):
                 ticker, countries=self.countries
             )
         ]
-        chunks = batch(tickers, size=self.batch_size)
-        financials = []
-        for chunk in chunks:
-            try:
-                logger.info(f"Reading Financials from {type(self).__name__}")
-                financials.extend(self._read_financials([t.symbol for t in chunk]))
 
-            except InvalidApiKeyError as e:
-                raise e
-            except Exception as e:
-                logger.error(
-                    f"Error reading Financials from {type(self).__name__}: {e}"
-                )
-            time.sleep(DELAY)
+        try:
+            logger.info(f"Reading Financials from {type(self).__name__}")
+            return self._read_financials([t.symbol for t in tickers])
 
-        return financials
+        except InvalidApiKeyError as e:
+            raise e
+        except Exception as e:
+            logger.error(f"Error reading Financials from {type(self).__name__}: {e}")
+
+        return []
 
     @validate_call(validate_return=True)
     @check_api_limit
@@ -131,18 +124,15 @@ class AbstractSource(SourceBase, abc.ABC):
                 ticker, countries=self.countries
             )
         ]
-        chunks = batch(tickers, size=self.batch_size)
-        prices = []
-        for chunk in chunks:
-            try:
-                prices_ = self._read_series([t.symbol for t in chunk], type_)
-                prices.extend([p for p in prices_ if p.valid()])
-            except InvalidApiKeyError as e:
-                raise e
-            except Exception as e:
-                logger.error(f"Error reading prices from {type(self).__name__}: {e}")
-            time.sleep(DELAY)
-        return prices
+        try:
+            prices_ = self._read_series([t.symbol for t in tickers], type_)
+            return [p for p in prices_ if p.valid()]
+        except InvalidApiKeyError as e:
+            raise e
+        except Exception as e:
+            logger.error(f"Error reading prices from {type(self).__name__}: {e}")
+
+        return []
 
     @abc.abstractmethod
     def _read_financials(self, tickers: List[str]) -> List[Financials]: ...
