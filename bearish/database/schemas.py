@@ -102,17 +102,15 @@ class SourcesORM(SQLModel, table=True):
 class PriceTrackerORM(SQLModel, PriceTracker, table=True):
     __tablename__ = "pricetracker"
     __table_args__ = {"sqlite_autoincrement": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
-    source: str = Field(index=True)
-    symbol: str = Field(index=True)
+    source: str = Field(index=True, primary_key=True)
+    symbol: str = Field(index=True, primary_key=True)
 
 
 class FinancialsTrackerORM(SQLModel, FinancialsTracker, table=True):
     __tablename__ = "financialstracker"
     __table_args__ = {"sqlite_autoincrement": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
-    source: str = Field(index=True)
-    symbol: str = Field(index=True)
+    source: str = Field(index=True, primary_key=True)
+    symbol: str = Field(index=True, primary_key=True)
 
 
 class AnalysisORM(BaseTable, Analysis, table=True):  # type: ignore
