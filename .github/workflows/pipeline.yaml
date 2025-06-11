@@ -8,6 +8,9 @@ env:
 jobs:
   linting:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ "18.x" ]
     if: startsWith(github.ref, 'refs/heads/') && ! contains(github.event.head_commit.message, 'Auto-increment')
     steps:
       - name: Checkout repository
