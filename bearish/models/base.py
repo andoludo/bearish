@@ -37,11 +37,16 @@ class SourceBase(BaseModel, abc.ABC):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 
-class TrackerQuery(BaseModel):
+class BaseTrackerQuery(BaseModel):
     exchange: Optional[str] = None
 
 
-class BaseTracker(TrackerQuery):
+class TrackerQuery(BaseTrackerQuery):
+    reference_date: Optional[datetime.date] = None
+    delay: int = 5
+
+
+class BaseTracker(BaseTrackerQuery):
     source: str
     symbol: str
     date: datetime.date = Field(default_factory=date.today)

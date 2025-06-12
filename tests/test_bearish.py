@@ -1,5 +1,6 @@
 import os
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -522,3 +523,22 @@ def test_star_prices() -> None:
     assert median_yoy > 30
     assert median_mom > 1
     assert median_wow > 0
+
+
+def test_read_tracker(bear_db: BearishDb) -> None:
+    date_str = "2025-06-22"
+    trackers = bear_db.read_tracker(
+        TrackerQuery(reference_date=datetime.strptime(date_str, "%Y-%m-%d").date()),
+        PriceTracker,
+    )
+    assert trackers
+    assert len(trackers) == 2
+
+
+def test_read_tracker_today(bear_db: BearishDb) -> None:
+    date_str = "2025-06-12"
+    trackers = bear_db.read_tracker(
+        TrackerQuery(reference_date=datetime.strptime(date_str, "%Y-%m-%d").date()),
+        PriceTracker,
+    )
+    assert not trackers

@@ -18,7 +18,6 @@ def test_base_views(bearish_db_with_analysis: BearishDb) -> None:
         assert not views.empty
 
 
-@pytest.mark.skip("bear.db: better approach to be found.")
 def test_views(bear_db: BearishDb):
     with tempfile.TemporaryDirectory() as d:
         TestView().compute(bear_db, Path(d))
@@ -29,7 +28,6 @@ def test_views(bear_db: BearishDb):
         assert not data.empty
 
 
-@pytest.mark.skip("bear.db: better approach to be found.")
 def test_views_plot(bear_db: BearishDb):
     view = View(symbol="NVDA", source="Yfinance", exchange="NMS")
     with tempfile.TemporaryDirectory() as d:

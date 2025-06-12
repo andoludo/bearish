@@ -6,7 +6,7 @@ from typing import List, TYPE_CHECKING, Type, Union, Any, Optional
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Engine, create_engine, insert
+from sqlalchemy import Engine, create_engine, insert, func
 from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
 
@@ -307,6 +307,14 @@ class BearishDb(BearishDbBase):
             query = select(tracker_orm.symbol, tracker_orm.exchange, tracker_orm.source)
             if tracker_query.exchange:
                 query = query.where(tracker_orm.exchange == tracker_query.exchange)
+            if tracker_query.reference_date:
+                query = query.where(
+                    func.abs(
+                        func.julianday(tracker_orm.date)
+                        - func.julianday(tracker_query.reference_date)
+                    )
+                    > tracker_query.delay
+                )
             tracker_orm = session.exec(query).all()  # type: ignore
             return [
                 Ticker(symbol=t[0], exchange=t[1], source=t[2]) for t in tracker_orm  # type: ignore

@@ -14,4 +14,4 @@ Sources = Literal[
 ]
 
 SeriesLength = Literal["max", "1d", "5d"]
-DELAY = 1
+DELAY = 0.2
