@@ -7,15 +7,13 @@ import pandas as pd
 import pytest
 import requests_mock
 
-from bearish.analysis.analysis import Analysis
-from bearish.analysis.figures import plot
-from bearish.analysis.view import TestView
+
 from bearish.database.crud import BearishDb
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.base import Ticker, TrackerQuery, PriceTracker, FinancialsTracker
 from bearish.models.price.price import Price
-from bearish.models.price.prices import Prices, yoy, wow, mom
+from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 
 from bearish.sources.financedatabase import (
@@ -479,50 +477,7 @@ def test_get_financials(bearish_db_with_assets: BearishDb):
             symbols=Symbols(equities=[Ticker(symbol="DAL"), Ticker(symbol="NVDA")])
         )
     )
-    fundamental_analysis = financials.fundamental_analysis(Ticker(symbol="DAL"))
     assert financials
-    assert not fundamental_analysis.is_empty()
-
-
-def test_technical_analysis(bearish_db_with_assets: BearishDb):
-
-    prices = Prices.from_csv(Path(__file__).parent / "data" / "prices.csv")
-    ta = prices.technical_analysis()
-    assert ta
-
-
-def test_analysis(bearish_db_with_assets: BearishDb):
-    bearish = Bearish(
-        path=bearish_db_with_assets.database_path,
-        api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
-    )
-    filter = Filter(countries=["US"], filters=["DAL", "NVDA"])
-    bearish.get_detailed_tickers(filter)  # type: ignore
-    bearish.get_financials(filter)  # type: ignore
-    bearish.get_prices(filter)  # type: ignore
-    analysis = Analysis.from_ticker(bearish_db_with_assets, Ticker(symbol="DAL"))
-    bearish_db_with_assets.write_analysis(analysis)
-    analysis = bearish_db_with_assets.read_analysis(Ticker(symbol="DAL"))
-    assert analysis
-
-
-def test_star_prices() -> None:
-    yoy_ = []
-    mom_ = []
-    wow_ = []
-    for ticker in ["NVDA", "RHM.DE", "TSM", "PLTR", "SMCI", "MSFT"]:
-        prices = Prices.from_csv(
-            Path(__file__).parent / "data" / f"prices_{ticker.lower()}.csv"
-        ).to_dataframe()
-        yoy_.append(yoy(prices))
-        mom_.append(mom(prices))
-        wow_.append(wow(prices))
-    median_yoy = pd.concat(yoy_).median()
-    median_mom = pd.concat(mom_).median()
-    median_wow = pd.concat(wow_).median()
-    assert median_yoy > 30
-    assert median_mom > 1
-    assert median_wow > 0
 
 
 def test_read_tracker(bear_db: BearishDb) -> None:

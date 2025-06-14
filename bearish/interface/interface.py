@@ -1,12 +1,12 @@
 import abc
 import logging
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Optional, Type, Union
+from typing import List, Type, Union
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, validate_call
 
-from bearish.analysis.view import View
+
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.models.assets.assets import Assets
 from bearish.models.base import (
@@ -22,8 +22,7 @@ from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
 from bearish.utils.utils import observability
 
-if TYPE_CHECKING:
-    from bearish.analysis.analysis import Analysis
+
 logger = logging.getLogger(__name__)
 
 
@@ -86,23 +85,8 @@ class BearishDbBase(BaseModel):
         tracker_type = type(trackers[0])
         return self._write_trackers(trackers, tracker_type)
 
-    def write_analysis(self, analysis: "Analysis") -> None:
-        return self._write_analysis(analysis)
-
-    def read_analysis(self, ticker: Ticker) -> Optional["Analysis"]:
-        return self._read_analysis(ticker)
-
-    def read_views(self, query: str) -> List[View]:
-        return self._read_views(query)
-
     def read_query(self, query: str) -> pd.DataFrame:
         return self._read_query(query)
-
-    def write_views(self, views: List[View]) -> None:
-        if not views:
-            logger.warning("No views to write.")
-            return
-        return self._write_views(views)
 
     @abc.abstractmethod
     def _write_assets(self, assets: Assets) -> None: ...
@@ -145,16 +129,4 @@ class BearishDbBase(BaseModel):
     def _get_tickers(self, exchange_query: ExchangeQuery) -> List[Ticker]: ...
 
     @abc.abstractmethod
-    def _write_analysis(self, analysis: "Analysis") -> None: ...
-
-    @abc.abstractmethod
-    def _read_analysis(self, ticker: Ticker) -> Optional["Analysis"]: ...
-
-    @abc.abstractmethod
-    def _read_views(self, query: str) -> List[View]: ...
-
-    @abc.abstractmethod
     def _read_query(self, query: str) -> pd.DataFrame: ...
-
-    @abc.abstractmethod
-    def _write_views(self, views: List[View]) -> None: ...

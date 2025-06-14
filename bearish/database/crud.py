@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Type, Union, Any, Optional
+from typing import List, TYPE_CHECKING, Type, Union, Any
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
@@ -10,8 +10,7 @@ from sqlalchemy import Engine, create_engine, insert, func
 from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
 
-from bearish.analysis.analysis import Analysis
-from bearish.analysis.view import View
+
 from bearish.database.schemas import (
     EquityORM,
     CurrencyORM,
@@ -23,8 +22,6 @@ from bearish.database.schemas import (
     PriceORM,
     SourcesORM,
     EarningsDateORM,
-    AnalysisORM,
-    ViewORM,
     QuarterlyFinancialMetricsORM,
     QuarterlyCashFlowORM,
     QuarterlyBalanceSheetORM,
@@ -255,25 +252,6 @@ class BearishDb(BearishDbBase):
             session.exec(stmt)  # type: ignore
             session.commit()
 
-    def _write_analysis(self, analysis: Analysis) -> None:
-        with Session(self._engine) as session:
-            stmt = (
-                insert(AnalysisORM)
-                .prefix_with("OR REPLACE")
-                .values(analysis.model_dump())
-            )
-            session.exec(stmt)  # type: ignore
-            session.commit()
-            session.commit()
-
-    def _read_analysis(self, ticker: Ticker) -> Optional[Analysis]:
-        with Session(self._engine) as session:
-            query = select(AnalysisORM).where(AnalysisORM.symbol == ticker.symbol)
-            analysis = session.exec(query).first()
-            if not analysis:
-                return None
-            return Analysis.model_validate(analysis)
-
     def _write_trackers(
         self,
         trackers: List[FinancialsTracker] | List[PriceTracker],
@@ -337,26 +315,6 @@ class BearishDb(BearishDbBase):
             Ticker(symbol=symbol["symbol"], exchange=symbol["exchange"])
             for symbol in symbols.to_dict(orient="records")
         ]
-
-    def _read_views(self, query: str) -> List[View]:
-        views = pd.read_sql(
-            query,
-            con=self._engine,
-        )
-        return [
-            View.model_validate(record) for record in views.to_dict(orient="records")
-        ]
-
-    def _write_views(self, views: List[View]) -> None:
-        with Session(self._engine) as session:
-            stmt = (
-                insert(ViewORM)
-                .prefix_with("OR REPLACE")
-                .values([view.model_dump() for view in views])
-            )
-
-            session.exec(stmt)  # type: ignore
-            session.commit()
 
     def _read_query(self, query: str) -> pd.DataFrame:
         return pd.read_sql(
