@@ -1,8 +1,9 @@
+import datetime
 import logging
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Any, get_args, Annotated, cast, Union, Type
+from typing import Optional, List, Any, get_args, Annotated, cast, Union, Type, Callable
 
 import typer
 from pydantic import (
@@ -219,7 +220,6 @@ class Bearish(BaseModel):
         ]
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
-        tickers = self.get_tickers_without_financials(tickers)
         logger.warning(f"Found tickers without financials: {len(tickers)}")
         chunks = batch(tickers, size=self.batch_size)
         source = self.financials_sources[0]
@@ -249,7 +249,6 @@ class Bearish(BaseModel):
 
     @validate_call
     def write_many_series(self, tickers: List[Ticker], type: SeriesLength) -> None:
-        tickers = self.get_tickers_without_price(tickers)
         chunks = batch(tickers, self.batch_size)
         source = self.price_sources[0]
         for chunk in chunks:
@@ -324,10 +323,51 @@ class Bearish(BaseModel):
             analysis = Analysis.from_ticker(self._bearish_db, ticker)
             self._bearish_db.write_analysis(analysis)
 
-    def update_prices(self, symbols: List[str]) -> None:
-        tickers = self._get_tracked_tickers(TrackerQuery(), PriceTracker)
-        tickers = [t for t in tickers if t.symbol in symbols]
-        self.write_many_series(tickers, "max")
+    def _update(
+        self,
+        tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
+        write_function: Callable[[List[Ticker]], None],
+        symbols: Optional[List[str]] = None,
+        reference_date: Optional[datetime.date] = None,
+        delay: int = 5,
+    ) -> None:
+        reference_date = reference_date or datetime.date.today()
+        tickers = self._get_tracked_tickers(
+            TrackerQuery(reference_date=reference_date, delay=delay), tracker_type
+        )
+        if symbols is not None:
+            tickers = [t for t in tickers if t.symbol in symbols]
+        write_function(tickers)
+
+    def update_prices(
+        self,
+        symbols: Optional[List[str]] = None,
+        reference_date: Optional[datetime.date] = None,
+    ) -> None:
+        def write_function(tickers: List[Ticker]) -> None:
+            logger.debug(f"Updating prices for {len(tickers)} tickers")
+            self.write_many_series(tickers, "5d")
+
+        self._update(
+            PriceTracker, write_function, symbols=symbols, reference_date=reference_date
+        )
+
+    def update_financials(
+        self,
+        symbols: Optional[List[str]] = None,
+        reference_date: Optional[datetime.date] = None,
+        delay: int = 20,
+    ) -> None:
+        def write_function(tickers: List[Ticker]) -> None:
+            self.write_many_financials(tickers)
+
+        self._update(
+            FinancialsTracker,
+            write_function,
+            symbols=symbols,
+            reference_date=reference_date,
+            delay=delay,
+        )
 
 
 @app.command()
@@ -441,14 +481,15 @@ def views(
 
 
 @app.command()
-def update_prices(
+def update(
     path: Path,
-    symbols: Annotated[List[str], typer.Argument()],
+    symbols: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.update_prices(symbols)
+    bearish.update_financials(symbols)
 
 
 if __name__ == "__main__":

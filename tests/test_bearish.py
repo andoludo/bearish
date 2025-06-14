@@ -175,7 +175,7 @@ def test_update_assets_multi_sources(bearish_db: BearishDb):
         assert sources
 
 
-def test_update_financials(bearish_db: BearishDb):
+def test_write_financials(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -542,3 +542,25 @@ def test_read_tracker_today(bear_db: BearishDb) -> None:
         PriceTracker,
     )
     assert not trackers
+
+
+def test_update_prices(bear_db: BearishDb) -> None:
+    date_str = "2025-06-22"
+    reference_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    bearish = Bearish(path=bear_db.database_path)
+    bearish.update_prices(reference_date=reference_date)
+    series = bearish.read_series(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
+    assert len({p.created_at for p in series}) > 1
+
+
+def test_update_financials(bear_db: BearishDb) -> None:
+    date_str = "2025-06-22"
+    reference_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    bearish = Bearish(path=bear_db.database_path)
+    bearish.update_financials(reference_date=reference_date)
+    financials = bearish.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
+    assert financials
