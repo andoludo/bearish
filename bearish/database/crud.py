@@ -61,11 +61,13 @@ BATCH_SIZE = 5000
 class BearishDb(BearishDbBase):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     database_path: Path
+    auto_migration: bool = True
 
     @cached_property
     def _engine(self) -> Engine:
         database_url = f"sqlite:///{Path(self.database_path)}"
-        upgrade(database_url)
+        if self.auto_migration:
+            upgrade(database_url)
         engine = create_engine(database_url)
         return engine
 
@@ -291,7 +293,7 @@ class BearishDb(BearishDbBase):
                         func.julianday(tracker_orm.date)
                         - func.julianday(tracker_query.reference_date)
                     )
-                    > tracker_query.delay
+                    >= tracker_query.delay
                 )
             tracker_orm = session.exec(query).all()  # type: ignore
             return [

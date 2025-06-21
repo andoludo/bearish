@@ -77,6 +77,7 @@ class Filter(BaseModel):
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
+    auto_migration: bool = True
     batch_size: int = Field(default=500)
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
@@ -107,7 +108,9 @@ class Bearish(BaseModel):
     )
 
     def model_post_init(self, __context: Any) -> None:
-        self._bearish_db = BearishDb(database_path=self.path)
+        self._bearish_db = BearishDb(
+            database_path=self.path, auto_migration=self.auto_migration
+        )
         for source in set(
             self.financials_sources
             + self.price_sources
@@ -330,13 +333,19 @@ class Bearish(BaseModel):
         self,
         symbols: Optional[List[str]] = None,
         reference_date: Optional[datetime.date] = None,
+        delay: int = 1,
+        series_length: SeriesLength = "5d",
     ) -> None:
         def write_function(tickers: List[Ticker]) -> None:
             logger.debug(f"Updating prices for {len(tickers)} tickers")
-            self.write_many_series(tickers, "5d")
+            self.write_many_series(tickers, series_length)
 
         self._update(
-            PriceTracker, write_function, symbols=symbols, reference_date=reference_date
+            PriceTracker,
+            write_function,
+            symbols=symbols,
+            reference_date=reference_date,
+            delay=delay,
         )
 
     def update_financials(
