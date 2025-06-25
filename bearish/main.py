@@ -334,7 +334,7 @@ class Bearish(BaseModel):
         symbols: Optional[List[str]] = None,
         reference_date: Optional[datetime.date] = None,
         delay: int = 1,
-        series_length: SeriesLength = "5d",
+        series_length: SeriesLength = "1mo",
     ) -> None:
         def write_function(tickers: List[Ticker]) -> None:
             logger.debug(f"Updating prices for {len(tickers)} tickers")
@@ -450,10 +450,11 @@ def update(
     path: Path,
     symbols: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
+    series_length: str = "1mo",
 ) -> None:
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
-    bearish.update_prices(symbols)
+    bearish.update_prices(symbols, series_length=series_length)  # type: ignore
     bearish.update_financials(symbols)
 
 
