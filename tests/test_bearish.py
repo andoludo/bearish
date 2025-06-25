@@ -1,6 +1,6 @@
 import os
 import tempfile
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -500,12 +500,13 @@ def test_read_tracker_today(bear_db: BearishDb) -> None:
 
 
 def test_update_prices(bear_db: BearishDb) -> None:
-    date_str = "2025-06-22"
-    reference_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+    date_today = date.today()
+    reference_date = date_today - timedelta(days=60)
     bearish = Bearish(path=bear_db.database_path)
     bearish.update_prices(reference_date=reference_date)
     series = bearish.read_series(
-        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")])), months=2
     )
     assert len({p.created_at for p in series}) > 1
 
