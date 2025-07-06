@@ -481,7 +481,9 @@ def test_get_financials(bearish_db_with_assets: BearishDb):
 
 
 def test_read_tracker(bear_db: BearishDb) -> None:
-    date_str = "2025-06-30"
+    date_today = date.today()
+    reference_date = date_today - timedelta(days=12)
+    date_str = reference_date.strftime("%Y-%m-%d")
     trackers = bear_db.read_tracker(
         TrackerQuery(reference_date=datetime.strptime(date_str, "%Y-%m-%d").date()),
         PriceTracker,
