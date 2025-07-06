@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any, Callable, cast
 import pandas as pd
 import yfinance as yf  # type: ignore
 from pydantic import BaseModel, Field
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_fixed, wait_exponential
 
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
@@ -36,6 +36,11 @@ class YfinanceBase(BaseModel):
     __source__: Sources = "Yfinance"
 
 
+@retry(
+    wait=wait_exponential(multiplier=4, min=60, max=1200),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
 def get_data_frame(
     ticker_: yf.Ticker,
     attribute: str,
