@@ -37,7 +37,7 @@ class YfinanceBase(BaseModel):
 
 
 @retry(
-    wait=wait_exponential(multiplier=4, min=60, max=1200),
+    wait=wait_exponential(multiplier=1, min=60, max=1200),
     stop=stop_after_attempt(5),
     reraise=True,
 )
