@@ -1,7 +1,8 @@
 import abc
 import logging
+from datetime import date
 from pathlib import Path
-from typing import List, Type, Union
+from typing import List, Type, Union, Optional
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, validate_call
@@ -130,3 +131,6 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _read_query(self, query: str) -> pd.DataFrame: ...
+
+    @abc.abstractmethod
+    def read_price_tracker(self, symbol: str) -> Optional[date]: ...

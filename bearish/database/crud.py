@@ -1,8 +1,8 @@
 import logging
-from datetime import datetime
+from datetime import datetime, date
 from functools import cached_property
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Type, Union, Any
+from typing import List, TYPE_CHECKING, Type, Union, Any, Optional
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
@@ -323,3 +323,11 @@ class BearishDb(BearishDbBase):
             query,
             con=self._engine,
         )
+
+    def read_price_tracker(self, symbol: str) -> Optional[date]:
+        with Session(self._engine) as session:
+            query = select(PriceTrackerORM.date).where(PriceTrackerORM.symbol == symbol)  # type: ignore
+            result = session.exec(query).first()
+            if result is None:
+                return None
+            return result  # type: ignore

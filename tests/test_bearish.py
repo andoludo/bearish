@@ -481,7 +481,7 @@ def test_get_financials(bearish_db_with_assets: BearishDb):
 
 
 def test_read_tracker(bear_db: BearishDb) -> None:
-    date_today = date.today()
+    date_today = bear_db.read_price_tracker("AAPL")
     reference_date = date_today - timedelta(days=12)
     date_str = reference_date.strftime("%Y-%m-%d")
     trackers = bear_db.read_tracker(
@@ -493,7 +493,7 @@ def test_read_tracker(bear_db: BearishDb) -> None:
 
 
 def test_read_tracker_today(bear_db: BearishDb) -> None:
-    date_today = date.today()
+    date_today = bear_db.read_price_tracker("AAPL")
     reference_date = date_today - timedelta(days=3)
     date_str = reference_date.strftime("%Y-%m-%d")
     trackers = bear_db.read_tracker(
