@@ -1,3 +1,4 @@
+import datetime
 import logging
 from typing import List, Dict, Any, TYPE_CHECKING
 
@@ -29,6 +30,16 @@ class Financials(BaseModel):
     quarterly_balance_sheets: List[QuarterlyBalanceSheet] = Field(default_factory=list)
     quarterly_cash_flows: List[QuarterlyCashFlow] = Field(default_factory=list)
     earnings_date: List[EarningsDate] = Field(default_factory=list)
+
+    def _get_dates(self) -> List[datetime.date]:
+        dates = sorted(
+            {
+                field_.date
+                for field in self.model_fields
+                for field_ in getattr(self, field)
+            }
+        )
+        return dates
 
     def add(self, financials: "Financials") -> None:
         self.financial_metrics.extend(financials.financial_metrics)
@@ -78,3 +89,25 @@ class ManyFinancials(BaseModel):
             if hasattr(financial, attribute)
             for a in getattr(financial, attribute)
         ]
+
+
+class FinancialsWithDate(Financials):
+    date: datetime.date
+
+    @classmethod
+    def from_financials(cls, financials_: Financials) -> List["FinancialsWithDate"]:
+        financials_with_dates = []
+        for date in financials_._get_dates():
+            financials = cls(date=date)
+            for field in financials_.model_fields:
+                setattr(
+                    financials,
+                    field,
+                    [
+                        field_
+                        for field_ in getattr(financials_, field)
+                        if field_.date <= date
+                    ],
+                )
+            financials_with_dates.append(financials)
+        return financials_with_dates
