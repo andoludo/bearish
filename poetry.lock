@@ -2387,14 +2387,14 @@ premium = ["selenium (>=4.32.0)"]
 
 [[package]]
 name = "yfinance"
-version = "0.2.63"
+version = "0.2.65"
 description = "Download market data from Yahoo! Finance API"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "yfinance-0.2.63-py2.py3-none-any.whl", hash = "sha256:f51af658004682332321301a79e6c0e40af4f6209a9306b917b52c9f4e43a3ed"},
-    {file = "yfinance-0.2.63.tar.gz", hash = "sha256:6b1becc0d442755b94ea6aee3e7ee1c5248a24e21b64d576d1f87ac8bff30279"},
+    {file = "yfinance-0.2.65-py2.py3-none-any.whl", hash = "sha256:7be13abb0d80a17230bf798e9c6a324fa2bef0846684a6d4f7fa2abd21938963"},
+    {file = "yfinance-0.2.65.tar.gz", hash = "sha256:3d465e58c49be9d61f9862829de3e00bef6b623809f32f4efb5197b62fc60485"},
 ]
 
 [package.dependencies]
@@ -2418,4 +2418,4 @@ repair = ["scipy (>=1.6.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "57110d7af6296403fe880afcf8615233ee96fa1130d94108d431389e6aac6902"
+content-hash = "ff8c67901fb783d25bdf0a28e2c2a63e502011db7a5aa0d391ff65192c10a677"
