@@ -422,14 +422,20 @@ class yFinanceSource(YfinanceBase, AbstractSource):
     def _read_series(  # type: ignore
         self, tickers: List[str], type: SeriesLength
     ) -> List[yFinancePrice]:
-        time.sleep(5)
         data = yf.download(
             tickers, period=type, group_by="ticker", auto_adjust=True, timeout=60
         )
+        if any(data[(ticker, "Close")].empty for ticker in tickers):
+            data = yf.download(
+                tickers, period=type, group_by="ticker", auto_adjust=True, timeout=60
+            )
+
         records_final = []
         for ticker in tickers:
             if ticker in data.columns:
                 records = data[ticker].reset_index().to_dict(orient="records")
+                if not records:
+                    logger.error(f"No data found for ticker: {ticker}")
                 records_final.extend(
                     [
                         yFinancePrice(**(record | {"symbol": ticker}))

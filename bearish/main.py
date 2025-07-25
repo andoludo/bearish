@@ -78,7 +78,7 @@ class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
     auto_migration: bool = True
-    batch_size: int = Field(default=500)
+    batch_size: int = Field(default=250)
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
@@ -261,8 +261,9 @@ class Bearish(BaseModel):
                 logger.error(f"Error reading series: {e}")
                 continue
             if series_:
-                price_date = Prices(prices=series_).get_last_date()
+
                 self._bearish_db.write_series(series_)
+                price_date = Prices(prices=series_).get_last_date()
                 self._bearish_db.write_trackers(
                     [
                         PriceTracker(
