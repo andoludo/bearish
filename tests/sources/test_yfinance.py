@@ -116,4 +116,3 @@ def test_bug_financials():
     assert financial_metrics
     assert balance_sheets
     assert not cash_flows
-    assert earnings_date

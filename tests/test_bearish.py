@@ -508,11 +508,11 @@ def test_update_prices(bear_db: BearishDb) -> None:
     date_today = date.today()
     reference_date = date_today - timedelta(days=60)
     bearish = Bearish(path=bear_db.database_path)
-    bearish.update_prices(reference_date=reference_date)
+    bearish.update_prices(reference_date=reference_date, series_length="3mo")
     series = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")])), months=2
     )
-    assert len({p.created_at for p in series}) > 1
+    assert len({p.date.month for p in series}) == 3
 
 
 def test_update_financials(bear_db: BearishDb) -> None:
