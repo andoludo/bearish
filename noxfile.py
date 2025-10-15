@@ -4,7 +4,7 @@ from nox import Session
 nox.options.reuse_existing_virtualenvs = True
 
 
-@nox.session(python=["3.10"])
+@nox.session(python=["3.11"])
 def install(session: Session) -> None:
     groups = ["main", "dev"]
     session.run(
@@ -17,7 +17,7 @@ def install(session: Session) -> None:
     )
 
 
-@nox.session(python=["3.10"])
+@nox.session(python=["3.11"])
 def linting(session: Session) -> None:
     session.run("poetry", "run", "black", ".")
     session.run("poetry", "run", "mypy")
@@ -32,6 +32,6 @@ def linting(session: Session) -> None:
     )
 
 
-@nox.session(python=["3.10"])
+@nox.session(python=["3.11"])
 def tests(session: Session) -> None:
     session.run("poetry", "run", "pytest", "-m", "not integration")
