@@ -21,7 +21,7 @@ tenacity = "^9.0.0"
 
 
 setuptools = "^78.1.0"
-numpy = "^2.3.4"
+numpy = "2.2.6"
 yahooquery = "^2.4.1"
 sec-edgar-downloader = "^5.0.3"
 
