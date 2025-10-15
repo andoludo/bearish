@@ -6,7 +6,7 @@ authors = ["aan <andoludovic.andriamamonjy@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "bearish" }]
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.11,<3.13"
 pandas = "^2.1.4"
 pydantic = "^2.5.3"
 unidecode = "^1.3.8"
@@ -15,13 +15,15 @@ typeguard = "^4.1.5"
 alembic = "^1.14.0"
 sqlmodel = "^0.0.22"
 python-dotenv = "^1.0.1"
-yfinance = "^0.2.65"
+yfinance = "^0.2.66"
 typer = "^0.13.1"
 tenacity = "^9.0.0"
 
+
 setuptools = "^78.1.0"
-numpy = ">=1.20,<2.0"
+numpy = "^2.3.4"
 yahooquery = "^2.4.1"
+sec-edgar-downloader = "^5.0.3"
 
 
 
