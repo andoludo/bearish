@@ -28,6 +28,7 @@ from bearish.database.schemas import (
     PriceTrackerORM,
     FinancialsTrackerORM,
     IndexORM,
+    SecORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
@@ -49,6 +50,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
+from bearish.models.sec.sec import Sec
 from bearish.utils.utils import batch
 
 if TYPE_CHECKING:
@@ -100,6 +102,16 @@ class BearishDb(BearishDbBase):
             chunks = batch(data, BATCH_SIZE)
             for chunk in chunks:
                 stmt = insert(price_orm).prefix_with("OR REPLACE").values(chunk)
+                session.exec(stmt)  # type: ignore
+            session.commit()
+
+    def _write_sec(self, secs: List["Sec"]) -> None:
+
+        with Session(self._engine) as session:
+            data = [sec.model_dump() for sec in secs]
+            chunks = batch(data, BATCH_SIZE)
+            for chunk in chunks:
+                stmt = insert(SecORM).prefix_with("OR REPLACE").values(chunk)
                 session.exec(stmt)  # type: ignore
             session.commit()
 

@@ -42,11 +42,15 @@ def bearish_db() -> BearishDb:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as file:
         bearish = BearishDb(database_path=Path(file.name))
         return bearish
+
+
 @pytest.fixture
 def bearish_db_index() -> BearishDb:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as file:
         bearish = BearishDb(database_path=Path(file.name))
         return bearish
+
+
 def test_update_asset_yfinance(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path,

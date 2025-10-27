@@ -21,6 +21,7 @@ from bearish.models.financials.base import Financials
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
+from bearish.models.sec.sec import Sec
 from bearish.utils.utils import observability
 
 
@@ -41,6 +42,10 @@ class BearishDbBase(BaseModel):
         self, series: List[Price], table: Optional[Type[SQLModel]] = None
     ) -> None:
         return self._write_series(series, table=table)
+
+    @validate_call
+    def write_sec(self, secs: List[Sec]) -> None:
+        return self._write_sec(secs)
 
     @observability
     @validate_call
@@ -100,6 +105,9 @@ class BearishDbBase(BaseModel):
     def _write_series(
         self, series: List[Price], table: Optional[Type[SQLModel]] = None
     ) -> None: ...
+
+    @abc.abstractmethod
+    def _write_sec(self, secs: List[Sec]) -> None: ...
 
     @abc.abstractmethod
     def _write_financials(self, financials: List[Financials]) -> None: ...

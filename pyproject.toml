@@ -24,6 +24,7 @@ setuptools = "^78.1.0"
 numpy = "2.2.6"
 yahooquery = "^2.4.1"
 sec-edgar-downloader = "^5.0.3"
+sec-cik-mapper = "^2.1.0"
 
 
 

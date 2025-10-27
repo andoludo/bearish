@@ -1860,6 +1860,27 @@ files = [
 ]
 
 [[package]]
+name = "sec-cik-mapper"
+version = "2.1.0"
+description = "Generate mappings between SEC identifiers using Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "sec-cik-mapper-2.1.0.tar.gz", hash = "sha256:7ef321eec7f2b017bd982886249ed7f514263cbf704f4e1bf04093bce1ee3d4b"},
+    {file = "sec_cik_mapper-2.1.0-py3-none-any.whl", hash = "sha256:c826b3f70ec3040ee59ad788c6e8e916f717786cac6f0e2897bba121252d1487"},
+]
+
+[package.dependencies]
+pandas = "*"
+requests = "*"
+typing_extensions = "*"
+
+[package.extras]
+doc = ["sphinx", "sphinx-autodoc-typehints"]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "sec-edgar-downloader"
 version = "5.0.3"
 description = "Download SEC filings from the EDGAR database using Python"
@@ -2408,4 +2429,4 @@ repair = ["scipy (>=1.6.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "d9bd71fe39b251a350035ec5075b70af2753ed2348948c3264be588514846dc5"
+content-hash = "ee7b12107951b1262bf2302c6eb3d35b5ea8cbc7332b37e80277cfef6819f6d7"

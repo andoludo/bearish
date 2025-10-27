@@ -19,6 +19,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
+from bearish.models.sec.sec import Sec
 
 
 class BaseBearishTable(SQLModel):
@@ -123,3 +124,9 @@ class FinancialsTrackerORM(SQLModel, FinancialsTracker, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
     source: str = Field(index=True, primary_key=True)
     symbol: str = Field(index=True, primary_key=True)
+
+
+class SecORM(SQLModel, Sec, table=True):
+    __tablename__ = "sec"
+    __table_args__ = {"sqlite_autoincrement": True}
+    name: str = Field(index=True, primary_key=True)
