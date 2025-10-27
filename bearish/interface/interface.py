@@ -6,7 +6,7 @@ from typing import List, Type, Union, Optional
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, validate_call
-
+from sqlmodel import SQLModel
 
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.models.assets.assets import Assets
@@ -37,8 +37,8 @@ class BearishDbBase(BaseModel):
 
     @observability
     @validate_call
-    def write_series(self, series: List[Price]) -> None:
-        return self._write_series(series)
+    def write_series(self, series: List[Price], table: Optional[Type[SQLModel]] = None) -> None:
+        return self._write_series(series, table=table)
 
     @observability
     @validate_call
@@ -46,8 +46,8 @@ class BearishDbBase(BaseModel):
         return self._write_financials(financials)
 
     @validate_call
-    def read_series(self, query: AssetQuery, months: int = 1) -> List[Price]:
-        return self._read_series(query, months)
+    def read_series(self, query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None) -> List[Price]:
+        return self._read_series(query, months, table=table)
 
     @validate_call
     def read_financials(self, query: AssetQuery) -> Financials:
@@ -93,13 +93,13 @@ class BearishDbBase(BaseModel):
     def _write_assets(self, assets: Assets) -> None: ...
 
     @abc.abstractmethod
-    def _write_series(self, series: List[Price]) -> None: ...
+    def _write_series(self, series: List[Price], table: Optional[Type[SQLModel]] = None) -> None: ...
 
     @abc.abstractmethod
     def _write_financials(self, financials: List[Financials]) -> None: ...
 
     @abc.abstractmethod
-    def _read_series(self, query: AssetQuery, months: int = 1) -> List[Price]: ...
+    def _read_series(self, query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None ) -> List[Price]: ...
 
     @abc.abstractmethod
     def _read_financials(self, query: AssetQuery) -> Financials: ...

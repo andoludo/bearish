@@ -19,6 +19,7 @@ class BaseAssets(BaseModel):
     cryptos: Any
     etfs: Any
     currencies: Any
+    index: Any
 
 
 class Ticker(BaseModel):

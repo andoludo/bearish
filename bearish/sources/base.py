@@ -116,14 +116,15 @@ class AbstractSource(SourceBase, abc.ABC):
     @validate_call(validate_return=True)
     @check_api_limit
     @observability
-    def read_series(self, tickers: List[Ticker], type_: SeriesLength) -> List[Price]:
-        tickers = [
-            ticker
-            for ticker in tickers
-            if self.exchanges.ticker_belongs_to_countries(
-                ticker, countries=self.countries
-            )
-        ]
+    def read_series(self, tickers: List[Ticker], type_: SeriesLength, apply_filter: bool =True) -> List[Price]:
+        if apply_filter:
+            tickers = [
+                ticker
+                for ticker in tickers
+                if self.exchanges.ticker_belongs_to_countries(
+                    ticker, countries=self.countries
+                )
+            ]
         try:
             prices_ = self._read_series([t.symbol for t in tickers], type_)
             return [p for p in prices_ if p.valid()]
@@ -163,6 +164,7 @@ class UrlSources(BaseModel):
     crypto: UrlSource
     currency: Optional[UrlSource] = Field(None)
     etf: UrlSource
+    index: Optional[UrlSource] = Field(None)
 
     def to_assets(self) -> Assets:
 
@@ -171,6 +173,7 @@ class UrlSources(BaseModel):
             cryptos=self.crypto.results,
             currencies=self.currency.results if self.currency else [],
             etfs=self.etf.results,
+            index=self.index.results,
         )
 
 
@@ -194,7 +197,8 @@ class DatabaseCsvSource(AbstractSource):
                     data, url_source.type_class, url_source.filters, url_source.renames
                 )
             except Exception as e:
-                raise e
+                logger.error(f"Failed to download data from {url_source.url}: {e}")
+                continue
         return sources.to_assets()
 
     def _from_dataframe(

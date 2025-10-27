@@ -9,6 +9,7 @@ from bearish.models.assets.equity import Equity
 from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
+from bearish.models.assets.index import Index
 from bearish.models.base import PriceTracker, FinancialsTracker
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
@@ -40,6 +41,9 @@ class EquityORM(BaseTable, Equity, table=True):  # type: ignore
     __tablename__ = "equity"
     country: Optional[str] = Field(default=None, index=True)
 
+class IndexORM(BaseTable, Index, table=True):  # type: ignore
+    __tablename__ = "index"
+    country: Optional[str] = Field(default=None, index=True)
 
 class CryptoORM(BaseTable, Crypto, table=True):  # type: ignore
     __tablename__ = "crypto"
@@ -60,6 +64,12 @@ class EtfORM(BaseTable, Etf, table=True):  # type: ignore
 
 class PriceORM(SQLModel, Price, table=True):  # type: ignore
     __tablename__ = "price"
+    date: datetime = Field(primary_key=True, index=True)
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, index=True)  # type: ignore
+
+class PriceIndexORM(SQLModel, Price, table=True):  # type: ignore
+    __tablename__ = "priceindex"
     date: datetime = Field(primary_key=True, index=True)
     symbol: str = Field(primary_key=True, index=True)
     source: str = Field(primary_key=True, index=True)  # type: ignore

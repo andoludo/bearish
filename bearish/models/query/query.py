@@ -28,17 +28,22 @@ class Symbols(BaseAssets):
     cryptos: Annotated[
         List[Ticker], BeforeValidator(remove_duplicates), Field(default_factory=list)
     ]
+    index: Annotated[
+        List[Ticker], BeforeValidator(remove_duplicates), Field(default_factory=list)
+    ]
 
     def filter(self, func: Callable[[Ticker], Any]) -> "Symbols":
         equities = [e for e in self.equities if func(e)]
         etfs = [e for e in self.etfs if func(e)]
         currencies = [e for e in self.currencies if func(e)]
         cryptos = [e for e in self.cryptos if func(e)]
+        index = [e for e in self.index if func(e)]
         return Symbols(
             equities=equities,
             etfs=etfs,
             currencies=currencies,
             cryptos=cryptos,
+            index=index,
         )
 
     def equities_symbols(self) -> List[str]:
@@ -54,12 +59,13 @@ class Symbols(BaseAssets):
                 self.etfs,
                 self.currencies,
                 self.cryptos,
+                self.index,
             ]
         )
 
     def all(self) -> List[str]:
         return [
-            t.symbol for t in self.equities + self.etfs + self.currencies + self.cryptos
+            t.symbol for t in self.equities + self.etfs + self.currencies + self.cryptos + self.index
         ]
 
 

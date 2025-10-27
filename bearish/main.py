@@ -15,9 +15,10 @@ from pydantic import (
     model_validator,
 )
 from rich.console import Console
-
+from sqlmodel import SQLModel
 
 from bearish.database.crud import BearishDb
+from bearish.database.schemas import PriceIndexORM
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import (
     Countries,
@@ -28,6 +29,7 @@ from bearish.exchanges.exchanges import (
 from bearish.interface.interface import BearishDbBase
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
+from bearish.models.assets.index import PRICE_INDEX
 from bearish.models.base import Ticker, TrackerQuery, FinancialsTracker, PriceTracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
@@ -59,7 +61,7 @@ CountriesEnum = Enum(  # type: ignore
 
 
 class Filter(BaseModel):
-    countries: List[CountriesEnum]
+    countries: List[CountriesEnum] = Field(default_factory=list)
     filters: Optional[List[str] | str] = None
 
     @model_validator(mode="after")
@@ -194,8 +196,8 @@ class Bearish(BaseModel):
     def read_financials(self, assets_query: AssetQuery) -> Financials:
         return self._bearish_db.read_financials(assets_query)
 
-    def read_series(self, assets_query: AssetQuery, months: int = 1) -> List[Price]:
-        return self._bearish_db.read_series(assets_query, months=months)
+    def read_series(self, assets_query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None) -> List[Price]:
+        return self._bearish_db.read_series(assets_query, months=months, table=table)
 
     def _get_tracked_tickers(
         self,
@@ -250,31 +252,31 @@ class Bearish(BaseModel):
             )
 
     @validate_call
-    def write_many_series(self, tickers: List[Ticker], type: SeriesLength) -> None:
+    def write_many_series(self, tickers: List[Ticker], type: SeriesLength, apply_filter: bool =True, table: Optional[Type[SQLModel]] = None, track: bool = True) -> None:
         chunks = batch(tickers, self.batch_size)
         source = self.price_sources[0]
         for chunk in chunks:
             logger.debug(f"getting financial data for {len(chunk)} tickers")
             try:
-                series_ = source.read_series(chunk, type)
+                series_ = source.read_series(chunk, type, apply_filter = apply_filter)
             except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
                 logger.error(f"Error reading series: {e}")
                 continue
             if series_:
-
-                self._bearish_db.write_series(series_)
-                price_date = Prices(prices=series_).get_last_date()
-                self._bearish_db.write_trackers(
-                    [
-                        PriceTracker(
-                            symbol=t.symbol,
-                            source=source.__source__,
-                            exchange=t.exchange,
-                            date=price_date,
-                        )
-                        for t in chunk
-                    ]
-                )
+                self._bearish_db.write_series(series_, table= table)
+                if track:
+                    price_date = Prices(prices=series_).get_last_date()
+                    self._bearish_db.write_trackers(
+                        [
+                            PriceTracker(
+                                symbol=t.symbol,
+                                source=source.__source__,
+                                exchange=t.exchange,
+                                date=price_date,
+                            )
+                            for t in chunk
+                        ]
+                    )
 
     def read_sources(self) -> List[str]:
         return self._bearish_db.read_sources()
@@ -313,6 +315,12 @@ class Bearish(BaseModel):
         )
         tickers = filter.filter(tickers)
         self.write_many_series(tickers, "max")
+
+    def get_prices_index(self, series_length: SeriesLength = "max") -> None:
+        asset_query = AssetQuery(symbols=Symbols(index=PRICE_INDEX))  # type: ignore
+        assets = self.read_assets(asset_query)
+        self.write_many_series([Ticker(symbol=i.symbol) for i in assets.index], series_length, apply_filter=False,
+                                  table=PriceIndexORM, track=False)
 
     def _update(
         self,
@@ -385,12 +393,16 @@ def run(
         filter = Filter(countries=countries, filters=filters)
         bearish.get_detailed_tickers(filter)
         console.log("[bold][red]Tickers downloaded!")
-    with console.status("[bold green]Fetching Financial data..."):
-        bearish.get_financials(filter)
-        console.log("[bold][red]Financial downloaded!")
     with console.status("[bold green]Fetching Price data..."):
         bearish.get_prices(filter)
         console.log("[bold][red]Price downloaded!")
+    with console.status("[bold green]Fetching Price index..."):
+        bearish.get_prices_index()
+        console.log("[bold][red]Price index downloaded!")
+    with console.status("[bold green]Fetching Financial data..."):
+        bearish.get_financials(filter)
+        console.log("[bold][red]Financial downloaded!")
+
 
 
 @app.command()
@@ -456,6 +468,7 @@ def update(
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
+    bearish.get_prices_index(series_length=series_length)  # type: ignore
     bearish.update_financials(symbols)
 
 

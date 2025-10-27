@@ -9,6 +9,7 @@ import yfinance as yf  # type: ignore
 from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_fixed, wait_exponential
 
+from bearish.exceptions import InvalidApiKeyError
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
 from bearish.models.base import Ticker
@@ -432,14 +433,17 @@ class yFinanceSource(YfinanceBase, AbstractSource):
 
         records_final = []
         for ticker in tickers:
-            if ticker in data.columns:
-                records = data[ticker].reset_index().to_dict(orient="records")
-                if not records:
-                    logger.error(f"No data found for ticker: {ticker}")
-                records_final.extend(
-                    [
-                        yFinancePrice(**(record | {"symbol": ticker}))
-                        for record in records
-                    ]
-                )
+            try:
+                if ticker in data.columns:
+                    records = data[ticker].reset_index().to_dict(orient="records")
+                    if not records:
+                        logger.error(f"No data found for ticker: {ticker}")
+                    records_final.extend(
+                        [
+                            yFinancePrice(**(record | {"symbol": ticker, "Date": pd.to_datetime(record["Date"]).date()}))
+                            for record in records
+                        ]
+                    )
+            except Exception as e:
+                logger.error(f"Error reading series for {ticker}: {e}")
         return records_final

@@ -7,6 +7,7 @@ from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.equity import Equity
 from bearish.models.assets.etfs import Etf
+from bearish.models.assets.index import Index
 from bearish.models.base import SourceBase
 from bearish.sources.base import (
     UrlSources,
@@ -19,6 +20,7 @@ RAW_EQUITIES_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatab
 RAW_CRYPTO_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/cryptos.csv"
 RAW_CURRENCY_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/currencies.csv"
 RAW_ETF_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/etfs.csv"
+RAW_INDEX_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/indices.csv"
 
 
 class FinanceDatabaseBase(SourceBase):
@@ -39,6 +41,8 @@ class FinanceDatabaseCurrency(FinanceDatabaseBase, Currency): ...
 
 
 class FinanceDatabaseEtf(FinanceDatabaseBase, Etf): ...
+
+class FinanceDatabaseIndex(FinanceDatabaseBase, Index): ...
 
 
 class FinanceDatabaseSource(FinanceDatabaseBase, DatabaseCsvSource):
@@ -65,6 +69,12 @@ class FinanceDatabaseSource(FinanceDatabaseBase, DatabaseCsvSource):
         etf=UrlSource(
             url=RAW_ETF_DATA_URL,
             type_class=FinanceDatabaseEtf,
+            filters=["symbol"],
+            renames={"Unnamed: 0": "symbol"},
+        ),
+        index=UrlSource(
+            url=RAW_INDEX_DATA_URL,
+            type_class=FinanceDatabaseIndex,
             filters=["symbol"],
             renames={"Unnamed: 0": "symbol"},
         ),
