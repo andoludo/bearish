@@ -41,9 +41,11 @@ class EquityORM(BaseTable, Equity, table=True):  # type: ignore
     __tablename__ = "equity"
     country: Optional[str] = Field(default=None, index=True)
 
+
 class IndexORM(BaseTable, Index, table=True):  # type: ignore
     __tablename__ = "index"
     country: Optional[str] = Field(default=None, index=True)
+
 
 class CryptoORM(BaseTable, Crypto, table=True):  # type: ignore
     __tablename__ = "crypto"
@@ -67,6 +69,7 @@ class PriceORM(SQLModel, Price, table=True):  # type: ignore
     date: datetime = Field(primary_key=True, index=True)
     symbol: str = Field(primary_key=True, index=True)
     source: str = Field(primary_key=True, index=True)  # type: ignore
+
 
 class PriceIndexORM(SQLModel, Price, table=True):  # type: ignore
     __tablename__ = "priceindex"

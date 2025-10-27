@@ -65,7 +65,12 @@ class Symbols(BaseAssets):
 
     def all(self) -> List[str]:
         return [
-            t.symbol for t in self.equities + self.etfs + self.currencies + self.cryptos + self.index
+            t.symbol
+            for t in self.equities
+            + self.etfs
+            + self.currencies
+            + self.cryptos
+            + self.index
         ]
 
 

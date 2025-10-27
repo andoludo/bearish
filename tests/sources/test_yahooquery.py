@@ -23,3 +23,10 @@ def test_read_series():
         tickers=[t.symbol for t in tickers], type="7d"
     )
     assert prices
+
+
+def test_yahooquery_indices():
+    tickers = [Ticker(symbol="^GSPC"), Ticker(symbol="^FTSE")]
+    equities = YahooQueryEquity.from_tickers(tickers)
+    assert equities
+    assert len(equities.equities) == len(tickers)

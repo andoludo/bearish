@@ -37,7 +37,9 @@ class BearishDbBase(BaseModel):
 
     @observability
     @validate_call
-    def write_series(self, series: List[Price], table: Optional[Type[SQLModel]] = None) -> None:
+    def write_series(
+        self, series: List[Price], table: Optional[Type[SQLModel]] = None
+    ) -> None:
         return self._write_series(series, table=table)
 
     @observability
@@ -46,7 +48,9 @@ class BearishDbBase(BaseModel):
         return self._write_financials(financials)
 
     @validate_call
-    def read_series(self, query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None) -> List[Price]:
+    def read_series(
+        self, query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None
+    ) -> List[Price]:
         return self._read_series(query, months, table=table)
 
     @validate_call
@@ -93,13 +97,17 @@ class BearishDbBase(BaseModel):
     def _write_assets(self, assets: Assets) -> None: ...
 
     @abc.abstractmethod
-    def _write_series(self, series: List[Price], table: Optional[Type[SQLModel]] = None) -> None: ...
+    def _write_series(
+        self, series: List[Price], table: Optional[Type[SQLModel]] = None
+    ) -> None: ...
 
     @abc.abstractmethod
     def _write_financials(self, financials: List[Financials]) -> None: ...
 
     @abc.abstractmethod
-    def _read_series(self, query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None ) -> List[Price]: ...
+    def _read_series(
+        self, query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None
+    ) -> List[Price]: ...
 
     @abc.abstractmethod
     def _read_financials(self, query: AssetQuery) -> Financials: ...

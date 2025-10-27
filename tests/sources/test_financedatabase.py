@@ -12,7 +12,8 @@ from bearish.sources.financedatabase import (
     FinanceDatabaseSource,
     RAW_CRYPTO_DATA_URL,
     RAW_CURRENCY_DATA_URL,
-    RAW_ETF_DATA_URL, RAW_INDEX_DATA_URL,
+    RAW_ETF_DATA_URL,
+    RAW_INDEX_DATA_URL,
 )
 
 

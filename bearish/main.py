@@ -196,7 +196,12 @@ class Bearish(BaseModel):
     def read_financials(self, assets_query: AssetQuery) -> Financials:
         return self._bearish_db.read_financials(assets_query)
 
-    def read_series(self, assets_query: AssetQuery, months: int = 1, table: Optional[Type[SQLModel]] = None) -> List[Price]:
+    def read_series(
+        self,
+        assets_query: AssetQuery,
+        months: int = 1,
+        table: Optional[Type[SQLModel]] = None,
+    ) -> List[Price]:
         return self._bearish_db.read_series(assets_query, months=months, table=table)
 
     def _get_tracked_tickers(
@@ -252,18 +257,25 @@ class Bearish(BaseModel):
             )
 
     @validate_call
-    def write_many_series(self, tickers: List[Ticker], type: SeriesLength, apply_filter: bool =True, table: Optional[Type[SQLModel]] = None, track: bool = True) -> None:
+    def write_many_series(
+        self,
+        tickers: List[Ticker],
+        type: SeriesLength,
+        apply_filter: bool = True,
+        table: Optional[Type[SQLModel]] = None,
+        track: bool = True,
+    ) -> None:
         chunks = batch(tickers, self.batch_size)
         source = self.price_sources[0]
         for chunk in chunks:
             logger.debug(f"getting financial data for {len(chunk)} tickers")
             try:
-                series_ = source.read_series(chunk, type, apply_filter = apply_filter)
+                series_ = source.read_series(chunk, type, apply_filter=apply_filter)
             except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
                 logger.error(f"Error reading series: {e}")
                 continue
             if series_:
-                self._bearish_db.write_series(series_, table= table)
+                self._bearish_db.write_series(series_, table=table)
                 if track:
                     price_date = Prices(prices=series_).get_last_date()
                     self._bearish_db.write_trackers(
@@ -319,8 +331,13 @@ class Bearish(BaseModel):
     def get_prices_index(self, series_length: SeriesLength = "max") -> None:
         asset_query = AssetQuery(symbols=Symbols(index=PRICE_INDEX))  # type: ignore
         assets = self.read_assets(asset_query)
-        self.write_many_series([Ticker(symbol=i.symbol) for i in assets.index], series_length, apply_filter=False,
-                                  table=PriceIndexORM, track=False)
+        self.write_many_series(
+            [Ticker(symbol=i.symbol) for i in assets.index],
+            series_length,
+            apply_filter=False,
+            table=PriceIndexORM,
+            track=False,
+        )
 
     def _update(
         self,
@@ -402,7 +419,6 @@ def run(
     with console.status("[bold green]Fetching Financial data..."):
         bearish.get_financials(filter)
         console.log("[bold][red]Financial downloaded!")
-
 
 
 @app.command()

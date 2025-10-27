@@ -9,6 +9,7 @@ import requests_mock
 
 
 from bearish.database.crud import BearishDb
+from bearish.database.schemas import PriceIndexORM
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.base import Ticker, TrackerQuery, PriceTracker, FinancialsTracker
@@ -22,6 +23,7 @@ from bearish.sources.financedatabase import (
     RAW_CRYPTO_DATA_URL,
     RAW_CURRENCY_DATA_URL,
     RAW_ETF_DATA_URL,
+    RAW_INDEX_DATA_URL,
 )
 from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import (
@@ -40,8 +42,11 @@ def bearish_db() -> BearishDb:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as file:
         bearish = BearishDb(database_path=Path(file.name))
         return bearish
-
-
+@pytest.fixture
+def bearish_db_index() -> BearishDb:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as file:
+        bearish = BearishDb(database_path=Path(file.name))
+        return bearish
 def test_update_asset_yfinance(bearish_db: BearishDb):
     bearish = Bearish(
         path=bearish_db.database_path,
@@ -524,3 +529,21 @@ def test_update_financials(bear_db: BearishDb) -> None:
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
     )
     assert financials
+
+
+def test_index_query(bearish_db_index: BearishDb):
+    with requests_mock.Mocker() as req:
+        req.get(
+            RAW_INDEX_DATA_URL,
+            text=Path(__file__)
+            .parent.joinpath("data/sources/financedatabase/index.csv")
+            .read_text(),
+        )
+        bearish = Bearish(
+            path=bearish_db_index.database_path, asset_sources=[FinanceDatabaseSource()]
+        )
+        bearish.write_assets()
+        bearish.get_prices_index()
+        assets_query = AssetQuery(symbols=Symbols(index=[Ticker(symbol="^GSPC")]))
+        series = bearish.read_series(assets_query, table=PriceIndexORM)
+        assert series

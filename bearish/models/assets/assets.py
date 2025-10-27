@@ -30,13 +30,7 @@ class Assets(BaseAssets):
 
     def is_empty(self) -> bool:
         return not any(
-            [
-                self.equities,
-                self.cryptos,
-                self.etfs,
-                self.currencies,
-                self.index
-            ]
+            [self.equities, self.cryptos, self.etfs, self.currencies, self.index]
         )
 
     def add(self, assets: "Assets") -> None:
@@ -49,5 +43,9 @@ class Assets(BaseAssets):
     def symbols(self) -> List[Ticker]:
         return [
             Ticker(symbol=asset.symbol, source=asset.source, exchange=asset.exchange)
-            for asset in self.equities + self.cryptos + self.etfs + self.currencies + self.index
+            for asset in self.equities
+            + self.cryptos
+            + self.etfs
+            + self.currencies
+            + self.index
         ]

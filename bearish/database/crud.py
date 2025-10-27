@@ -26,7 +26,8 @@ from bearish.database.schemas import (
     QuarterlyCashFlowORM,
     QuarterlyBalanceSheetORM,
     PriceTrackerORM,
-    FinancialsTrackerORM, IndexORM,
+    FinancialsTrackerORM,
+    IndexORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
@@ -90,7 +91,9 @@ class BearishDb(BearishDbBase):
             session.add_all(objects_orm)
             session.commit()
 
-    def _write_series(self, series: List["Price"], table: Optional[Type[SQLModel]] = None) -> None:
+    def _write_series(
+        self, series: List["Price"], table: Optional[Type[SQLModel]] = None
+    ) -> None:
         price_orm = table or PriceORM
         with Session(self._engine) as session:
             data = [serie.model_dump() for serie in series]
@@ -147,7 +150,12 @@ class BearishDb(BearishDbBase):
                 session.exec(stmt)  # type: ignore
             session.commit()
 
-    def _read_series(self, query: "AssetQuery", months: int = 1, table: Optional[Type[SQLModel]] = None) -> List[Price]:
+    def _read_series(
+        self,
+        query: "AssetQuery",
+        months: int = 1,
+        table: Optional[Type[SQLModel]] = None,
+    ) -> List[Price]:
         end_date = datetime.now()
         start_date = end_date - pd.Timedelta(days=months * 31)
         table = table or PriceORM
@@ -204,7 +212,11 @@ class BearishDb(BearishDbBase):
             etfs = self._read_asset_type(session, Etf, EtfORM, query)
             index = self._read_asset_type(session, Index, IndexORM, query)
             return Assets(
-                equities=equities, currencies=currencies, cryptos=cryptos, etfs=etfs, index=index
+                equities=equities,
+                currencies=currencies,
+                cryptos=cryptos,
+                etfs=etfs,
+                index=index,
             )
 
     def _read_asset_type(

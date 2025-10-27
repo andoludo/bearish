@@ -116,7 +116,9 @@ class AbstractSource(SourceBase, abc.ABC):
     @validate_call(validate_return=True)
     @check_api_limit
     @observability
-    def read_series(self, tickers: List[Ticker], type_: SeriesLength, apply_filter: bool =True) -> List[Price]:
+    def read_series(
+        self, tickers: List[Ticker], type_: SeriesLength, apply_filter: bool = True
+    ) -> List[Price]:
         if apply_filter:
             tickers = [
                 ticker
@@ -173,7 +175,7 @@ class UrlSources(BaseModel):
             cryptos=self.crypto.results,
             currencies=self.currency.results if self.currency else [],
             etfs=self.etf.results,
-            index=self.index.results,
+            index=self.index.results if self.index else [],
         )
 
 
