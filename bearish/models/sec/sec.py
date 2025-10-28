@@ -181,13 +181,13 @@ class Secs(BaseModel):
         rows = []
         unique_secs = []
         groups = defaultdict(list)
-        date_ = date_ or date.today() - timedelta(days=31 * 4)
+        date__ = date_ or date.today() - timedelta(days=31 * 4)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dl = Downloader(
                 "MyCompanyName", "email@example.com", download_folder=tmpdir
             )
-            dl.get("13F-HR", source, after=date_.strftime(format="%Y-%m-%d"))
+            dl.get("13F-HR", source, after=date__.strftime(format="%Y-%m-%d"))
             for p in list(Path(tmpdir).rglob("*.txt")):
                 rows.extend(
                     _info_table_to_rows(
