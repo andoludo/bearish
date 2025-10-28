@@ -130,3 +130,6 @@ class SecORM(SQLModel, Sec, table=True):
     __tablename__ = "sec"
     __table_args__ = {"sqlite_autoincrement": True}
     name: str = Field(index=True, primary_key=True)
+    source: str = Field(index=True, primary_key=True)
+    period: str = Field(index=True, primary_key=True)
+    filed_date: str = Field(index=True, primary_key=True)

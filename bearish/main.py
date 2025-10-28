@@ -35,6 +35,7 @@ from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
 from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
+from bearish.models.sec.sec import Secs
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
@@ -416,6 +417,9 @@ def run(
     with console.status("[bold green]Fetching Price index..."):
         bearish.get_prices_index()
         console.log("[bold][red]Price index downloaded!")
+    with console.status("[bold green]Fetching SEC data..."):
+        Secs.upload(bearish._bearish_db)  # type: ignore
+        console.log("[bold][red]SEC data downloaded!")
     with console.status("[bold green]Fetching Financial data..."):
         bearish.get_financials(filter)
         console.log("[bold][red]Financial downloaded!")

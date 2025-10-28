@@ -2,6 +2,7 @@ import re
 import tempfile
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+from datetime import date, timedelta
 from io import StringIO
 from pathlib import Path
 from typing import Optional, List, Dict, TYPE_CHECKING, Self
@@ -14,6 +15,38 @@ from sec_edgar_downloader import Downloader  # type: ignore
 
 if TYPE_CHECKING:
     from bearish.database.crud import BearishDb
+
+CIKS = [
+    "0001081316",
+    "0001274791",
+    "0000829771",
+    "0001067983",
+    "0000109694",
+    "0001015867",
+    "0000895421",
+    "0001364742",
+    "0000880052",
+    "0000102909",
+    "0000735286",
+    "0000093751",
+    "0000315066",
+    "0000080255",
+    "0000017283",
+    "0001562230",
+    "0001214717",
+    "0001009268",
+    "0001179392",
+    "0001037389",
+    "0001350694",
+    "0001423053",
+    "0001167483",
+    "0001336528",
+    "0000921669",
+    "0001061768",
+    "0001103804",
+    "0001603466",
+    "0000070858",
+]
 
 
 def normalize(s: str) -> str:
@@ -58,8 +91,10 @@ class Sec(BaseModel):
     cusip: Optional[str] = None
     shares: Optional[int] = None
     period: Optional[str] = None
+    filed_date: Optional[str] = None
     ticker: Optional[str] = None
     source: Optional[str] = None
+    company_name: Optional[str] = None
 
     def __hash__(self) -> int:
         return hash((self.name, self.cusip))
@@ -86,10 +121,22 @@ def _info_table_to_rows(
     ns = {"it": "http://www.sec.gov/edgar/document/thirteenf/informationtable"}
     root = ET.fromstring(xml.lstrip())  # noqa: S314
     period = re.search(r"CONFORMED PERIOD OF REPORT:\s+(\d{8})", sec_text)
-    period_report = None
-    if period:
-        per_dt = period.group(1)
-        period_report = f"{per_dt[0:4]}-{per_dt[4:6]}-{per_dt[6:8]}"
+    filed_date_ = re.search(r"FILED AS OF DATE:\s+(\d{8})", sec_text)
+    company_name_ = re.search(r"COMPANY CONFORMED NAME:\s*([^\r\n]+)", sec_text)
+
+    if not period:
+        raise ValueError("period is required")
+    per_dt = period.group(1)
+    period_report = f"{per_dt[0:4]}-{per_dt[4:6]}-{per_dt[6:8]}"
+
+    if not filed_date_:
+        raise ValueError("Filed date is missing")
+    filed_date__ = filed_date_.group(1)
+    filed_date = f"{filed_date__[0:4]}-{filed_date__[4:6]}-{filed_date__[6:8]}"
+
+    company_name = None
+    if company_name_:
+        company_name = company_name_.group(1)
 
     rows = []
     for t in root.findall(".//it:infoTable", ns):
@@ -108,7 +155,9 @@ def _info_table_to_rows(
                     "shares": shares,
                     "period": period_report,
                     "source": source,
+                    "filed_date": filed_date,
                     "ticker": ticker_mapping.get(normalize(name)),
+                    "company_name": company_name,
                 }
             )
         )
@@ -122,15 +171,23 @@ class Secs(BaseModel):
         bearish_db.write_sec(self.secs)
 
     @classmethod
-    def from_sec_13f_hr(cls, source: str) -> "Secs":
+    def upload(cls, bearish_db: "BearishDb", date_: Optional[date] = None) -> None:
+        for cik in CIKS:
+            sec = cls.from_sec_13f_hr(cik, date_=date_)
+            sec.write(bearish_db)
+
+    @classmethod
+    def from_sec_13f_hr(cls, source: str, date_: Optional[date] = None) -> "Secs":
         rows = []
         unique_secs = []
         groups = defaultdict(list)
+        date_ = date_ or date.today() - timedelta(days=31 * 4)
+
         with tempfile.TemporaryDirectory() as tmpdir:
             dl = Downloader(
                 "MyCompanyName", "email@example.com", download_folder=tmpdir
             )
-            dl.get("13F-HR", source, after="2025-07-07")
+            dl.get("13F-HR", source, after=date_.strftime(format="%Y-%m-%d"))
             for p in list(Path(tmpdir).rglob("*.txt")):
                 rows.extend(
                     _info_table_to_rows(
