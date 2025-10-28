@@ -187,7 +187,7 @@ class Secs(BaseModel):
             dl = Downloader(
                 "MyCompanyName", "email@example.com", download_folder=tmpdir
             )
-            dl.get("13F-HR", source, after=date__.strftime(format="%Y-%m-%d"))
+            dl.get("13F-HR", source, after=date__.strftime("%Y-%m-%d"))
             for p in list(Path(tmpdir).rglob("*.txt")):
                 rows.extend(
                     _info_table_to_rows(
