@@ -115,6 +115,12 @@ class BearishDb(BearishDbBase):
                 session.exec(stmt)  # type: ignore
             session.commit()
 
+    def _read_sec(self, ticker: str) -> List[Sec]:
+        with Session(self._engine) as session:
+            stmt = select(SecORM).where(SecORM.ticker == ticker)
+            sources = session.exec(stmt).all()
+            return [Sec.model_validate(source.model_dump()) for source in sources]
+
     def _write_financials(self, financials: List[Financials]) -> None:
         many_financials = ManyFinancials(financials=financials)
         self._write_financials_series(

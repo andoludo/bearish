@@ -47,6 +47,10 @@ class BearishDbBase(BaseModel):
     def write_sec(self, secs: List[Sec]) -> None:
         return self._write_sec(secs)
 
+    @validate_call
+    def read_sec(self, ticker: str) -> List[Sec]:
+        return self._read_sec(ticker)
+
     @observability
     @validate_call
     def write_financials(self, financials: List[Financials]) -> None:
@@ -108,6 +112,9 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _write_sec(self, secs: List[Sec]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_sec(self, ticker: str) -> List[Sec]: ...
 
     @abc.abstractmethod
     def _write_financials(self, financials: List[Financials]) -> None: ...

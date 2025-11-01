@@ -10,3 +10,11 @@ def test_sec(bearish_db: BearishDb) -> None:
     )
     assert secs.secs
     secs.write(bearish_db)
+
+
+def test_sec_all(bearish_db: BearishDb) -> None:
+    Secs.upload(bearish_db, date_=datetime.strptime("2023-10-01", "%Y-%m-%d").date())
+
+
+def test_sec_all_price(bearish_db: BearishDb) -> None:
+    Secs.update_values(bearish_db)

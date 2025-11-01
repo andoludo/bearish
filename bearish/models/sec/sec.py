@@ -12,6 +12,7 @@ import requests  # type: ignore
 from pydantic import BaseModel
 from sec_cik_mapper import StockMapper  # type: ignore
 from sec_edgar_downloader import Downloader  # type: ignore
+import yfinance as yf  # type: ignore
 
 if TYPE_CHECKING:
     from bearish.database.crud import BearishDb
@@ -95,6 +96,7 @@ class Sec(BaseModel):
     ticker: Optional[str] = None
     source: Optional[str] = None
     company_name: Optional[str] = None
+    value: Optional[float] = None
 
     def __hash__(self) -> int:
         return hash((self.name, self.source, self.period, self.filed_date, self.cusip))
@@ -175,6 +177,24 @@ class Secs(BaseModel):
         for cik in CIKS:
             sec = cls.from_sec_13f_hr(cik, date_=date_)
             sec.write(bearish_db)
+
+    @classmethod
+    def update_values(cls, bearish_db: "BearishDb") -> None:
+        prices = {}
+        tickers = bearish_db.read_query(
+            query="SELECT DISTINCT ticker from sec WHERE ticker NOT NULL"
+        )
+        tickers_ = tickers["ticker"].tolist()
+        batch_size = 500
+        for i in range(0, len(tickers_), batch_size):
+            batch = tickers_[i : i + batch_size]
+            data = yf.download(batch, period="5d", auto_adjust=True, timeout=60)
+            prices.update(data["Close"].dropna(axis=1).iloc[-1].to_dict())
+        for symbol, price in prices.items():
+            secs = bearish_db.read_sec(symbol)
+            for sec in secs:
+                sec.value = price * sec.shares
+            bearish_db.write_sec(secs)
 
     @classmethod
     def from_sec_13f_hr(cls, source: str, date_: Optional[date] = None) -> "Secs":
