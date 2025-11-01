@@ -97,7 +97,7 @@ class Sec(BaseModel):
     company_name: Optional[str] = None
 
     def __hash__(self) -> int:
-        return hash((self.name, self.cusip))
+        return hash((self.name, self.source, self.period, self.filed_date, self.cusip))
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Sec):
@@ -196,7 +196,7 @@ class Secs(BaseModel):
                 )
             for item in rows:
                 groups[item].append(item)
-            for sec in groups.values():
-                shares = sum([s.shares for s in sec if s.shares is not None])
-                unique_secs.append(sec[0].set_share(shares))
+            for key, values in groups.items():
+                shares = sum([s.shares for s in values if s.shares is not None])
+                unique_secs.append(key.set_share(shares))
         return cls(secs=unique_secs)
