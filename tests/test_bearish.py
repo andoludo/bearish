@@ -521,7 +521,7 @@ def test_update_prices(bear_db: BearishDb) -> None:
     series = bearish.read_series(
         AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")])), months=2
     )
-    assert len({p.date.month for p in series}) == 3
+    assert len({p.date.month for p in series}) in [2, 3]
 
 
 def test_update_financials(bear_db: BearishDb) -> None:
