@@ -509,7 +509,7 @@ def test_read_tracker_today(bear_db: BearishDb) -> None:
         TrackerQuery(reference_date=datetime.strptime(date_str, "%Y-%m-%d").date()),
         PriceTracker,
     )
-    assert not trackers
+    assert trackers
 
 
 def test_update_prices(bear_db: BearishDb) -> None:
