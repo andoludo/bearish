@@ -489,6 +489,7 @@ def update(
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
     bearish.get_prices_index(series_length=series_length)  # type: ignore
+    Secs.upload(bearish._bearish_db)  # type: ignore
     bearish.update_financials(symbols)
 
 
