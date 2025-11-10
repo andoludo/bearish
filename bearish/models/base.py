@@ -50,7 +50,7 @@ class TrackerQuery(BaseTrackerQuery):
 class BaseTracker(BaseTrackerQuery):
     source: str
     symbol: str
-    date: datetime.date = Field(default_factory=date.today)
+    date: datetime.date = Field(default_factory=lambda: date(1970, 1, 1))
 
 
 class PriceTracker(BaseTracker): ...

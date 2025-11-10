@@ -12,3 +12,7 @@ class TickerNotFoundError(Exception):
 
 class FinancialDataError(Exception):
     pass
+
+
+class IncompleteDataError(Exception):
+    pass

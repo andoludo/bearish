@@ -7,8 +7,16 @@ from typing import List, Optional, Dict, Any, Callable, cast
 import pandas as pd
 import yfinance as yf  # type: ignore
 from pydantic import BaseModel, Field
-from tenacity import retry, stop_after_attempt, wait_fixed, wait_exponential
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_fixed,
+    wait_exponential,
+    retry_if_exception_type,
+    RetryCallState,
+)
 
+from bearish.exceptions import IncompleteDataError
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
 from bearish.models.base import Ticker
@@ -365,6 +373,14 @@ class yFinancePrice(YfinanceBase, Price):
     }
 
 
+MAX_TRIES = 2
+
+
+def inject_is_last(retry_state: RetryCallState) -> None:
+    is_last = retry_state.attempt_number == MAX_TRIES
+    retry_state.kwargs["is_last_attempt"] = is_last
+
+
 class yFinanceSource(YfinanceBase, AbstractSource):
     countries: List[Countries] = [
         "United Kingdom",
@@ -419,16 +435,23 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             )
         return financials
 
+    @retry(
+        retry=retry_if_exception_type(IncompleteDataError),
+        stop=stop_after_attempt(MAX_TRIES),
+        wait=wait_fixed(60),
+        before=inject_is_last,
+    )
     def _read_series(  # type: ignore
-        self, tickers: List[str], type: SeriesLength
+        self, tickers: List[str], type: SeriesLength, is_last_attempt: bool = False
     ) -> List[yFinancePrice]:
         data = yf.download(
             tickers, period=type, group_by="ticker", auto_adjust=True, timeout=60
         )
-        if any(data[(ticker, "Close")].empty for ticker in tickers):
-            data = yf.download(
-                tickers, period=type, group_by="ticker", auto_adjust=True, timeout=60
-            )
+        if (not is_last_attempt) and (
+            any(data[(ticker, "Close")].empty for ticker in tickers)
+            or len(tickers) != len({c[0] for c in data.columns})
+        ):
+            raise IncompleteDataError()
 
         records_final = []
         for ticker in tickers:
@@ -453,4 +476,5 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                     )
             except Exception as e:  # noqa: PERF203
                 logger.error(f"Error reading series for {ticker}: {e}")
+        time.sleep(30)
         return records_final

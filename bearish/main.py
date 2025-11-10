@@ -278,14 +278,14 @@ class Bearish(BaseModel):
             if series_:
                 self._bearish_db.write_series(series_, table=table)
                 if track:
-                    price_date = Prices(prices=series_).get_last_date()
+                    prices_date = Prices(prices=series_)
                     self._bearish_db.write_trackers(
                         [
                             PriceTracker(
                                 symbol=t.symbol,
                                 source=source.__source__,
                                 exchange=t.exchange,
-                                date=price_date,
+                                date=prices_date.ticker_date(t.symbol),
                             )
                             for t in chunk
                         ]

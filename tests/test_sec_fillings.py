@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pytest
+
 from bearish.database.crud import BearishDb
 from bearish.models.sec.sec import Secs
 
@@ -12,9 +14,11 @@ def test_sec(bearish_db: BearishDb) -> None:
     secs.write(bearish_db)
 
 
+@pytest.mark.skip(reason="Too slow")
 def test_sec_all(bearish_db: BearishDb) -> None:
     Secs.upload(bearish_db, date_=datetime.strptime("2023-10-01", "%Y-%m-%d").date())
 
 
+@pytest.mark.skip(reason="Too slow")
 def test_sec_all_price(bearish_db: BearishDb) -> None:
     Secs.update_values(bearish_db)

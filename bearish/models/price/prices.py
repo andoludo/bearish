@@ -24,6 +24,14 @@ class Prices(BaseModel):
     def get_last_date(self) -> date:
         return sorted(self.prices, key=lambda price: price.date)[-1].date
 
+    def ticker_date(self, symbol: str) -> date:
+        symbol_date = sorted(
+            [p for p in self.prices if p.symbol == symbol], key=lambda p: p.date
+        )
+        if not symbol_date:
+            return date(1970, 1, 1)
+        return symbol_date[-1].date
+
     @classmethod
     def from_ticker(cls, bearish_db: "BearishDbBase", ticker: Ticker) -> "Prices":
         prices = bearish_db.read_series(
