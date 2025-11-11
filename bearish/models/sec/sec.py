@@ -177,6 +177,7 @@ class Secs(BaseModel):
         for cik in CIKS:
             sec = cls.from_sec_13f_hr(cik, date_=date_)
             sec.write(bearish_db)
+        cls.update_values(bearish_db)
 
     @classmethod
     def update_values(cls, bearish_db: "BearishDb") -> None:
@@ -185,7 +186,7 @@ class Secs(BaseModel):
             query="SELECT DISTINCT ticker from sec WHERE ticker NOT NULL"
         )
         tickers_ = tickers["ticker"].tolist()
-        batch_size = 500
+        batch_size = 100
         for i in range(0, len(tickers_), batch_size):
             batch = tickers_[i : i + batch_size]
             data = yf.download(batch, period="5d", auto_adjust=True, timeout=60)

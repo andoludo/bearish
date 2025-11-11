@@ -476,5 +476,5 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                     )
             except Exception as e:  # noqa: PERF203
                 logger.error(f"Error reading series for {ticker}: {e}")
-        time.sleep(30)
+        time.sleep(60)
         return records_final

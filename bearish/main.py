@@ -81,7 +81,7 @@ class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
     auto_migration: bool = True
-    batch_size: int = Field(default=250)
+    batch_size: int = Field(default=100)
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
@@ -365,7 +365,7 @@ class Bearish(BaseModel):
     ) -> None:
         def write_function(tickers: List[Ticker]) -> None:
             logger.debug(f"Updating prices for {len(tickers)} tickers")
-            self.write_many_series(tickers, series_length)
+            self.write_many_series(tickers, series_length, apply_filter=False)
 
         self._update(
             PriceTracker,
