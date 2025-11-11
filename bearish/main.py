@@ -81,7 +81,7 @@ class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
     auto_migration: bool = True
-    batch_size: int = Field(default=100)
+    batch_size: int = Field(default=50)
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)

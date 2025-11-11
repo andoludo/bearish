@@ -434,7 +434,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             ticker for ticker in tickers if data[(ticker, "Close")].dropna().empty
         ]
         if missing_tickers:
-            time.sleep(30)
+            time.sleep(15)
             valid_tickers = list(set(tickers).difference(set(missing_tickers)))
             data = data[valid_tickers]
             logger.warning(f"Missing tickers: {missing_tickers}")
@@ -448,6 +448,8 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             )
             if not data_missing.empty:
                 data = pd.concat([data, data_missing], axis=1)
+            else:
+                print("None of the missing tickers where found")
 
         records_final = []
         for ticker in tickers:
@@ -472,5 +474,5 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                     )
             except Exception as e:  # noqa: PERF203
                 logger.error(f"Error reading series for {ticker}: {e}")
-        time.sleep(30)
+        time.sleep(15)
         return records_final
