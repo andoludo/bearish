@@ -90,6 +90,7 @@ def test_fmp_assets(fmp_api_fixture: requests_mock.Mocker) -> None:
     assert not assets.is_empty()
 
 
+@pytest.mark.skip("Non supported endpoint")
 def test_fmp_assets_integration() -> None:
     fmp_assets = FmpAssetsSource()
     fmp_assets.set_api_key(API_KEY)
@@ -140,6 +141,7 @@ def test_fmp_series_limited(fmp_api_fixture: requests_mock.Mocker) -> None:
     assert prices
 
 
+@pytest.mark.skip("Non supported endpoint")
 def test_read_api() -> None:
     response_period = read_api(
         API_URL,
