@@ -434,7 +434,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
             ticker for ticker in tickers if data[(ticker, "Close")].dropna().empty
         ]
         if missing_tickers:
-            time.sleep(15)
+            time.sleep(self.pause)
             valid_tickers = list(set(tickers).difference(set(missing_tickers)))
             data = data[valid_tickers]
             logger.warning(f"Missing tickers: {missing_tickers}")
@@ -474,5 +474,5 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                     )
             except Exception as e:  # noqa: PERF203
                 logger.error(f"Error reading series for {ticker}: {e}")
-        time.sleep(15)
+        time.sleep(self.pause)
         return records_final

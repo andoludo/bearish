@@ -81,7 +81,8 @@ class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
     auto_migration: bool = True
-    batch_size: int = Field(default=50)
+    batch_size: int = Field(default=100)
+    pause: int = Field(default=60)
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
@@ -120,13 +121,14 @@ class Bearish(BaseModel):
             + self.asset_sources
             + self.detailed_asset_sources
         ):
+            source.set_pause(self.pause)
             try:
                 source.set_api_key(
                     self.api_keys.keys.get(
                         source.__source__, os.environ.get(source.__source__.upper())  # type: ignore
                     )
                 )
-            except Exception as e:  # noqa: PERF203
+            except Exception as e:
                 logger.error(
                     f"Invalid API key for {source.__source__}: {e}. It will be removed from sources"
                 )
@@ -138,6 +140,18 @@ class Bearish(BaseModel):
                 ]:
                     if source in sources:
                         sources.remove(source)
+
+    def set_batch_size(self, batch_size: int) -> None:
+        self.batch_size = batch_size
+
+    def set_pause(self, pause: int) -> None:
+        for source in set(
+            self.financials_sources
+            + self.price_sources
+            + self.asset_sources
+            + self.detailed_asset_sources
+        ):
+            source.set_pause(pause)
 
     def get_asset_sources(self) -> List[Sources]:
         return [source.__source__ for source in self.asset_sources]
@@ -356,17 +370,21 @@ class Bearish(BaseModel):
             tickers = [t for t in tickers if t.symbol in symbols]
         write_function(tickers)
 
-    def update_prices(
+    def update_prices(  # noqa: PLR0913
         self,
         symbols: Optional[List[str]] = None,
         reference_date: Optional[datetime.date] = None,
         delay: int = 1,
         series_length: SeriesLength = "1mo",
+        batch_size: int = 100,
+        pause: int = 60,
     ) -> None:
         def write_function(tickers: List[Ticker]) -> None:
             logger.debug(f"Updating prices for {len(tickers)} tickers")
             self.write_many_series(tickers, series_length, apply_filter=False)
 
+        self.set_batch_size(batch_size)
+        self.set_pause(pause)
         self._update(
             PriceTracker,
             write_function,

@@ -70,6 +70,7 @@ class AbstractSource(SourceBase, abc.ABC):
     countries: List[Countries]
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
     api_usage: ApiUsage = Field(default_factory=ApiUsage)
+    pause: int = 60
 
     @validate_call(validate_return=True)
     @check_api_limit
@@ -148,6 +149,9 @@ class AbstractSource(SourceBase, abc.ABC):
 
     @abc.abstractmethod
     def set_api_key(self, api_key: str) -> None: ...
+
+    def set_pause(self, value: int) -> None:
+        self.pause = value
 
     def __hash__(self) -> int:
         return hash(self.__source__)
