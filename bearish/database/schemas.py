@@ -79,6 +79,13 @@ class PriceIndexORM(SQLModel, Price, table=True):  # type: ignore
     source: str = Field(primary_key=True, index=True)  # type: ignore
 
 
+class PriceEtfORM(SQLModel, Price, table=True):  # type: ignore
+    __tablename__ = "priceetf"
+    date: datetime = Field(primary_key=True, index=True)
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, index=True)  # type: ignore
+
+
 class FinancialMetricsORM(BaseFinancials, FinancialMetrics, table=True):  # type: ignore
     __tablename__ = "financialmetrics"
 

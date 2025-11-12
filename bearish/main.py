@@ -18,7 +18,7 @@ from rich.console import Console
 from sqlmodel import SQLModel
 
 from bearish.database.crud import BearishDb
-from bearish.database.schemas import PriceIndexORM
+from bearish.database.schemas import PriceIndexORM, PriceEtfORM
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import (
     Countries,
@@ -354,6 +354,22 @@ class Bearish(BaseModel):
             track=False,
         )
 
+    def get_prices_etf(
+        self, series_length: SeriesLength = "max", limit: Optional[int] = None
+    ) -> List[str]:
+        query_etfs = "SELECT DISTINCT symbol from etf;"
+        etf_symbols = self._bearish_db.read_query(query_etfs)["symbol"].tolist()
+        if limit:
+            etf_symbols = etf_symbols[:limit]
+        self.write_many_series(
+            [Ticker(symbol=symbol) for symbol in etf_symbols],
+            series_length,
+            apply_filter=False,
+            table=PriceEtfORM,
+            track=False,
+        )
+        return etf_symbols
+
     def _update(
         self,
         tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
@@ -435,6 +451,9 @@ def run(
     with console.status("[bold green]Fetching Price index..."):
         bearish.get_prices_index()
         console.log("[bold][red]Price index downloaded!")
+    with console.status("[bold green]Fetching Etf price..."):
+        bearish.get_prices_etf()
+        console.log("[bold][red]Price etf downloaded!")
     with console.status("[bold green]Fetching SEC data..."):
         Secs.upload(bearish._bearish_db)  # type: ignore
         console.log("[bold][red]SEC data downloaded!")
@@ -507,6 +526,7 @@ def update(
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
     bearish.get_prices_index(series_length=series_length)  # type: ignore
+    bearish.get_prices_etf(series_length=series_length)  # type: ignore
     Secs.upload(bearish._bearish_db)  # type: ignore
     bearish.update_financials(symbols)
 

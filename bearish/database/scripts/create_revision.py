@@ -16,5 +16,5 @@ def create_revision(database_url: str, message: str) -> None:
 
 
 if __name__ == "__main__":
-    message = "sec_value"
+    message = "price_etf"
     create_revision(DATABASE_URL, message)

@@ -9,7 +9,7 @@ import requests_mock
 
 
 from bearish.database.crud import BearishDb
-from bearish.database.schemas import PriceIndexORM
+from bearish.database.schemas import PriceIndexORM, PriceEtfORM
 from bearish.main import Bearish, Filter
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.base import Ticker, TrackerQuery, PriceTracker, FinancialsTracker
@@ -51,7 +51,7 @@ def bearish_db_index() -> BearishDb:
         return bearish
 
 
-def test_update_asset_yfinance(bearish_db: BearishDb):
+def test_update_asset_yfinance(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         price_sources=[yFinanceSource()],
@@ -66,7 +66,7 @@ def test_update_asset_yfinance(bearish_db: BearishDb):
 
 
 @pytest.mark.skip("Test with real db")
-def test_update_asset_fmp(bearish_db: BearishDb):
+def test_update_asset_fmp(bearish_db: BearishDb) -> None:
     api_keys = SourceApiKeys(keys={"FMPAssets": "..."})
     bearish = Bearish(
         api_keys=api_keys,
@@ -80,7 +80,7 @@ def test_update_asset_fmp(bearish_db: BearishDb):
     assert not assets.is_empty()
 
 
-def test_update_asset_financedatabase(bearish_db: BearishDb):
+def test_update_asset_financedatabase(bearish_db: BearishDb) -> None:
     with requests_mock.Mocker() as req:
         req.get(
             RAW_EQUITIES_DATA_URL,
@@ -130,7 +130,7 @@ def test_update_asset_financedatabase(bearish_db: BearishDb):
         assert assets_multi.cryptos
 
 
-def test_update_assets_multi_sources(bearish_db: BearishDb):
+def test_update_assets_multi_sources(bearish_db: BearishDb) -> None:
     with requests_mock.Mocker() as req:
         req.get(
             RAW_EQUITIES_DATA_URL,
@@ -182,7 +182,7 @@ def test_update_assets_multi_sources(bearish_db: BearishDb):
         assert sources
 
 
-def test_write_financials(bearish_db: BearishDb):
+def test_write_financials(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -202,7 +202,7 @@ def test_write_financials(bearish_db: BearishDb):
     assert financials.quarterly_financial_metrics
 
 
-def test_update_series(bearish_db: BearishDb):
+def test_update_series(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -216,7 +216,7 @@ def test_update_series(bearish_db: BearishDb):
     assert len(series) > 1
 
 
-def test_trackers(bearish_db: BearishDb):
+def test_trackers(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -231,7 +231,7 @@ def test_trackers(bearish_db: BearishDb):
     assert financials
 
 
-def test_update_series_multiple_times(bearish_db: BearishDb):
+def test_update_series_multiple_times(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -246,7 +246,7 @@ def test_update_series_multiple_times(bearish_db: BearishDb):
     assert len(series) > 1
 
 
-def test_write_assets(bearish_db: BearishDb):
+def test_write_assets(bearish_db: BearishDb) -> None:
     with requests_mock.Mocker() as req:
         req.get(
             RAW_EQUITIES_DATA_URL,
@@ -300,7 +300,7 @@ def test_write_assets(bearish_db: BearishDb):
         assert not assets.is_empty()
 
 
-def test_write_assets_finance_database(bearish_db: BearishDb):
+def test_write_assets_finance_database(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[FinanceDatabaseSource()],
@@ -311,7 +311,7 @@ def test_write_assets_finance_database(bearish_db: BearishDb):
     assert not assets.is_empty()
 
 
-def test_write_assets_tiingo(bearish_db: BearishDb):
+def test_write_assets_tiingo(bearish_db: BearishDb) -> None:
     source_api_keys = SourceApiKeys(keys={"Tiingo": os.getenv("TIINGO_API_KEY")})
     bearish = Bearish(
         api_keys=source_api_keys,
@@ -331,7 +331,7 @@ def test_write_assets_tiingo(bearish_db: BearishDb):
     assert all(isinstance(p, Price) for p in prices)
 
 
-def test_write_assets_fmp(bearish_db: BearishDb):
+def test_write_assets_fmp(bearish_db: BearishDb) -> None:
     source_api_keys = SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")})
     bearish = Bearish(
         api_keys=source_api_keys,
@@ -349,7 +349,7 @@ def test_write_assets_fmp(bearish_db: BearishDb):
     assert all(isinstance(p, Price) for p in prices)
 
 
-def test_write_assets_yfinance(bearish_db: BearishDb):
+def test_write_assets_yfinance(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -394,7 +394,7 @@ def test_detailed_assets(bearish_db: BearishDb) -> None:
     assert assets.equities
 
 
-def test_update_financials_fmp(bearish_db: BearishDb):
+def test_update_financials_fmp(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
@@ -408,7 +408,7 @@ def test_update_financials_fmp(bearish_db: BearishDb):
     assert financials
 
 
-def test_write_financials_yfinance(bearish_db: BearishDb):
+def test_write_financials_yfinance(bearish_db: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db.database_path,
         asset_sources=[],
@@ -430,7 +430,7 @@ def test_write_financials_yfinance(bearish_db: BearishDb):
     assert financials
 
 
-def test_get_detailed_tickers(bearish_db_with_assets: BearishDb):
+def test_get_detailed_tickers(bearish_db_with_assets: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db_with_assets.database_path,
         api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
@@ -443,7 +443,7 @@ def test_get_detailed_tickers(bearish_db_with_assets: BearishDb):
     assert len(assets.equities) == 2
 
 
-def test_get_detailed_tickers_fmp(bearish_db_with_assets: BearishDb):
+def test_get_detailed_tickers_fmp(bearish_db_with_assets: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db_with_assets.database_path,
         api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
@@ -459,7 +459,7 @@ def test_get_detailed_tickers_fmp(bearish_db_with_assets: BearishDb):
     assert len(assets.equities) > 1
 
 
-def test_get_prices(bearish_db_with_assets: BearishDb):
+def test_get_prices(bearish_db_with_assets: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db_with_assets.database_path,
         api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
@@ -473,7 +473,7 @@ def test_get_prices(bearish_db_with_assets: BearishDb):
     assert prices
 
 
-def test_get_financials(bearish_db_with_assets: BearishDb):
+def test_get_financials(bearish_db_with_assets: BearishDb) -> None:
     bearish = Bearish(
         path=bearish_db_with_assets.database_path,
         api_keys=SourceApiKeys(keys={"FMP": os.getenv("FMP_API_KEY")}),
@@ -535,7 +535,7 @@ def test_update_financials(bear_db: BearishDb) -> None:
     assert financials
 
 
-def test_index_query(bearish_db_index: BearishDb):
+def test_index_query(bearish_db_index: BearishDb) -> None:
     with requests_mock.Mocker() as req:
         req.get(
             RAW_INDEX_DATA_URL,
@@ -551,3 +551,13 @@ def test_index_query(bearish_db_index: BearishDb):
         assets_query = AssetQuery(symbols=Symbols(index=[Ticker(symbol="^GSPC")]))
         series = bearish.read_series(assets_query, table=PriceIndexORM)
         assert series
+
+
+def test_price_etf(bear_db: BearishDb) -> None:
+    bearish = Bearish(path=bear_db.database_path)
+    etf_symbols = bearish.get_prices_etf(series_length="1d", limit=5)
+    assets_query = AssetQuery(
+        symbols=Symbols(index=[Ticker(symbol=symbol) for symbol in etf_symbols])
+    )
+    series = bearish.read_series(assets_query, table=PriceEtfORM)
+    assert series
