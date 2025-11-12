@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bearishpy"
-version = "0.39.0"
+version = "0.40.0"
 description = ""
 authors = ["aan <andoludovic.andriamamonjy@gmail.com>"]
 readme = "README.md"
