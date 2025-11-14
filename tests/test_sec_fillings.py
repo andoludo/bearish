@@ -22,3 +22,7 @@ def test_sec_all(bearish_db: BearishDb) -> None:
 @pytest.mark.skip(reason="Too slow")
 def test_sec_all_price(bearish_db: BearishDb) -> None:
     Secs.update_values(bearish_db)
+
+
+def test_update_value(bear_db: BearishDb) -> None:
+    Secs.update_values(bear_db, additional_tickers=["AAPL", "NVDA"])
