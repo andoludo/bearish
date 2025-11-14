@@ -528,6 +528,17 @@ def prices(
 
 
 @app.command()
+def sec(
+    path: Path,
+    api_keys: Optional[Path] = None,
+) -> None:
+    with console.status("[bold green]Fetching SEC data..."):
+        source_api_keys = SourceApiKeys.from_file(api_keys)
+        bearish = Bearish(path=path, api_keys=source_api_keys)
+        Secs.upload(bearish._bearish_db)  # type: ignore
+
+
+@app.command()
 def update(
     path: Path,
     symbols: Optional[List[str]] = None,
