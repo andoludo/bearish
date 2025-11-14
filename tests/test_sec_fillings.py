@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 
 from bearish.database.crud import BearishDb
+from bearish.models.sec.ciks import _read_tsv
 from bearish.models.sec.sec import Secs
 
 
@@ -26,3 +27,7 @@ def test_sec_all_price(bearish_db: BearishDb) -> None:
 
 def test_update_value(bear_db: BearishDb) -> None:
     Secs.update_values(bear_db, additional_tickers=["AAPL", "NVDA"])
+
+
+def test_read_tsv():
+    assert _read_tsv()
