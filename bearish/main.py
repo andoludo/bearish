@@ -61,13 +61,6 @@ CountriesEnum = Enum(  # type: ignore
 )
 
 
-class Options(BaseModel):
-    etf: bool = True
-    index: bool = True
-    sec: bool = True
-    financials: bool = True
-
-
 class Filter(BaseModel):
     countries: List[CountriesEnum] = Field(default_factory=list)
     filters: Optional[List[str] | str] = None
@@ -435,14 +428,16 @@ class Bearish(BaseModel):
 
 
 @app.command()
-def run(
+def run(  # noqa: PLR0913
     path: Path,
     countries: Annotated[List[CountriesEnum], typer.Argument()],
     filters: Optional[str] = None,
     api_keys: Optional[Path] = None,
-    options: Optional[Options] = None,
+    etf: bool = True,
+    index: bool = True,
+    sec: bool = True,
+    financials: bool = True,
 ) -> None:
-    options = options or Options()
     console.log(
         f"Fetching assets to database for countries: {countries}, with filters: {filters}",
     )
@@ -456,19 +451,19 @@ def run(
     with console.status("[bold green]Fetching Price data..."):
         bearish.get_prices(filter)
         console.log("[bold][red]Price downloaded!")
-    if options.index:
+    if index:
         with console.status("[bold green]Fetching Price index..."):
             bearish.get_prices_index()
             console.log("[bold][red]Price index downloaded!")
-    if options.etf:
+    if etf:
         with console.status("[bold green]Fetching Etf price..."):
             bearish.get_prices_etf()
             console.log("[bold][red]Price etf downloaded!")
-    if options.sec:
+    if sec:
         with console.status("[bold green]Fetching SEC data..."):
             Secs.upload(bearish._bearish_db)  # type: ignore
             console.log("[bold][red]SEC data downloaded!")
-    if options.financials:
+    if financials:
         with console.status("[bold green]Fetching Financial data..."):
             bearish.get_financials(filter)
             console.log("[bold][red]Financial downloaded!")
