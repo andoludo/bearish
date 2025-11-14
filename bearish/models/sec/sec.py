@@ -12,7 +12,6 @@ import requests  # type: ignore
 from pydantic import BaseModel
 from sec_cik_mapper import StockMapper  # type: ignore
 from sec_edgar_downloader import Downloader  # type: ignore
-import yfinance as yf  # type: ignore
 
 if TYPE_CHECKING:
     from bearish.database.crud import BearishDb
@@ -166,6 +165,20 @@ def _info_table_to_rows(
     return rows
 
 
+def _query(symbols: List[str]) -> str:
+    symbols_ = ",".join([f"'{s}'" for s in symbols])
+    query = f"""WITH last_dates AS (SELECT DISTINCT date \
+                                   FROM price \
+                                   ORDER BY date DESC \
+                                   LIMIT 3)
+               SELECT date, symbol, close
+               FROM price
+               WHERE date IN (SELECT date FROM last_dates)
+                 AND symbol IN ({symbols_})
+               ORDER BY date DESC;"""
+    return query
+
+
 class Secs(BaseModel):
     secs: List[Sec]
 
@@ -180,17 +193,23 @@ class Secs(BaseModel):
         cls.update_values(bearish_db)
 
     @classmethod
-    def update_values(cls, bearish_db: "BearishDb") -> None:
+    def update_values(
+        cls, bearish_db: "BearishDb", additional_tickers: Optional[List[str]] = None
+    ) -> None:
         prices = {}
+        additional_tickers = additional_tickers or []
         tickers = bearish_db.read_query(
             query="SELECT DISTINCT ticker from sec WHERE ticker NOT NULL"
         )
-        tickers_ = tickers["ticker"].tolist()
+        tickers_ = [*tickers["ticker"].tolist(), *additional_tickers]
         batch_size = 100
+
         for i in range(0, len(tickers_), batch_size):
             batch = tickers_[i : i + batch_size]
-            data = yf.download(batch, period="5d", auto_adjust=True, timeout=60)
-            prices.update(data["Close"].dropna(axis=1).iloc[-1].to_dict())
+            data = bearish_db.read_query(_query(batch))
+            prices.update(
+                {r["symbol"]: r["close"] for r in data.to_dict(orient="records")}
+            )
         for symbol, price in prices.items():
             secs = bearish_db.read_sec(symbol)
             for sec in secs:
