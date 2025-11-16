@@ -33,7 +33,7 @@ def test_sec_data(bear_db: BearishDb) -> None:
     assert secs.secs
     secs.write(bear_db)
     Secs.update_values(bear_db)
-    bear_db.read_sec_shares(type_=">")
+    bear_db.read_sec_shares()
 
 
 def test_update_value(bear_db: BearishDb) -> None:
