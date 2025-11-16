@@ -498,7 +498,7 @@ def test_read_tracker(bear_db: BearishDb) -> None:
         PriceTracker,
     )
     assert trackers
-    assert len(trackers) == 2
+    assert len(trackers) == 6
 
 
 def test_read_tracker_today(bear_db: BearishDb) -> None:
