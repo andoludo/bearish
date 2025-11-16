@@ -25,8 +25,25 @@ def test_sec_all_price(bearish_db: BearishDb) -> None:
     Secs.update_values(bearish_db)
 
 
+@pytest.mark.skip(reason="Only to generate data")
+def test_sec_data(bear_db: BearishDb) -> None:
+    secs = Secs.from_sec_13f_hr(
+        "0001067983", date_=datetime.strptime("2024-10-01", "%Y-%m-%d").date()
+    )
+    assert secs.secs
+    secs.write(bear_db)
+    Secs.update_values(bear_db)
+    bear_db.read_sec_shares(type_=">")
+
+
 def test_update_value(bear_db: BearishDb) -> None:
     Secs.update_values(bear_db, additional_tickers=["AAPL", "NVDA"])
+
+
+def test_read_sec_shares(bear_db: BearishDb) -> None:
+    sec_shares = bear_db.read_sec_shares()
+    bear_db.write_sec_shares(sec_shares)
+    assert sec_shares
 
 
 def test_read_tsv():

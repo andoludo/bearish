@@ -56,13 +56,29 @@ def company_ticker() -> Dict[str, str]:
 TICKER_MAPPING = company_ticker()
 
 
+class BaseSecShare(BaseModel):
+    ticker: str
+    previous_period: Optional[date] = None
+    max_period: Optional[date] = None
+    occurrences: Optional[int] = None
+    prev_total_value: Optional[float] = None
+    total_value: Optional[float] = None
+    total_increase: Optional[float] = None
+    prev_total_shares: Optional[float] = None
+    total_shares: Optional[float] = None
+    shares_increase: Optional[float] = None
+
+
+class SecShareIncrease(BaseSecShare): ...
+
+
 class Sec(BaseModel):
     name: Optional[str] = None
+    ticker: Optional[str] = None
     cusip: Optional[str] = None
     shares: Optional[int] = None
     period: Optional[str] = None
     filed_date: Optional[str] = None
-    ticker: Optional[str] = None
     source: Optional[str] = None
     company_name: Optional[str] = None
     value: Optional[float] = None
@@ -185,6 +201,8 @@ class Secs(BaseModel):
             for sec in secs:
                 sec.value = price * sec.shares
             bearish_db.write_sec(secs)
+        sec_shares = bearish_db.read_sec_shares()
+        bearish_db.write_sec_shares(sec_shares)
 
     @classmethod
     def from_sec_13f_hr(cls, source: str, date_: Optional[date] = None) -> "Secs":

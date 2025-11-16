@@ -29,6 +29,7 @@ from bearish.database.schemas import (
     FinancialsTrackerORM,
     IndexORM,
     SecORM,
+    SecShareIncreaseORM,
 )
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
@@ -50,7 +51,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
-from bearish.models.sec.sec import Sec
+from bearish.models.sec.sec import Sec, SecShareIncrease
 from bearish.utils.utils import batch
 
 if TYPE_CHECKING:
@@ -360,3 +361,62 @@ class BearishDb(BearishDbBase):
             if result is None:
                 return None
             return result  # type: ignore
+
+    def _read_sec_shares(self) -> List[SecShareIncrease]:
+        query = """
+                WITH max_period_table AS (SELECT MAX(s.period) AS max_period \
+                                          FROM sec AS s \
+                                          WHERE s.value IS NOT NULL),
+                     previous_period_table AS (SELECT MAX(s.period) AS previous_period \
+                                               FROM sec AS s \
+                                               WHERE s.value IS NOT NULL \
+                                                 AND s.period NOT IN (SELECT max_period FROM max_period_table)),
+
+                     paired AS (SELECT s.company_name, \
+                                       s.name, \
+                                       s.cusip, \
+                                       p.previous_period, \
+                                       m.max_period, \
+                                       MAX(CASE WHEN s.period = m.max_period THEN s.ticker END)      AS curr_ticker, \
+                                       MAX(CASE WHEN s.period = m.max_period THEN s.value END)       AS curr_value, \
+                                       MAX(CASE WHEN s.period = m.max_period THEN s.shares END)      AS curr_shares, \
+                                       MAX(CASE WHEN s.period = p.previous_period THEN s.value END)  AS prev_value, \
+                                       MAX(CASE WHEN s.period = p.previous_period THEN s.shares END) AS prev_shares \
+                                FROM sec AS s \
+                                         CROSS JOIN max_period_table AS m \
+                                         CROSS JOIN previous_period_table AS p \
+                                WHERE s.value IS NOT NULL \
+                                GROUP BY s.company_name, s.cusip)
+                SELECT p.name,
+                       p.curr_ticker                      AS ticker,
+                       p.previous_period,
+                       p.max_period,
+                       COUNT(DISTINCT p.company_name)     AS occurrences,
+                       SUM(p.prev_value)                  AS prev_total_value,
+                       SUM(p.curr_value)                  AS total_value,
+                       SUM(p.curr_value - p.prev_value)   AS total_increase,
+                       SUM(p.prev_shares)                 AS prev_total_shares,
+                       SUM(p.curr_shares)                 AS total_shares,
+                       SUM(p.curr_shares - p.prev_shares) AS shares_increase
+                FROM paired AS p
+                WHERE p.curr_value IS NOT NULL
+                  AND p.prev_value IS NOT NULL
+                GROUP BY p.cusip, p.curr_ticker
+                ORDER BY total_increase DESC; \
+                """
+        data = self._read_query(query)
+        return [
+            SecShareIncrease.model_validate(r) for r in data.to_dict(orient="records")
+        ]
+
+    def _write_sec_shares(self, sec_shares: List["SecShareIncrease"]) -> None:
+
+        with Session(self._engine) as session:
+            data = [serie.model_dump() for serie in sec_shares]
+            chunks = batch(data, BATCH_SIZE)
+            for chunk in chunks:
+                stmt = (
+                    insert(SecShareIncreaseORM).prefix_with("OR REPLACE").values(chunk)
+                )
+                session.exec(stmt)  # type: ignore
+            session.commit()

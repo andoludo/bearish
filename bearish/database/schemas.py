@@ -19,7 +19,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
-from bearish.models.sec.sec import Sec
+from bearish.models.sec.sec import Sec, SecShareIncrease
 
 
 class BaseBearishTable(SQLModel):
@@ -140,3 +140,9 @@ class SecORM(SQLModel, Sec, table=True):
     source: str = Field(index=True, primary_key=True)
     period: str = Field(index=True, primary_key=True)
     filed_date: str = Field(index=True, primary_key=True)
+
+
+class SecShareIncreaseORM(SQLModel, SecShareIncrease, table=True):
+    __tablename__ = "secshareincrease"
+    __table_args__ = {"sqlite_autoincrement": True}
+    ticker: str = Field(index=True, primary_key=True)
