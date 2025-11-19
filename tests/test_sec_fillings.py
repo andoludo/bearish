@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -48,3 +49,9 @@ def test_read_sec_shares(bear_db: BearishDb) -> None:
 
 def test_read_tsv():
     assert _read_tsv()
+
+
+def test_read_share_data(bear_db: BearishDb) -> None:
+    companies = bear_db.read_sec_companies()
+    data = bear_db.read_sec_share_data(companies[0])
+    assert not data.empty

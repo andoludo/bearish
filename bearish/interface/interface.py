@@ -71,6 +71,14 @@ class BearishDbBase(BaseModel):
         return self._read_series(query, months, table=table)
 
     @validate_call
+    def read_sec_companies(self) -> List[str]:
+        return self._read_sec_companies()
+
+    @validate_call
+    def read_sec_share_data(self, company: str) -> pd.DataFrame:
+        return self._read_sec_share_data(company)
+
+    @validate_call
     def read_financials(self, query: AssetQuery) -> Financials:
         return self._read_financials(query)
 
@@ -126,6 +134,11 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _read_sec_shares(self) -> List[SecShareIncrease]: ...
+    @abc.abstractmethod
+    def _read_sec_companies(self) -> List[str]: ...
+
+    @abc.abstractmethod
+    def _read_sec_share_data(self, company: str) -> pd.DataFrame: ...
     @abc.abstractmethod
     def _write_sec_shares(self, sec_shares: List[SecShareIncrease]) -> None: ...
     @abc.abstractmethod

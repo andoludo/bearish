@@ -362,6 +362,50 @@ class BearishDb(BearishDbBase):
                 return None
             return result  # type: ignore
 
+    def _read_sec_companies(self) -> List[str]:
+        query = """SELECT DISTINCT company_name FROM sec;"""
+        return self._read_query(query)["company_name"].tolist()
+
+    def _read_sec_share_data(self, company: str) -> pd.DataFrame:
+        query = f"""WITH max_period_table AS (SELECT MAX(s.period) AS max_period 
+                                          FROM sec AS s 
+                                          WHERE s.company_name = '{company}'),
+                     previous_period_table AS (SELECT MAX(s.period) AS previous_period 
+                                               FROM sec AS s 
+                                               WHERE s.period NOT IN (SELECT max_period FROM max_period_table) 
+                                               AND s.company_name = '{company}'),
+
+                     paired AS (SELECT s.company_name, 
+                                       s.name, 
+                                       s.cusip, 
+                                       p.previous_period, 
+                                       m.max_period, 
+                                       MAX(CASE WHEN s.period = m.max_period THEN s.ticker END)      AS curr_ticker, 
+                                       MAX(CASE WHEN s.period = m.max_period THEN s.value END)       AS curr_value, 
+                                       MAX(CASE WHEN s.period = m.max_period THEN s.shares END)      AS curr_shares, 
+                                       MAX(CASE WHEN s.period = p.previous_period THEN s.value END)  AS prev_value, 
+                                       MAX(CASE WHEN s.period = p.previous_period THEN s.shares END) AS prev_shares 
+                                FROM sec AS s 
+                                         CROSS JOIN max_period_table AS m 
+                                         CROSS JOIN previous_period_table AS p 
+                                WHERE s.company_name = '{company}'
+                                GROUP BY s.company_name, s.cusip)
+                SELECT p.name,
+                       p.curr_ticker                      AS ticker,
+                       p.previous_period,
+                       p.max_period,
+                       p.company_name   ,
+                       SUM(p.prev_value)                  AS prev_total_value,
+                       SUM(p.curr_value)                  AS total_value,
+                       SUM(p.curr_value - p.prev_value)   AS total_increase,
+                       SUM(p.prev_shares)                 AS prev_total_shares,
+                       SUM(p.curr_shares)                 AS total_shares,
+                       SUM(p.curr_shares - p.prev_shares) AS shares_increase
+                FROM paired AS p
+                GROUP BY p.cusip, p.curr_ticker
+                ORDER BY total_increase DESC; """
+        return self._read_query(query)
+
     def _read_sec_shares(self) -> List[SecShareIncrease]:
         query = """
                 WITH max_period_table AS (SELECT MAX(s.period) AS max_period \
