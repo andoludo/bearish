@@ -534,8 +534,12 @@ def sec(
 
 
 @app.command()
-def update(
+def update(  # noqa: PLR0913
     path: Path,
+    etf: bool = True,
+    index: bool = True,
+    sec: bool = True,
+    financials: bool = True,
     symbols: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
     series_length: str = "1mo",
@@ -543,10 +547,14 @@ def update(
     source_api_keys = SourceApiKeys.from_file(api_keys)
     bearish = Bearish(path=path, api_keys=source_api_keys)
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
-    bearish.get_prices_index(series_length=series_length)  # type: ignore
-    bearish.get_prices_etf(series_length=series_length)  # type: ignore
-    Secs.upload(bearish._bearish_db)  # type: ignore
-    bearish.update_financials(symbols)
+    if index:
+        bearish.get_prices_index(series_length=series_length)  # type: ignore
+    if etf:
+        bearish.get_prices_etf(series_length=series_length)  # type: ignore
+    if sec:
+        Secs.upload(bearish._bearish_db)  # type: ignore
+    if financials:
+        bearish.update_financials(symbols)
 
 
 if __name__ == "__main__":
