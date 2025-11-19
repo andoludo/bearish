@@ -58,6 +58,7 @@ TICKER_MAPPING = company_ticker()
 
 class BaseSecShare(BaseModel):
     ticker: str
+    name: Optional[str] = None
     previous_period: Optional[date] = None
     max_period: Optional[date] = None
     occurrences: Optional[int] = None
@@ -153,15 +154,12 @@ def _info_table_to_rows(
 
 def _query(symbols: List[str]) -> str:
     symbols_ = ",".join([f"'{s}'" for s in symbols])
-    query = f"""WITH last_dates AS (SELECT DISTINCT date \
-                                   FROM price \
-                                   ORDER BY date DESC \
-                                   LIMIT 3)
-               SELECT date, symbol, close
-               FROM price
-               WHERE date IN (SELECT date FROM last_dates)
-                 AND symbol IN ({symbols_})
-               ORDER BY date DESC;"""
+    query = f"""SELECT date, symbol, close
+FROM price
+WHERE symbol IN ({symbols_})
+  AND date >= date('now', '-3 months')
+ORDER BY date DESC;
+"""
     return query
 
 
@@ -188,7 +186,7 @@ class Secs(BaseModel):
             query="SELECT DISTINCT ticker from sec WHERE ticker NOT NULL"
         )
         tickers_ = [*tickers["ticker"].tolist(), *additional_tickers]
-        batch_size = 100
+        batch_size = 1000
 
         for i in range(0, len(tickers_), batch_size):
             batch = tickers_[i : i + batch_size]
