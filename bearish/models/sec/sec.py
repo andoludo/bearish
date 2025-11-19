@@ -207,7 +207,7 @@ class Secs(BaseModel):
         rows = []
         unique_secs = []
         groups = defaultdict(list)
-        date__ = date_ or date.today() - timedelta(days=31 * 4)
+        date__ = date_ or date.today() - timedelta(days=31 * 7)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dl = Downloader(
