@@ -1,13 +1,18 @@
-"""Domain-specific exceptions."""
+class InvalidApiKeyError(Exception):
+    pass
 
 
-class BearishError(Exception):
-    """Base class for all bearish errors."""
+class LimitApiKeyReachedError(Exception):
+    pass
 
 
-class SourceError(BearishError):
-    """Raised when a data source fails to deliver data."""
+class TickerNotFoundError(Exception):
+    pass
 
 
-class RepositoryError(BearishError):
-    """Raised when the repository cannot read or write data."""
+class FinancialDataError(Exception):
+    pass
+
+
+class IncompleteDataError(Exception):
+    pass

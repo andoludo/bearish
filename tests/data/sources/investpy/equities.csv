@@ -1,0 +1,44 @@
+country,name,full_name,tag,isin,id,currency,symbol
+argentina,Tenaris,Tenaris,tenaris?cid=13302,LU0156801721,13302,ARS,TS
+argentina,PETROBRAS ON,Petroleo Brasileiro - Petrobras,petrobras-on?cid=13303,BRPETRACNOR9,13303,ARS,APBR
+argentina,Grupo Financiero Galicia,Grupo Financiero Galicia B,gp-fin-galicia,ARP495251018,13304,ARS,GGAL
+argentina,Ternium Argentina,Ternium Argentina SA,siderar,ARSIDE010029,13305,ARS,TXAR
+argentina,Pampa Energia,Pampa Energia SA,pampa-energia,ARP432631215,13306,ARS,PAMP
+argentina,Telecom Argentina,Telecom Argentina,telecom,ARP9028N1016,13307,ARS,TECO2
+argentina,Banco Patagonia,Banco Patagonia,bco-patagonia,ARMERI013163,13308,ARS,BPAT
+argentina,Aluar,Aluar Aluminio Argentino,aluar,ARALUA010258,13309,ARS,ALUA
+argentina,BBVA Banco Frances,BBVA Banco Frances SA,frances,ARP125991090,13310,ARS,BBAR
+argentina,Banco Macro,Banco Macro,macro,ARBANS010010,13311,ARS,BMA
+argentina,Edenor,Empresa Distribuidora y Comercializadora Norte S.A.,edenor,ARENOR010020,13313,ARS,EDN
+argentina,Transener,Compania de Transporte de Energia Electrica en Alta Tension Transener SA,transener,ARTRAN010011,13314,ARS,TRAN
+argentina,Mirgor,Mirgor S.A. C,mirgor,ARP6823S1295,13315,ARS,MIRG
+argentina,Banco Hipotecario,Banco Hipotecario SA,bco-hipotecari,ARBHIP010161,13316,ARS,BHIP
+argentina,Agrometal,Agrometal,agrometal,ARAGRO010015,13318,ARS,AGRO
+argentina,Autopistas del Sol,Autopistas del Sol,autopistas-sol,ARASOL010033,13320,ARS,AUSO
+argentina,Boldt Gaming,Boldt Gaming,boldt-gaming,ARBOLG010010,13321,ARS,GAMI
+argentina,Boldt,Boldt,boldt,ARBOLD010054,13322,ARS,BOLT
+argentina,Camuzzi Gas Pampeana,Camuzzi Gas Pampeana SA,camuzzi,ARCGSU010048,13323,ARS,CGPA2
+argentina,Carlos Casado,Carlos Casado,carlos-casado,ARCADO010023,13324,ARS,CADO
+argentina,Carboclor,Carboclor,carboclor,ARP8723U1058,13325,ARS,CARC
+argentina,Caputo,Caputo,caputo,ARP2071R1377,13326,ARS,CAPU
+argentina,Enel Generacion Costanera,Enel Generacion Costanera SA,central-costan,ARP2341J1058,13327,ARS,CECO2
+argentina,Celulosa Argentina,Celulosa Argentina SA,celulosa,ARP219751426,13328,ARS,CELU
+argentina,Central Puerto,Central Puerto S.A.,central-puerto,ARP2354W1188,13329,ARS,CEPU
+argentina,Grupo clarin,Grupo clarin,grupo-clarin,ARGCLA010015,13330,ARS,GCLA
+argentina,Colorin,Colorin Industria de Materiales Sinteticos SA,colorin,ARP2885N1161,13331,ARS,COLO
+argentina,Comercial del Plata,Sociedad Comercial del Plata S.A.,comer-del-plat,ARP290071462,13332,ARS,COME
+argentina,Consultatio,Consultatio SA,consultatio-s.,ARCTIO010019,13333,ARS,CTIO
+argentina,Capex,Capex,capex,ARP2006N1025,13334,ARS,CAPX
+argentina,Cresud,Cresud SA,cresud,ARP331091024,13335,ARS,CRES
+argentina,Dycasa,Dycasa SA,dycasa,ARP3594C1107,13336,ARS,DYCA
+argentina,Distribuidora de Gas Cuyana,Distribuidora de Gas Cuyana SA,ecogas,ARP3568E1180,13337,ARS,DGCU2
+argentina,Ferrum,Ferrum SA de Ceramica y Metalurgia,ferrum,ARP395611576,13339,ARS,FERR
+argentina,Fiplasto SA,Fiplasto SA,fiplasto,ARP416191426,13340,ARS,FIPL
+argentina,Garovaglio y Zorroaquin,Garovaglio y Zorroaquin,garovaglio,ARP460221020,13342,ARS,GARO
+argentina,Gas Natural BAN,Gas Natural BAN,gas-natural,ARGASB010027,13343,ARS,GBAN
+argentina,Grimoldi,Grimoldi SA,grimoldi,ARP493071046,13344,ARS,GRIM
+argentina,Solvay Indupa,Solvay Indupa SAIC,indupa,ARP533511050,13346,ARS,INDU
+argentina,IRSA,IRSA Inversiones y Representaciones SA,irsa,ARP588091073,13347,ARS,IRSA
+argentina,Holcim,Holcim Argentina SA,juan-minetti,ARP6806N1051,13348,ARS,HARG
+argentina,Ledesma,Ledesma SAAI,ledesma,ARP624571096,13349,ARS,LEDE
+argentina,Longvie,Longvie SA,longvie,ARP6356B1059,13350,ARS,LONG

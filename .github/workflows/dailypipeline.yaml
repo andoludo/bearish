@@ -5,6 +5,10 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 
+env:
+  TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+  FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -12,6 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          lfs: true
           ref: ${{ github.ref_name }}
 
       - name: Install uv
@@ -22,5 +27,5 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run tests
+      - name: Run full test suite (live data sources)
         run: uv run pytest

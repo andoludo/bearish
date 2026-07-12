@@ -22,10 +22,10 @@ jobs:
         run: uv sync
 
       - name: Run ruff
-        run: uv run ruff check bearish
+        run: uv run ruff check
 
       - name: Run mypy
-        run: uv run mypy bearish
+        run: uv run mypy
 
   tests:
     needs: [linting]
@@ -44,8 +44,8 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Run tests (offline, deterministic)
+        run: uv run pytest -m "not network and not lfs"
 
   create-revision-and-tag:
     if: startsWith(github.ref, 'refs/heads/master')
