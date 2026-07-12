@@ -128,3 +128,19 @@ def test_read_series_fetches_dividends():
     assert prices
     dividends = [p.dividends for p in prices if p.dividends]
     assert any(d > 0 for d in dividends)
+
+
+def test_earnings_dates_alias_columns_exist_live():
+    """Catch provider column drift via the SourceCheck/daily CI.
+
+    The revenue aliases ("Revenue Estimate"/"Reported Revenue") are NOT
+    required here: the pinned yfinance version does not return them (verified
+    against its source); they are mapped opportunistically for versions that
+    do. Only the columns the current version documents are asserted.
+    """
+    frame = yf.Ticker("AAPL").earnings_dates
+    assert frame is not None and not frame.empty
+    live_columns = set(frame.columns)
+    assert {"EPS Estimate", "Reported EPS"} <= live_columns, (
+        f"yfinance earnings_dates columns drifted: {sorted(live_columns)}"
+    )

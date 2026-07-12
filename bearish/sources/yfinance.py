@@ -268,17 +268,26 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, QuarterlyFinancialMetrics)
 
 
 class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
+    # "Revenue Estimate"/"Reported Revenue" are not present in the currently
+    # pinned yfinance version but have appeared in other versions of the
+    # provider payload — the mapping captures them whenever they are returned.
     __alias__ = {
         "symbol": "symbol",
         "EPS Estimate": "eps_estimate",
         "Reported EPS": "eps_reported",
+        "Revenue Estimate": "revenue_estimate",
+        "Reported Revenue": "revenue_reported",
     }
 
     @classmethod
     def from_ticker(
         cls, ticker: yf.Ticker, prefix: Optional[str] = None
     ) -> List["yFinanceEarningsDate"]:
-        return cls._from_ticker(ticker, "earnings_dates", transpose=False, prefix=prefix)  # type: ignore
+        rows = cls._from_ticker(ticker, "earnings_dates", transpose=False, prefix=prefix)
+        today = date.today()
+        for row in rows:
+            row.is_forward = row.date > today  # type: ignore[attr-defined]
+        return rows  # type: ignore[return-value]
 
 
 class yFinanceBalanceSheet(YfinanceFinancialBase, QuarterlyBalanceSheet):

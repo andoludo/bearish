@@ -92,3 +92,85 @@ def test_price_alias_maps_action_columns_directly() -> None:
     )
     assert price.dividends == 0.24
     assert price.stock_splits == 2.0
+
+
+class _FakeEarningsTicker:
+    """Mimics the yf.Ticker surface used by yFinanceEarningsDate.from_ticker."""
+
+    def __init__(self, frame: pd.DataFrame, symbol: str = "AAPL") -> None:
+        self.ticker = symbol
+        self.earnings_dates = frame
+
+
+def _earnings_frame(extra_columns: bool = False) -> pd.DataFrame:
+    import json
+    from pathlib import Path
+
+    fixture = json.loads(
+        Path(__file__)
+        .parents[1]
+        .joinpath("data/sources/yfinance/earnings_dates_AAPL.json")
+        .read_text()
+    )
+    rows = fixture["rows"]
+    frame = pd.DataFrame(rows).set_index(pd.to_datetime([r["date"] for r in rows]))
+    frame = frame.drop(columns=["date"])
+    # one future row, dated dynamically so the test never rots
+    future = pd.Timestamp(datetime.date.today() + datetime.timedelta(days=90))
+    frame.loc[future] = {"EPS Estimate": 3.1, "Reported EPS": None, "Surprise(%)": None}
+    if extra_columns:
+        frame["Revenue Estimate"] = 1.0e11
+        frame["Reported Revenue"] = 1.1e11
+    return frame
+
+
+def test_earnings_dates_sets_is_forward() -> None:
+    from bearish.sources.yfinance import yFinanceEarningsDate
+
+    rows = yFinanceEarningsDate.from_ticker(_FakeEarningsTicker(_earnings_frame()))
+    assert len(rows) == 4
+    forward = [r for r in rows if r.is_forward]
+    past = [r for r in rows if not r.is_forward]
+    assert len(forward) == 1
+    assert forward[0].eps_reported is None
+    assert len(past) == 3
+    assert all(r.eps_estimate is not None for r in rows)
+
+
+def test_earnings_dates_maps_revenue_columns_when_present() -> None:
+    from bearish.sources.yfinance import yFinanceEarningsDate
+
+    rows = yFinanceEarningsDate.from_ticker(
+        _FakeEarningsTicker(_earnings_frame(extra_columns=True))
+    )
+    assert all(r.revenue_estimate == 1.0e11 for r in rows)
+    assert all(r.revenue_reported == 1.1e11 for r in rows)
+
+
+def test_earnings_dates_without_revenue_columns_yield_none() -> None:
+    from bearish.sources.yfinance import yFinanceEarningsDate
+
+    rows = yFinanceEarningsDate.from_ticker(_FakeEarningsTicker(_earnings_frame()))
+    assert all(r.revenue_estimate is None for r in rows)
+    assert all(r.revenue_reported is None for r in rows)
+
+
+def test_earnings_dates_roundtrip_through_database(tmp_path) -> None:
+    from pathlib import Path
+
+    from bearish.database.crud import BearishDb
+    from bearish.models.base import Ticker
+    from bearish.models.financials.base import Financials
+    from bearish.models.query.query import AssetQuery, Symbols
+    from bearish.sources.yfinance import yFinanceEarningsDate
+
+    rows = yFinanceEarningsDate.from_ticker(_FakeEarningsTicker(_earnings_frame()))
+    db = BearishDb(database_path=tmp_path / "bear.db")
+    db.write_financials([Financials(earnings_date=rows)])
+    db.write_financials([Financials(earnings_date=rows)])  # idempotent upsert
+
+    loaded = db.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    ).earnings_date
+    assert len(loaded) == len(rows)
+    assert {r.is_forward for r in loaded} == {True, False}
