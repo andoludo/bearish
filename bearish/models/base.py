@@ -38,6 +38,20 @@ class SourceBase(BaseModel, abc.ABC):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 
+class FiledDateMixin(BaseModel):
+    """Adds the filing/publication date to dated statement rows.
+
+    Distinct from the period-end `date` and from the scrape date `created_at`.
+    yfinance does not expose it (left None); the EDGAR filings fetcher
+    backfills it for US tickers.
+    """
+
+    filed_date: Optional[datetime.date] = Field(
+        default=None,
+        description="Date the statement was filed / became publicly available",
+    )
+
+
 class BaseTrackerQuery(BaseModel):
     exchange: Optional[str] = None
 

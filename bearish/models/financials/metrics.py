@@ -2,10 +2,10 @@ from typing import Optional
 
 from pydantic import Field
 
-from bearish.models.base import DataSourceBase
+from bearish.models.base import DataSourceBase, FiledDateMixin
 
 
-class FinancialMetrics(DataSourceBase):
+class FinancialMetrics(FiledDateMixin, DataSourceBase):
 
     ebitda: Optional[float] = Field(
         None,

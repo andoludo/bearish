@@ -35,6 +35,7 @@ from bearish.models.price.price import Price
 from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.models.sec.sec import Secs
+from bearish.sources.edgar_filings import fetch_filings
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.investpy import InvestPySource
@@ -324,6 +325,19 @@ class Bearish(BaseModel):
         logger.debug(f"Found tickers: {[t.symbol for t in tickers]}")
         self.write_many_financials(tickers)
 
+    def get_filings(self, filter: Filter) -> None:
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        filings = fetch_filings([t.symbol for t in tickers])
+        logger.debug(f"Fetched {len(filings)} EDGAR filings")
+        self._bearish_db.write_filings(filings)
+        self._bearish_db.backfill_filed_dates()
+
     def get_prices(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
@@ -512,6 +526,20 @@ def prices(
         filter = Filter(countries=countries, filters=filters)
         bearish.get_prices(filter)
         console.log("[bold][red]Price data downloaded!")
+
+
+@app.command()
+def filings(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    with console.status("[bold green]Fetching EDGAR filings..."):
+        bearish = _bearish_from(path, api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        bearish.get_filings(filter)
+        console.log("[bold][red]Filings downloaded!")
 
 
 @app.command()

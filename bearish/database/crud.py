@@ -6,13 +6,14 @@ from typing import List, TYPE_CHECKING, Type, Union, Any, Optional
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Engine, create_engine, insert
+from sqlalchemy import Engine, create_engine, insert, text
 from sqlmodel import Session, select
 from sqlmodel.main import SQLModel
 
 
 from bearish.database.schemas import (
     AnalystRecommendationORM,
+    FilingORM,
     PriceTargetORM,
     EquityORM,
     CurrencyORM,
@@ -54,6 +55,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
+from bearish.models.sec.filing import Filing
 from bearish.models.sec.sec import Sec, SecShareIncrease
 from bearish.utils.utils import batch
 
@@ -124,6 +126,58 @@ class BearishDb(BearishDbBase):
             stmt = select(SecORM).where(SecORM.ticker == ticker)
             sources = session.exec(stmt).all()
             return [Sec.model_validate(source.model_dump()) for source in sources]
+
+    def _write_filings(self, filings: List["Filing"]) -> None:
+        if not filings:
+            return
+        with Session(self._engine) as session:
+            data = [filing.model_dump() for filing in filings]
+            for chunk in batch(data, BATCH_SIZE):
+                stmt = insert(FilingORM).prefix_with("OR REPLACE").values(chunk)
+                session.exec(stmt)
+            session.commit()
+
+    def _read_filings(self, symbol: str) -> List[Filing]:
+        with Session(self._engine) as session:
+            stmt = select(FilingORM).where(FilingORM.symbol == symbol)
+            rows = session.exec(stmt).all()
+            return [Filing.model_validate(row.model_dump()) for row in rows]
+
+    # Statement tables that carry a filed_date column.
+    _FILED_DATE_TABLES = (
+        "financialmetrics",
+        "balancesheet",
+        "cashflow",
+        "quarterlyfinancialmetrics",
+        "quarterlybalancesheet",
+        "quarterlycashflow",
+    )
+
+    def _backfill_filed_dates(self) -> None:
+        """Copy filing.filed_date onto statement rows whose (symbol, period_end)
+        matches exactly. Raw data transfer only — no approximation. When several
+        filings share a period (e.g. an amendment), the earliest filing date
+        (initial publication) is used."""
+        with Session(self._engine) as session:
+            for table in self._FILED_DATE_TABLES:
+                session.exec(
+                    text(
+                        f"""
+                        UPDATE {table} SET filed_date = (
+                            SELECT f.filed_date FROM filing f
+                            WHERE f.symbol = {table}.symbol
+                              AND f.period_end = date({table}.date)
+                            ORDER BY f.filed_date ASC LIMIT 1
+                        )
+                        WHERE EXISTS (
+                            SELECT 1 FROM filing f
+                            WHERE f.symbol = {table}.symbol
+                              AND f.period_end = date({table}.date)
+                        )
+                        """
+                    )  # type: ignore[call-overload]
+                )
+            session.commit()
 
     def _write_financials(self, financials: List[Financials]) -> None:
         many_financials = ManyFinancials(financials=financials)

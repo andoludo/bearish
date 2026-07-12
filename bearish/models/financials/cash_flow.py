@@ -2,11 +2,11 @@ from typing import Annotated, Optional
 
 from pydantic import BeforeValidator, Field
 
-from bearish.models.base import DataSourceBase
+from bearish.models.base import DataSourceBase, FiledDateMixin
 from bearish.utils.utils import to_float
 
 
-class CashFlow(DataSourceBase):
+class CashFlow(FiledDateMixin, DataSourceBase):
     operating_cash_flow: Annotated[
         Optional[float],
         BeforeValidator(to_float),
