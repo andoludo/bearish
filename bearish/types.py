@@ -2,6 +2,9 @@ from typing import Literal
 
 TickerOnlySources = Literal["investpy", "FMPAssets", "FinanceDatabase"]
 
+# "FMP"/"FMPAssets" (source removed: API discontinued for non-legacy users) and
+# "AlphaVantage" (never had a source implementation) stay in the Literal so that
+# rows already stored in existing databases keep validating.
 Sources = Literal[
     "Tiingo",
     "investpy",

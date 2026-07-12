@@ -4,8 +4,8 @@ Run in an environment with direct internet access (e.g. a CI runner):
 
     uv run python scripts/check_sources.py
 
-Key-based sources (FMP, Tiingo) are only probed when their API key is present
-in the environment (FMP_API_KEY / TIINGO_API_KEY); otherwise they are SKIPPED.
+Key-based sources (Tiingo) are only probed when their API key is present
+in the environment (TIINGO_API_KEY); otherwise they are SKIPPED.
 The script always exits 0 — it reports, the caller decides.
 """
 
@@ -113,18 +113,6 @@ def _tiingo() -> str:
 
     source = TiingoSource()
     source.set_api_key(os.environ["TIINGO_API_KEY"])
-    prices = source.read_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "5d")
-    assert prices, "no prices returned"
-    return f"{len(prices)} price rows for AAPL"
-
-
-@probe("FMP", condition=bool(os.environ.get("FMP_API_KEY")))
-def _fmp() -> str:
-    from bearish.models.base import Ticker
-    from bearish.sources.financial_modelling_prep import FmpSource
-
-    source = FmpSource()
-    source.set_api_key(os.environ["FMP_API_KEY"])
     prices = source.read_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "5d")
     assert prices, "no prices returned"
     return f"{len(prices)} price rows for AAPL"

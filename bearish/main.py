@@ -38,7 +38,6 @@ from bearish.models.query.query import AssetQuery, Symbols
 from bearish.models.sec.sec import Secs
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
-from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import InvestPySource
 from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yahooquery import YahooQuerySource
@@ -77,6 +76,18 @@ class Filter(BaseModel):
         return list({t for t in tickers if t.symbol in self.filters})
 
 
+def _default_asset_sources() -> List[AbstractSource]:
+    return [FinanceDatabaseSource(), InvestPySource()]
+
+
+def _default_detailed_sources() -> List[AbstractSource]:
+    return [yFinanceSource(), YahooQuerySource()]
+
+
+def _default_price_sources() -> List[AbstractSource]:
+    return [yFinanceSource(), YahooQuerySource(), TiingoSource()]
+
+
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
@@ -86,30 +97,10 @@ class Bearish(BaseModel):
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
-    asset_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [
-            FinanceDatabaseSource(),
-            InvestPySource(),
-            FmpAssetsSource(),
-        ]
-    )
-    detailed_asset_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [yFinanceSource(), YahooQuerySource(), FmpSource()]
-    )
-    financials_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [
-            yFinanceSource(),
-            YahooQuerySource(),
-            FmpSource(),
-        ]
-    )
-    price_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [
-            yFinanceSource(),
-            YahooQuerySource(),
-            TiingoSource(),
-        ]
-    )
+    asset_sources: List[AbstractSource] = Field(default_factory=_default_asset_sources)
+    detailed_asset_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
+    financials_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
+    price_sources: List[AbstractSource] = Field(default_factory=_default_price_sources)
 
     def model_post_init(self, __context: Any) -> None:
         self._bearish_db = BearishDb(

@@ -7,7 +7,6 @@ import requests_mock
 
 from bearish.models.base import Ticker
 from bearish.sources.tiingo import TiingoSource, compute_url, read_api
-from tests.sources.test_finance_modelling_prep import API_KEY
 
 API_KEY = os.environ.get("TIINGO_API_KEY")
 

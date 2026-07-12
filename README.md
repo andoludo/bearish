@@ -38,12 +38,15 @@ Bearish pulls data from multiple sources:
 - [📦 FinanceDatabase](https://github.com/JerBouma/FinanceDatabase) for basic ticker information
 - [🌐 InvestPy](https://github.com/alvarobartt/investpy) for country-level equity listings
 - [📉 yFinance](https://pypi.org/project/yfinance/) as the primary source of prices and fundamentals
-- [📊 Financial Modeling Prep (FMP)](https://financialmodelingprep.com/)
-- [🔍 AlphaVantage](https://www.alphavantage.co/)
-- [📈 Tiingo](https://www.tiingo.com/)
+- [🔎 YahooQuery](https://pypi.org/project/yahooquery/) as a fallback for prices and fundamentals
+- [📈 Tiingo](https://www.tiingo.com/) for prices (API key required)
+- [🏛️ SEC EDGAR](https://www.sec.gov/) for 13F institutional holdings
 
-> Ticker information is **enriched** using additional sources like yFinance, FMP, etc.  
+> Ticker information is **enriched** using additional sources like yFinance, YahooQuery, etc.  
 > Bearish is also **extensible** — you can add support for any data source or API.
+>
+> ℹ️ Support for **Financial Modeling Prep (FMP)** was removed: FMP discontinued
+> its legacy API endpoints for subscriptions created after August 31, 2025.
 
 By default, Bearish relies primarily on **yFinance** due to limitations in free-tier APIs of other providers. However, if you have a **premium subscription**, you can use other sources more fully.
 
@@ -89,9 +92,6 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ```json
 {
-  "FMPAssets": "your Financial Modeling Prep API key",
-  "FMP": "your Financial Modeling Prep API key",
-  "AlphaVantage": "your Alphavantage API key",
   "Tiingo": "your Tiingo API key"
 }
 ```
