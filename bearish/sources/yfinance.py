@@ -365,6 +365,8 @@ class yFinancePrice(YfinanceBase, Price):
         "Low": "low",
         "Close": "close",
         "Volume": "volume",
+        "Dividends": "dividends",
+        "Stock Splits": "stock_splits",
         "symbol": "symbol",
         "Date": "date",
     }
@@ -428,7 +430,12 @@ class yFinanceSource(YfinanceBase, AbstractSource):
         self, tickers: List[str], type: SeriesLength
     ) -> List[yFinancePrice]:
         data = yf.download(
-            tickers, period=type, group_by="ticker", auto_adjust=True, timeout=60
+            tickers,
+            period=type,
+            group_by="ticker",
+            auto_adjust=True,
+            actions=True,
+            timeout=60,
         )
         missing_tickers = [
             ticker for ticker in tickers if data[(ticker, "Close")].dropna().empty
@@ -444,6 +451,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                 period=type,
                 group_by="ticker",
                 auto_adjust=True,
+                actions=True,
                 timeout=60,
             )
             if not data_missing.empty:

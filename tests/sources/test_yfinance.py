@@ -119,3 +119,12 @@ def test_bug_financials():
     assert financial_metrics
     assert balance_sheets
     assert not cash_flows
+
+
+def test_read_series_fetches_dividends():
+    # AAPL pays quarterly, so a 6-month window always contains a dividend row
+    source = yFinanceSource(pause=0)
+    prices = source._read_series(["AAPL"], "6mo")
+    assert prices
+    dividends = [p.dividends for p in prices if p.dividends]
+    assert any(d > 0 for d in dividends)
