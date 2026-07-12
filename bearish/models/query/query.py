@@ -10,7 +10,7 @@ from bearish.utils.utils import remove_duplicates, remove_duplicates_string
 class BaseAssetQuery(BaseModel):
     @model_validator(mode="after")
     def validate_query(self) -> Any:
-        if all(not getattr(self, field) for field in self.model_fields):
+        if all(not getattr(self, field) for field in type(self).model_fields):
             raise ValueError("At least one query parameter must be provided")
         return self
 
@@ -93,7 +93,7 @@ class AssetQuery(BaseAssetQuery):
     symbols: Symbols = Field(default=Symbols())  # type: ignore
 
     def update_symbols(self, assets: Assets) -> None:
-        for field in assets.model_fields:
+        for field in type(assets).model_fields:
             if field == "failed_query":
                 continue
             symbols = sorted(

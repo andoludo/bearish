@@ -34,7 +34,7 @@ class Ticker(BaseModel):
 class SourceBase(BaseModel, abc.ABC):
     __source__: Sources
     __alias__: ClassVar[Dict[str, str]] = {}
-    __api_key__: ClassVar[str]
+    __api_key__: ClassVar[Optional[str]] = None
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 

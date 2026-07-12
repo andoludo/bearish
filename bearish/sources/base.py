@@ -16,29 +16,10 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.types import Sources, SeriesLength
+from bearish.types import SeriesLength
 from bearish.utils.utils import observability
 
 logger = logging.getLogger(__name__)
-
-
-class ValidTickers(BaseModel):
-    sources: List[Sources] = Field(default_factory=list)
-    exchanges: List[str] = Field(default_factory=list)
-
-    def is_valid(self, ticker: Ticker) -> bool:
-        if not self.exchanges and not self.sources:
-            return True
-        elif self.exchanges and not self.sources:
-            return ticker.exchange in self.exchanges
-        elif self.sources and not self.exchanges:
-            return ticker.source in self.sources
-        else:
-            return bool(
-                ticker.exchange is not None
-                and self.exchanges
-                and ticker.source in self.sources
-            )
 
 
 class ApiUsage(BaseModel):
@@ -148,7 +129,7 @@ class AbstractSource(SourceBase, abc.ABC):
     def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]: ...
 
     @abc.abstractmethod
-    def set_api_key(self, api_key: str) -> None: ...
+    def set_api_key(self, api_key: Optional[str]) -> None: ...
 
     def set_pause(self, value: int) -> None:
         self.pause = value
@@ -186,15 +167,15 @@ class UrlSources(BaseModel):
 class DatabaseCsvSource(AbstractSource):
     __url_sources__: UrlSources
 
-    def set_api_key(self, api_key: str) -> None: ...
+    def set_api_key(self, api_key: Optional[str]) -> None: ...
 
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         sources = self.__url_sources__
-        for field in sources.model_fields:
+        for field in type(sources).model_fields:
+            url_source = getattr(sources, field)
+            if url_source is None:
+                continue
             try:
-                url_source = getattr(sources, field)
-                if url_source is None:
-                    continue
                 response = requests.get(url_source.url, timeout=60)
                 if not response.ok:
                     raise Exception(f"Failed to download data from {url_source.url}")

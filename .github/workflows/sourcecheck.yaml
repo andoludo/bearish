@@ -2,9 +2,8 @@ name: SourceCheck
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - claude/refactor-financial-data-module-0ILD3
+  schedule:
+    - cron: '0 6 * * 1'
 
 env:
   TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}

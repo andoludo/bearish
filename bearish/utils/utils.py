@@ -67,12 +67,15 @@ def remove_duplicates_string(value: list[str]) -> list[str]:
     return list(set(value))
 
 
+_SERIES_LENGTH_DAYS: Dict[str, int] = {"1d": 1, "5d": 5, "1mo": 31, "3mo": 93, "6mo": 186}
+
+
 def get_start_date(type: SeriesLength) -> Optional[str]:
-    from_ = None
-    if type != "max":
-        past_date = datetime.today() - timedelta(days=int(type.replace("d", "")))
-        from_ = str(past_date.strftime("%Y-%m-%d"))
-    return from_
+    """Start date (YYYY-MM-DD) matching a series length, or None for "max"."""
+    if type == "max":
+        return None
+    past_date = datetime.today() - timedelta(days=_SERIES_LENGTH_DAYS[type])
+    return past_date.strftime("%Y-%m-%d")
 
 
 def to_dataframe(datas: List[Any]) -> pd.DataFrame:
