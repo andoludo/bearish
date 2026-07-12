@@ -98,6 +98,33 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ---
 
+## 🧑‍💼 Analyst data & filings
+
+Alongside statements and prices, Bearish records raw analyst data from
+yFinance on every financials run:
+
+- **`pricetarget`** — dated snapshots of analyst price targets
+  (mean/high/low/median, number of analysts, recommendation mean/key).
+  One row per fetch date, so a history accumulates across runs.
+- **`analystrecommendation`** — the provider's recommendation trend
+  (strong buy / buy / hold / sell / strong sell counts) per relative period
+  bucket (`0m`, `-1m`, …), snapshotted per fetch date.
+
+For US tickers, SEC EDGAR filing metadata can be fetched into the
+**`filing`** table (form type, period of report, filed date, accession
+number) and the filing date is copied onto financial statement rows whose
+`(symbol, period_end)` matches exactly (`filed_date` column):
+
+```bash
+bearish filings /path/to/sqlite/db US --filters NVDA,AAPL
+```
+
+Earnings rows (`earningsdate`) also store `is_forward`, a fetch-time flag
+marking rows whose earnings date was still in the future when fetched, and
+price rows include dividends and stock splits.
+
+---
+
 ## 🔄 Updating Data
 
 ### 💵 Update Prices

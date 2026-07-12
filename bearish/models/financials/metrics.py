@@ -14,8 +14,6 @@ class FinancialMetrics(FiledDateMixin, DataSourceBase):
     net_income: Optional[float] = Field(
         None, description="Total earnings or profit of the company"
     )
-    pe_ratio: Optional[float] = Field(None)
-    market_capitalization: Optional[float] = Field(None)
     basic_eps: Optional[float] = Field(
         None,
         description="Earnings per share for basic shares outstanding",
@@ -41,7 +39,6 @@ class FinancialMetrics(FiledDateMixin, DataSourceBase):
     operating_income: Optional[float] = Field(
         None, description="Income generated from operations"
     )
-    profit_margin: Optional[float] = Field(None, description="Net profit margin")
     cost_of_revenue: Optional[float] = Field(
         None, description="Cost incurred to generate revenue"
     )
