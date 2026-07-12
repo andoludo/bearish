@@ -1,0 +1,31 @@
+name: SourceCheck
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/refactor-financial-data-module-0ILD3
+
+env:
+  TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+  FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+
+jobs:
+  probe-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Probe all data sources against live APIs
+        run: uv run python scripts/check_sources.py
