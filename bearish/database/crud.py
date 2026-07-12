@@ -12,6 +12,8 @@ from sqlmodel.main import SQLModel
 
 
 from bearish.database.schemas import (
+    AnalystRecommendationORM,
+    PriceTargetORM,
     EquityORM,
     CurrencyORM,
     CryptoORM,
@@ -42,6 +44,7 @@ from bearish.models.base import (
     FinancialsTracker,
     PriceTracker,
 )
+from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.base import Financials, ManyFinancials
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
@@ -144,6 +147,13 @@ class BearishDb(BearishDbBase):
         self._write_financials_series(
             many_financials.get("quarterly_balance_sheets"), QuarterlyBalanceSheetORM  # type: ignore
         )
+        self._write_financials_series(
+            many_financials.get("price_targets"), PriceTargetORM  # type: ignore
+        )
+        self._write_financials_series(
+            many_financials.get("analyst_recommendations"),  # type: ignore
+            AnalystRecommendationORM,
+        )
 
     def _write_financials_series(
         self,
@@ -155,6 +165,8 @@ class BearishDb(BearishDbBase):
             List[QuarterlyCashFlow],
             List[QuarterlyFinancialMetrics],
             List[QuarterlyBalanceSheet],
+            List[PriceTarget],
+            List[AnalystRecommendation],
         ],
         table: Type[SQLModel],
     ) -> None:
@@ -207,6 +219,12 @@ class BearishDb(BearishDbBase):
             quarterly_balance_sheets = self._read_asset_type(
                 session, QuarterlyBalanceSheet, QuarterlyBalanceSheetORM, query
             )
+            price_targets = self._read_asset_type(
+                session, PriceTarget, PriceTargetORM, query
+            )
+            analyst_recommendations = self._read_asset_type(
+                session, AnalystRecommendation, AnalystRecommendationORM, query
+            )
             return Financials(
                 financial_metrics=financial_metrics,
                 cash_flows=cash_flows,
@@ -215,6 +233,8 @@ class BearishDb(BearishDbBase):
                 quarterly_cash_flows=quarterly_cash_flows,
                 quarterly_balance_sheets=quarterly_balance_sheets,
                 earnings_date=earnings_date,
+                price_targets=price_targets,
+                analyst_recommendations=analyst_recommendations,
             )
 
     def _read_assets(self, query: "AssetQuery") -> Assets:
@@ -255,6 +275,8 @@ class BearishDb(BearishDbBase):
                 QuarterlyCashFlowORM,
                 QuarterlyFinancialMetricsORM,
                 EarningsDateORM,
+                PriceTargetORM,
+                AnalystRecommendationORM,
                 IndexORM,
             ]
         ],

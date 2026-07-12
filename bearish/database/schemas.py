@@ -11,6 +11,7 @@ from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.assets.index import Index
 from bearish.models.base import PriceTracker, FinancialsTracker
+from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
@@ -112,6 +113,15 @@ class QuarterlyCashFlowORM(BaseFinancials, QuarterlyCashFlow, table=True):  # ty
 
 class EarningsDateORM(BaseFinancials, EarningsDate, table=True):  # type: ignore
     __tablename__ = "earningsdate"
+
+
+class PriceTargetORM(BaseFinancials, PriceTarget, table=True):  # type: ignore
+    __tablename__ = "pricetarget"
+
+
+class AnalystRecommendationORM(BaseFinancials, AnalystRecommendation, table=True):  # type: ignore
+    __tablename__ = "analystrecommendation"
+    period: str = Field(primary_key=True, index=True)
 
 
 class SourcesORM(SQLModel, table=True):

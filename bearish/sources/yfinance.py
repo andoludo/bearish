@@ -17,6 +17,7 @@ from tenacity import (
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
 from bearish.models.base import Ticker
+from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
@@ -56,8 +57,13 @@ def get_data_frame(
     data = getattr(ticker_, attribute_).T if transpose else getattr(ticker_, attribute_)
     if data is None:
         return pd.DataFrame()
-    data.index = [date(index.year, index.month, index.day) for index in data.index]
-    data = data.reset_index(names=["date"])
+    if isinstance(data.index, pd.DatetimeIndex):
+        data.index = [date(index.year, index.month, index.day) for index in data.index]
+        data = data.reset_index(names=["date"])
+    else:
+        # e.g. recommendations: a plain range index; the snapshot date is
+        # supplied downstream by DataSourceBase (defaults to the fetch date).
+        data = data.reset_index(drop=True)
     return cast(pd.DataFrame, data)
 
 
@@ -367,6 +373,47 @@ class yFinanceCashFlow(YfinanceFinancialBase, QuarterlyCashFlow):
         return cls._from_ticker(ticker, "cashflow", prefix=prefix)  # type: ignore
 
 
+class yFinancePriceTarget(YfinanceFinancialBase, PriceTarget):
+    __alias__ = {
+        "symbol": "symbol",
+        "targetMeanPrice": "target_mean",
+        "targetHighPrice": "target_high",
+        "targetLowPrice": "target_low",
+        "targetMedianPrice": "target_median",
+        "numberOfAnalystOpinions": "number_of_analysts",
+        "recommendationMean": "recommendation_mean",
+        "recommendationKey": "recommendation_key",
+    }
+
+    @classmethod
+    def from_ticker(cls, ticker_: yf.Ticker) -> List["yFinancePriceTarget"]:
+        try:
+            info = ticker_.info or {}
+            time.sleep(DELAY)
+            if not any(key in info for key in cls.__alias__ if key != "symbol"):
+                return []
+            return [cls.model_validate(info | {"symbol": ticker_.ticker})]
+        except Exception as e:
+            logger.error(f"Error reading {ticker_.ticker} price target: {e}")
+            return []
+
+
+class yFinanceAnalystRecommendation(YfinanceFinancialBase, AnalystRecommendation):
+    __alias__ = {
+        "symbol": "symbol",
+        "period": "period",
+        "strongBuy": "strong_buy",
+        "buy": "buy",
+        "hold": "hold",
+        "sell": "sell",
+        "strongSell": "strong_sell",
+    }
+
+    @classmethod
+    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceAnalystRecommendation"]:
+        return cls._from_ticker(ticker, "recommendations", transpose=False)  # type: ignore
+
+
 class yFinancePrice(YfinanceBase, Price):
     __alias__ = {
         "Open": "open",
@@ -431,6 +478,10 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                         ticker_, prefix="quarterly"
                     ),
                     earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
+                    price_targets=yFinancePriceTarget.from_ticker(ticker_),
+                    analyst_recommendations=yFinanceAnalystRecommendation.from_ticker(
+                        ticker_
+                    ),
                 )
             )
         return financials

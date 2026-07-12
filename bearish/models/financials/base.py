@@ -5,6 +5,7 @@ from typing import List, TYPE_CHECKING
 from pydantic import BaseModel, Field
 
 from bearish.models.base import Ticker, DataSourceBase
+from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
@@ -29,6 +30,8 @@ class Financials(BaseModel):
     quarterly_balance_sheets: List[QuarterlyBalanceSheet] = Field(default_factory=list)
     quarterly_cash_flows: List[QuarterlyCashFlow] = Field(default_factory=list)
     earnings_date: List[EarningsDate] = Field(default_factory=list)
+    price_targets: List[PriceTarget] = Field(default_factory=list)
+    analyst_recommendations: List[AnalystRecommendation] = Field(default_factory=list)
 
     def _get_dates(self) -> List[datetime.date]:
         return sorted(
@@ -47,6 +50,8 @@ class Financials(BaseModel):
         self.quarterly_balance_sheets.extend(financials.quarterly_balance_sheets)
         self.quarterly_cash_flows.extend(financials.quarterly_cash_flows)
         self.earnings_date.extend(financials.earnings_date)
+        self.price_targets.extend(financials.price_targets)
+        self.analyst_recommendations.extend(financials.analyst_recommendations)
 
     def is_empty(self) -> bool:
         return not any(
@@ -58,6 +63,8 @@ class Financials(BaseModel):
                 self.quarterly_balance_sheets,
                 self.quarterly_cash_flows,
                 self.earnings_date,
+                self.price_targets,
+                self.analyst_recommendations,
             ]
         )
 

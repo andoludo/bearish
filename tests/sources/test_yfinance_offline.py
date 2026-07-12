@@ -174,3 +174,125 @@ def test_earnings_dates_roundtrip_through_database(tmp_path) -> None:
     ).earnings_date
     assert len(loaded) == len(rows)
     assert {r.is_forward for r in loaded} == {True, False}
+
+
+def _load_fixture(name: str):
+    import json
+    from pathlib import Path
+
+    return json.loads(
+        Path(__file__).parents[1].joinpath(f"data/sources/yfinance/{name}").read_text()
+    )
+
+
+class _FakeInfoTicker:
+    def __init__(self, info: dict, symbol: str = "AAPL") -> None:
+        self.ticker = symbol
+        self.info = info
+
+
+class _FakeRecommendationsTicker:
+    def __init__(self, frame: pd.DataFrame, symbol: str = "AAPL") -> None:
+        self.ticker = symbol
+        self.recommendations = frame
+
+
+def test_price_target_maps_info_keys() -> None:
+    from bearish.sources.yfinance import yFinancePriceTarget
+
+    targets = yFinancePriceTarget.from_ticker(
+        _FakeInfoTicker(_load_fixture("info_AAPL.json"))
+    )
+    assert len(targets) == 1
+    target = targets[0]
+    assert target.symbol == "AAPL"
+    assert target.target_mean == 251.05
+    assert target.target_high == 300.0
+    assert target.target_low == 175.0
+    assert target.target_median == 255.0
+    assert target.number_of_analysts == 40
+    assert target.recommendation_mean == 2.0
+    assert target.recommendation_key == "buy"
+    assert target.date == datetime.date.today()  # snapshot date
+
+
+def test_price_target_missing_keys_yield_none() -> None:
+    from bearish.sources.yfinance import yFinancePriceTarget
+
+    info = {"symbol": "AAPL", "targetMeanPrice": 100.0}  # everything else absent
+    targets = yFinancePriceTarget.from_ticker(_FakeInfoTicker(info))
+    assert len(targets) == 1
+    assert targets[0].target_mean == 100.0
+    assert targets[0].target_high is None
+    assert targets[0].number_of_analysts is None
+    assert targets[0].recommendation_key is None
+
+
+def test_price_target_without_any_analyst_keys_is_empty() -> None:
+    from bearish.sources.yfinance import yFinancePriceTarget
+
+    targets = yFinancePriceTarget.from_ticker(
+        _FakeInfoTicker({"symbol": "AAPL", "shortName": "Apple"})
+    )
+    assert targets == []
+
+
+def test_analyst_recommendations_row_per_period() -> None:
+    from bearish.sources.yfinance import yFinanceAnalystRecommendation
+
+    frame = pd.DataFrame(_load_fixture("recommendations_AAPL.json"))
+    rows = yFinanceAnalystRecommendation.from_ticker(_FakeRecommendationsTicker(frame))
+    assert len(rows) == 4
+    assert [r.period for r in rows] == ["0m", "-1m", "-2m", "-3m"]
+    assert rows[0].strong_buy == 7
+    assert rows[0].strong_sell == 1
+    assert all(r.date == datetime.date.today() for r in rows)
+
+
+def test_analyst_recommendations_empty_frame_is_empty() -> None:
+    from bearish.sources.yfinance import yFinanceAnalystRecommendation
+
+    rows = yFinanceAnalystRecommendation.from_ticker(
+        _FakeRecommendationsTicker(pd.DataFrame())
+    )
+    assert rows == []
+
+
+def test_analyst_data_roundtrip_through_database(tmp_path) -> None:
+    from bearish.database.crud import BearishDb
+    from bearish.models.base import Ticker
+    from bearish.models.financials.base import Financials
+    from bearish.models.query.query import AssetQuery, Symbols
+    from bearish.sources.yfinance import (
+        yFinanceAnalystRecommendation,
+        yFinancePriceTarget,
+    )
+
+    targets = yFinancePriceTarget.from_ticker(
+        _FakeInfoTicker(_load_fixture("info_AAPL.json"))
+    )
+    frame = pd.DataFrame(_load_fixture("recommendations_AAPL.json"))
+    recommendations = yFinanceAnalystRecommendation.from_ticker(
+        _FakeRecommendationsTicker(frame)
+    )
+    financials = Financials(
+        price_targets=targets, analyst_recommendations=recommendations
+    )
+    assert not financials.is_empty()
+
+    db = BearishDb(database_path=tmp_path / "bear.db")
+    db.write_financials([financials])
+    db.write_financials([financials])  # idempotent upsert
+
+    loaded = db.read_financials(
+        AssetQuery(symbols=Symbols(equities=[Ticker(symbol="AAPL")]))
+    )
+    assert len(loaded.price_targets) == 1
+    assert loaded.price_targets[0].target_mean == 251.05
+    assert len(loaded.analyst_recommendations) == 4
+    assert {r.period for r in loaded.analyst_recommendations} == {
+        "0m",
+        "-1m",
+        "-2m",
+        "-3m",
+    }

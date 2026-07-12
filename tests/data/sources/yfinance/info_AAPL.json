@@ -1,0 +1,15 @@
+{
+  "symbol": "AAPL",
+  "shortName": "Apple Inc.",
+  "currency": "USD",
+  "exchange": "NMS",
+  "marketCap": 3450000000000,
+  "targetMeanPrice": 251.05,
+  "targetHighPrice": 300.0,
+  "targetLowPrice": 175.0,
+  "targetMedianPrice": 255.0,
+  "numberOfAnalystOpinions": 40,
+  "recommendationMean": 2.0,
+  "recommendationKey": "buy",
+  "trailingPE": 36.4
+}

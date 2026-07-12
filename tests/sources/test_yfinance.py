@@ -144,3 +144,20 @@ def test_earnings_dates_alias_columns_exist_live():
     assert {"EPS Estimate", "Reported EPS"} <= live_columns, (
         f"yfinance earnings_dates columns drifted: {sorted(live_columns)}"
     )
+
+
+def test_price_target_live():
+    from bearish.sources.yfinance import yFinancePriceTarget
+
+    targets = yFinancePriceTarget.from_ticker(yf.Ticker("AAPL"))
+    assert len(targets) == 1
+    assert targets[0].target_mean is not None
+    assert targets[0].target_mean > 0
+
+
+def test_analyst_recommendations_live():
+    from bearish.sources.yfinance import yFinanceAnalystRecommendation
+
+    rows = yFinanceAnalystRecommendation.from_ticker(yf.Ticker("AAPL"))
+    assert rows
+    assert rows[0].period is not None

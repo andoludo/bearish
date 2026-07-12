@@ -26,6 +26,13 @@ def to_float(value: Any) -> Optional[float]:
     return float(value)
 
 
+def to_int(value: Any) -> Optional[int]:
+    as_float = to_float(value)
+    if as_float is None or isnan(as_float):
+        return None
+    return int(as_float)
+
+
 def to_datetime(value: Any) -> datetime:
     if isinstance(value, str):
         return datetime.strptime(value, "%Y-%m-%d")
