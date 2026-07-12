@@ -1,4 +1,5 @@
 {
+  "analystrecommendation": [],
   "balancesheet": [],
   "cashflow": [],
   "crypto": [
@@ -27247,6 +27248,7 @@
   ],
   "priceetf": [],
   "priceindex": [],
+  "pricetarget": [],
   "pricetracker": [
     {
       "date": "2024-11-29",
