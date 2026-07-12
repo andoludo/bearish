@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, List, Any, ClassVar, Dict
 
-import requests  # type: ignore
+import requests
 from pydantic import Field
 
 from bearish.exceptions import InvalidApiKeyError

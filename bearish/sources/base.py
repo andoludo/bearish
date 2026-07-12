@@ -5,7 +5,7 @@ from io import BytesIO
 from typing import List, Literal, Optional, Type, Callable, Any, cast
 
 import pandas as pd
-import requests  # type: ignore
+import requests
 from pydantic import ConfigDict, validate_call, BaseModel, Field
 
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError

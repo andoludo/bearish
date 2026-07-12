@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any, cast, ClassVar
 
-import requests  # type: ignore
+import requests
 
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.assets import Assets

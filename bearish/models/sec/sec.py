@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, TYPE_CHECKING, Self
 
 import pandas as pd
-import requests  # type: ignore
+import requests
 from pydantic import BaseModel
 from sec_cik_mapper import StockMapper  # type: ignore
 from sec_edgar_downloader import Downloader  # type: ignore
