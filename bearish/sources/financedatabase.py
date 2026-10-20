@@ -16,10 +16,12 @@ from bearish.sources.base import (
 )
 from bearish.types import Sources
 
-RAW_EQUITIES_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/equities.csv"
+# FinanceDatabase split equities.csv/etfs.csv into per-exchange files upstream;
+# the single-file datasets now only exist as bz2-compressed CSVs under /compression.
+RAW_EQUITIES_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/compression/equities.bz2"
 RAW_CRYPTO_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/cryptos.csv"
 RAW_CURRENCY_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/currencies.csv"
-RAW_ETF_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/etfs.csv"
+RAW_ETF_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/compression/etfs.bz2"
 RAW_INDEX_DATA_URL = "https://raw.githubusercontent.com/JerBouma/FinanceDatabase/refs/heads/main/database/indices.csv"
 
 

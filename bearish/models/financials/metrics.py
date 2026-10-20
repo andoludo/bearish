@@ -2,10 +2,10 @@ from typing import Optional
 
 from pydantic import Field
 
-from bearish.models.base import DataSourceBase
+from bearish.models.base import DataSourceBase, FiledDateMixin
 
 
-class FinancialMetrics(DataSourceBase):
+class FinancialMetrics(FiledDateMixin, DataSourceBase):
 
     ebitda: Optional[float] = Field(
         None,
@@ -14,8 +14,6 @@ class FinancialMetrics(DataSourceBase):
     net_income: Optional[float] = Field(
         None, description="Total earnings or profit of the company"
     )
-    pe_ratio: Optional[float] = Field(None)
-    market_capitalization: Optional[float] = Field(None)
     basic_eps: Optional[float] = Field(
         None,
         description="Earnings per share for basic shares outstanding",
@@ -41,7 +39,6 @@ class FinancialMetrics(DataSourceBase):
     operating_income: Optional[float] = Field(
         None, description="Income generated from operations"
     )
-    profit_margin: Optional[float] = Field(None, description="Net profit margin")
     cost_of_revenue: Optional[float] = Field(
         None, description="Cost incurred to generate revenue"
     )

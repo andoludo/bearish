@@ -1,11 +1,11 @@
 import abc
 import logging
 from functools import wraps
-from io import StringIO
-from typing import List, Optional, Type, Callable, Any, cast
+from io import BytesIO
+from typing import List, Literal, Optional, Type, Callable, Any, cast
 
 import pandas as pd
-import requests  # type: ignore
+import requests
 from pydantic import ConfigDict, validate_call, BaseModel, Field
 
 from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
@@ -16,29 +16,10 @@ from bearish.models.base import SourceBase, DataSourceBase, Ticker
 
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
-from bearish.types import Sources, SeriesLength
+from bearish.types import SeriesLength
 from bearish.utils.utils import observability
 
 logger = logging.getLogger(__name__)
-
-
-class ValidTickers(BaseModel):
-    sources: List[Sources] = Field(default_factory=list)
-    exchanges: List[str] = Field(default_factory=list)
-
-    def is_valid(self, ticker: Ticker) -> bool:
-        if not self.exchanges and not self.sources:
-            return True
-        elif self.exchanges and not self.sources:
-            return ticker.exchange in self.exchanges
-        elif self.sources and not self.exchanges:
-            return ticker.source in self.sources
-        else:
-            return bool(
-                ticker.exchange is not None
-                and self.exchanges
-                and ticker.source in self.sources
-            )
 
 
 class ApiUsage(BaseModel):
@@ -148,7 +129,7 @@ class AbstractSource(SourceBase, abc.ABC):
     def _read_series(self, tickers: List[str], type: SeriesLength) -> List[Price]: ...
 
     @abc.abstractmethod
-    def set_api_key(self, api_key: str) -> None: ...
+    def set_api_key(self, api_key: Optional[str]) -> None: ...
 
     def set_pause(self, value: int) -> None:
         self.pause = value
@@ -186,19 +167,22 @@ class UrlSources(BaseModel):
 class DatabaseCsvSource(AbstractSource):
     __url_sources__: UrlSources
 
-    def set_api_key(self, api_key: str) -> None: ...
+    def set_api_key(self, api_key: Optional[str]) -> None: ...
 
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         sources = self.__url_sources__
-        for field in sources.model_fields:
+        for field in type(sources).model_fields:
+            url_source = getattr(sources, field)
+            if url_source is None:
+                continue
             try:
-                url_source = getattr(sources, field)
-                if url_source is None:
-                    continue
-                response = requests.get(url_source.url, timeout=10)
+                response = requests.get(url_source.url, timeout=60)
                 if not response.ok:
                     raise Exception(f"Failed to download data from {url_source.url}")
-                data = pd.read_csv(StringIO(response.text))
+                compression: Literal["bz2", "infer"] = (
+                    "bz2" if url_source.url.endswith(".bz2") else "infer"
+                )
+                data = pd.read_csv(BytesIO(response.content), compression=compression)
                 url_source.results = self._from_dataframe(
                     data, url_source.type_class, url_source.filters, url_source.renames
                 )
@@ -219,7 +203,10 @@ class DatabaseCsvSource(AbstractSource):
         if filters:
             data = data.dropna(subset=filters)
 
-        equities_mapping = [equity.to_dict() for _, equity in data.iterrows()]
+        equities_mapping = [
+            {str(key): value for key, value in equity.to_dict().items()}
+            for _, equity in data.iterrows()
+        ]
         return [databaseclass(**equity_mapping) for equity_mapping in equities_mapping]
 
     def _read_financials(self, tickers: List[str]) -> List[Financials]:

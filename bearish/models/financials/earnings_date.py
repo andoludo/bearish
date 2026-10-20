@@ -27,3 +27,7 @@ class EarningsDate(DataSourceBase):
         BeforeValidator(to_float),
         Field(default=None, description="Reported Revenue"),
     ]
+    is_forward: Optional[bool] = Field(
+        default=None,
+        description="True if the earnings date is in the future at fetch time",
+    )

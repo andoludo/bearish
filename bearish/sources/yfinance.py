@@ -17,6 +17,7 @@ from tenacity import (
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.etfs import Etf
 from bearish.models.base import Ticker
+from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.query.query import AssetQuery
 from bearish.models.assets.equity import Equity
@@ -56,8 +57,13 @@ def get_data_frame(
     data = getattr(ticker_, attribute_).T if transpose else getattr(ticker_, attribute_)
     if data is None:
         return pd.DataFrame()
-    data.index = [date(index.year, index.month, index.day) for index in data.index]
-    data = data.reset_index(names=["date"])
+    if isinstance(data.index, pd.DatetimeIndex):
+        data.index = [date(index.year, index.month, index.day) for index in data.index]
+        data = data.reset_index(names=["date"])
+    else:
+        # e.g. recommendations: a plain range index; the snapshot date is
+        # supplied downstream by DataSourceBase (defaults to the fetch date).
+        data = data.reset_index(drop=True)
     return cast(pd.DataFrame, data)
 
 
@@ -268,17 +274,26 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, QuarterlyFinancialMetrics)
 
 
 class yFinanceEarningsDate(YfinanceFinancialBase, EarningsDate):
+    # "Revenue Estimate"/"Reported Revenue" are not present in the currently
+    # pinned yfinance version but have appeared in other versions of the
+    # provider payload — the mapping captures them whenever they are returned.
     __alias__ = {
         "symbol": "symbol",
         "EPS Estimate": "eps_estimate",
         "Reported EPS": "eps_reported",
+        "Revenue Estimate": "revenue_estimate",
+        "Reported Revenue": "revenue_reported",
     }
 
     @classmethod
     def from_ticker(
         cls, ticker: yf.Ticker, prefix: Optional[str] = None
     ) -> List["yFinanceEarningsDate"]:
-        return cls._from_ticker(ticker, "earnings_dates", transpose=False, prefix=prefix)  # type: ignore
+        rows = cls._from_ticker(ticker, "earnings_dates", transpose=False, prefix=prefix)
+        today = date.today()
+        for row in rows:
+            row.is_forward = row.date > today  # type: ignore[attr-defined]
+        return rows  # type: ignore[return-value]
 
 
 class yFinanceBalanceSheet(YfinanceFinancialBase, QuarterlyBalanceSheet):
@@ -358,6 +373,47 @@ class yFinanceCashFlow(YfinanceFinancialBase, QuarterlyCashFlow):
         return cls._from_ticker(ticker, "cashflow", prefix=prefix)  # type: ignore
 
 
+class yFinancePriceTarget(YfinanceFinancialBase, PriceTarget):
+    __alias__ = {
+        "symbol": "symbol",
+        "targetMeanPrice": "target_mean",
+        "targetHighPrice": "target_high",
+        "targetLowPrice": "target_low",
+        "targetMedianPrice": "target_median",
+        "numberOfAnalystOpinions": "number_of_analysts",
+        "recommendationMean": "recommendation_mean",
+        "recommendationKey": "recommendation_key",
+    }
+
+    @classmethod
+    def from_ticker(cls, ticker_: yf.Ticker) -> List["yFinancePriceTarget"]:
+        try:
+            info = ticker_.info or {}
+            time.sleep(DELAY)
+            if not any(key in info for key in cls.__alias__ if key != "symbol"):
+                return []
+            return [cls.model_validate(info | {"symbol": ticker_.ticker})]
+        except Exception as e:
+            logger.error(f"Error reading {ticker_.ticker} price target: {e}")
+            return []
+
+
+class yFinanceAnalystRecommendation(YfinanceFinancialBase, AnalystRecommendation):
+    __alias__ = {
+        "symbol": "symbol",
+        "period": "period",
+        "strongBuy": "strong_buy",
+        "buy": "buy",
+        "hold": "hold",
+        "sell": "sell",
+        "strongSell": "strong_sell",
+    }
+
+    @classmethod
+    def from_ticker(cls, ticker: yf.Ticker) -> List["yFinanceAnalystRecommendation"]:
+        return cls._from_ticker(ticker, "recommendations", transpose=False)  # type: ignore
+
+
 class yFinancePrice(YfinanceBase, Price):
     __alias__ = {
         "Open": "open",
@@ -365,6 +421,8 @@ class yFinancePrice(YfinanceBase, Price):
         "Low": "low",
         "Close": "close",
         "Volume": "volume",
+        "Dividends": "dividends",
+        "Stock Splits": "stock_splits",
         "symbol": "symbol",
         "Date": "date",
     }
@@ -380,7 +438,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
         "US",
     ]
 
-    def set_api_key(self, api_key: str) -> None: ...
+    def set_api_key(self, api_key: Optional[str]) -> None: ...
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()
@@ -420,6 +478,10 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                         ticker_, prefix="quarterly"
                     ),
                     earnings_date=yFinanceEarningsDate.from_ticker(ticker_),
+                    price_targets=yFinancePriceTarget.from_ticker(ticker_),
+                    analyst_recommendations=yFinanceAnalystRecommendation.from_ticker(
+                        ticker_
+                    ),
                 )
             )
         return financials
@@ -428,7 +490,12 @@ class yFinanceSource(YfinanceBase, AbstractSource):
         self, tickers: List[str], type: SeriesLength
     ) -> List[yFinancePrice]:
         data = yf.download(
-            tickers, period=type, group_by="ticker", auto_adjust=True, timeout=60
+            tickers,
+            period=type,
+            group_by="ticker",
+            auto_adjust=True,
+            actions=True,
+            timeout=60,
         )
         missing_tickers = [
             ticker for ticker in tickers if data[(ticker, "Close")].dropna().empty
@@ -444,6 +511,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                 period=type,
                 group_by="ticker",
                 auto_adjust=True,
+                actions=True,
                 timeout=60,
             )
             if not data_missing.empty:
@@ -472,7 +540,7 @@ class yFinanceSource(YfinanceBase, AbstractSource):
                             for record in records
                         ]
                     )
-            except Exception as e:  # noqa: PERF203
+            except Exception as e:
                 logger.error(f"Error reading series for {ticker}: {e}")
         time.sleep(self.pause)
         return records_final

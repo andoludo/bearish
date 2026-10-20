@@ -8,6 +8,7 @@ from bearish.models.sec.ciks import _read_tsv
 from bearish.models.sec.sec import Secs
 
 
+@pytest.mark.network
 def test_sec(bearish_db: BearishDb) -> None:
     secs = Secs.from_sec_13f_hr(
         "0001067983", date_=datetime.strptime("2024-10-01", "%Y-%m-%d").date()
@@ -37,10 +38,12 @@ def test_sec_data(bear_db: BearishDb) -> None:
     bear_db.read_sec_shares()
 
 
+@pytest.mark.lfs
 def test_update_value(bear_db: BearishDb) -> None:
     Secs.update_values(bear_db, additional_tickers=["AAPL", "NVDA"])
 
 
+@pytest.mark.lfs
 def test_read_sec_shares(bear_db: BearishDb) -> None:
     sec_shares = bear_db.read_sec_shares()
     bear_db.write_sec_shares(sec_shares)
@@ -51,6 +54,7 @@ def test_read_tsv():
     assert _read_tsv()
 
 
+@pytest.mark.lfs
 def test_read_share_data(bear_db: BearishDb) -> None:
     companies = bear_db.read_sec_companies()
     data = bear_db.read_sec_share_data(companies[0])

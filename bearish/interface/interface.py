@@ -21,6 +21,7 @@ from bearish.models.financials.base import Financials
 from bearish.models.financials.earnings_date import EarningsDate
 from bearish.models.price.price import Price
 from bearish.models.query.query import AssetQuery
+from bearish.models.sec.filing import Filing
 from bearish.models.sec.sec import Sec, SecShareIncrease
 from bearish.utils.utils import observability
 
@@ -46,6 +47,17 @@ class BearishDbBase(BaseModel):
     @validate_call
     def write_sec(self, secs: List[Sec]) -> None:
         return self._write_sec(secs)
+
+    @validate_call
+    def write_filings(self, filings: List[Filing]) -> None:
+        return self._write_filings(filings)
+
+    @validate_call
+    def read_filings(self, symbol: str) -> List[Filing]:
+        return self._read_filings(symbol)
+
+    def backfill_filed_dates(self) -> None:
+        return self._backfill_filed_dates()
 
     @validate_call
     def read_sec(self, ticker: str) -> List[Sec]:
@@ -128,6 +140,15 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _write_sec(self, secs: List[Sec]) -> None: ...
+
+    @abc.abstractmethod
+    def _write_filings(self, filings: List[Filing]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_filings(self, symbol: str) -> List[Filing]: ...
+
+    @abc.abstractmethod
+    def _backfill_filed_dates(self) -> None: ...
 
     @abc.abstractmethod
     def _read_sec(self, ticker: str) -> List[Sec]: ...

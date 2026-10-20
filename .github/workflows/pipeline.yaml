@@ -2,36 +2,30 @@ name: Pipeline
 
 on:
   push:
-env:
-  TIINGO_API_KEY: ${{secrets.TIINGO_API_KEY}}
-  FMP_API_KEY: ${{secrets.FMP_API_KEY}}
+
 jobs:
   linting:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ "18.x" ]
     if: startsWith(github.ref, 'refs/heads/') && ! contains(github.event.head_commit.message, 'Auto-increment')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: true
           ref: ${{ github.ref_name }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
+
       - name: Install dependencies
-        run: poetry install
+        run: uv sync
 
-      - name: Install nox dependencies
-        run: poetry run nox -s install
+      - name: Run ruff
+        run: uv run ruff check
 
-      - name: Run linting
-        run: poetry run nox -s linting
+      - name: Run mypy
+        run: uv run mypy
 
   tests:
     needs: [linting]
@@ -40,25 +34,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: true
           ref: ${{ github.ref_name }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Install graphviz
-        run: |
-            sudo apt update
-            sudo apt install graphviz
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-      - name: Install dependencies
-        run: poetry install
 
-      - name: Install nox dependencies
-        run: poetry run nox -s install
-      - name: Run tests
-        run: poetry run nox -s tests
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run tests (offline, deterministic)
+        run: uv run pytest -m "not network and not lfs"
 
   create-revision-and-tag:
     if: startsWith(github.ref, 'refs/heads/master')
@@ -71,18 +58,22 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.ref_name }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
 
       - name: Determine Versioning Strategy
         run: |
           echo "Bumping minor version"
-          poetry version minor
-          echo "NEW_VERSION=$(poetry version -s)" >> $GITHUB_ENV
+          uv version --bump minor
+          echo "NEW_VERSION=$(uv version --short)" >> $GITHUB_ENV
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: ${{ github.ref == 'refs/heads/master' && 'Auto-increment release version' || 'Auto-increment prerelease version' }}
+
       - name: Create and Push Git Tag
         run: |
           NEW_TAG="${{ env.NEW_VERSION }}"
@@ -101,8 +92,10 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.ref_name }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
 
       - name: Determine Current Version
         run: |
@@ -110,7 +103,8 @@ jobs:
 
       - name: Build source and wheel archives
         id: build
-        run: poetry build
+        run: uv build
+
       - name: Get Commit Messages Since Last Tag
         id: commit_messages
         run: |

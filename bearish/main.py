@@ -19,7 +19,6 @@ from sqlmodel import SQLModel
 
 from bearish.database.crud import BearishDb
 from bearish.database.schemas import PriceIndexORM, PriceEtfORM
-from bearish.exceptions import InvalidApiKeyError, LimitApiKeyReachedError
 from bearish.exchanges.exchanges import (
     Countries,
     exchanges_factory,
@@ -36,9 +35,9 @@ from bearish.models.price.price import Price
 from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.models.sec.sec import Secs
+from bearish.sources.edgar_filings import fetch_filings
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
-from bearish.sources.financial_modelling_prep import FmpAssetsSource, FmpSource
 from bearish.sources.investpy import InvestPySource
 from bearish.sources.tiingo import TiingoSource
 from bearish.sources.yahooquery import YahooQuerySource
@@ -77,6 +76,18 @@ class Filter(BaseModel):
         return list({t for t in tickers if t.symbol in self.filters})
 
 
+def _default_asset_sources() -> List[AbstractSource]:
+    return [FinanceDatabaseSource(), InvestPySource()]
+
+
+def _default_detailed_sources() -> List[AbstractSource]:
+    return [yFinanceSource(), YahooQuerySource()]
+
+
+def _default_price_sources() -> List[AbstractSource]:
+    return [yFinanceSource(), YahooQuerySource(), TiingoSource()]
+
+
 class Bearish(BaseModel):
     model_config = ConfigDict(extra="forbid")
     path: Path
@@ -86,71 +97,55 @@ class Bearish(BaseModel):
     api_keys: SourceApiKeys = Field(default_factory=SourceApiKeys)
     _bearish_db: BearishDbBase = PrivateAttr()
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
-    asset_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [
-            FinanceDatabaseSource(),
-            InvestPySource(),
-            FmpAssetsSource(),
-        ]
-    )
-    detailed_asset_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [yFinanceSource(), YahooQuerySource(), FmpSource()]
-    )
-    financials_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [
-            yFinanceSource(),
-            YahooQuerySource(),
-            FmpSource(),
-        ]
-    )
-    price_sources: List[AbstractSource] = Field(
-        default_factory=lambda: [
-            yFinanceSource(),
-            YahooQuerySource(),
-            TiingoSource(),
-        ]
-    )
+    asset_sources: List[AbstractSource] = Field(default_factory=_default_asset_sources)
+    detailed_asset_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
+    financials_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
+    price_sources: List[AbstractSource] = Field(default_factory=_default_price_sources)
 
     def model_post_init(self, __context: Any) -> None:
         self._bearish_db = BearishDb(
             database_path=self.path, auto_migration=self.auto_migration
         )
-        for source in set(
+        for source in self._all_sources():
+            source.set_pause(self.pause)
+            self._set_api_key_or_drop(source)
+
+    def _all_sources(self) -> set[AbstractSource]:
+        return set(
             self.financials_sources
             + self.price_sources
             + self.asset_sources
             + self.detailed_asset_sources
-        ):
-            source.set_pause(self.pause)
-            try:
-                source.set_api_key(
-                    self.api_keys.keys.get(
-                        source.__source__, os.environ.get(source.__source__.upper())  # type: ignore
-                    )
-                )
-            except Exception as e:
-                logger.error(
-                    f"Invalid API key for {source.__source__}: {e}. It will be removed from sources"
-                )
-                for sources in [
-                    self.financials_sources,
-                    self.price_sources,
-                    self.asset_sources,
-                    self.detailed_asset_sources,
-                ]:
-                    if source in sources:
-                        sources.remove(source)
+        )
+
+    def _source_lists(self) -> List[List[AbstractSource]]:
+        return [
+            self.financials_sources,
+            self.price_sources,
+            self.asset_sources,
+            self.detailed_asset_sources,
+        ]
+
+    def _set_api_key_or_drop(self, source: AbstractSource) -> None:
+        """Configure the source's API key; drop the source everywhere if invalid."""
+        api_key = self.api_keys.keys.get(
+            source.__source__, os.environ.get(source.__source__.upper())
+        )
+        try:
+            source.set_api_key(api_key)
+        except Exception as e:
+            logger.error(
+                f"Invalid API key for {source.__source__}: {e}. It will be removed from sources"
+            )
+            for sources in self._source_lists():
+                if source in sources:
+                    sources.remove(source)
 
     def set_batch_size(self, batch_size: int) -> None:
         self.batch_size = batch_size
 
     def set_pause(self, pause: int) -> None:
-        for source in set(
-            self.financials_sources
-            + self.price_sources
-            + self.asset_sources
-            + self.detailed_asset_sources
-        ):
+        for source in self._all_sources():
             source.set_pause(pause)
 
     def get_asset_sources(self) -> List[Sources]:
@@ -238,10 +233,7 @@ class Bearish(BaseModel):
         ]
 
     def get_ticker_with_price(self) -> List[Ticker]:
-        return [
-            Ticker(symbol=t)
-            for t in self._get_tracked_tickers(TrackerQuery(), PriceTracker)
-        ]
+        return self._get_tracked_tickers(TrackerQuery(), PriceTracker)
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
         logger.warning(f"Found tickers without financials: {len(tickers)}")
@@ -252,7 +244,7 @@ class Bearish(BaseModel):
             logger.debug(f"getting financial data for {len(chunk)} tickers")
             try:
                 financials_ = source.read_financials(chunk)
-            except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
+            except Exception as e:  # keep going: one failed batch must not stop the run
                 logger.error(f"Error reading data using {source.__source__}: {e}")
                 continue
 
@@ -286,7 +278,7 @@ class Bearish(BaseModel):
             logger.debug(f"getting financial data for {len(chunk)} tickers")
             try:
                 series_ = source.read_series(chunk, type, apply_filter=apply_filter)
-            except (InvalidApiKeyError, LimitApiKeyReachedError, Exception) as e:
+            except Exception as e:  # keep going: one failed batch must not stop the run
                 logger.error(f"Error reading series: {e}")
                 continue
             if series_:
@@ -332,6 +324,19 @@ class Bearish(BaseModel):
         tickers = filter.filter(tickers)
         logger.debug(f"Found tickers: {[t.symbol for t in tickers]}")
         self.write_many_financials(tickers)
+
+    def get_filings(self, filter: Filter) -> None:
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        filings = fetch_filings([t.symbol for t in tickers])
+        logger.debug(f"Fetched {len(filings)} EDGAR filings")
+        self._bearish_db.write_filings(filings)
+        self._bearish_db.backfill_filed_dates()
 
     def get_prices(self, filter: Filter) -> None:
         tickers = self.get_tickers(
@@ -427,6 +432,11 @@ class Bearish(BaseModel):
         )
 
 
+def _bearish_from(path: Path, api_keys: Optional[Path]) -> Bearish:
+    """Build a Bearish instance for a CLI command from a database path and key file."""
+    return Bearish(path=path, api_keys=SourceApiKeys.from_file(api_keys))
+
+
 @app.command()
 def run(  # noqa: PLR0913
     path: Path,
@@ -441,8 +451,7 @@ def run(  # noqa: PLR0913
     console.log(
         f"Fetching assets to database for countries: {countries}, with filters: {filters}",
     )
-    source_api_keys = SourceApiKeys.from_file(api_keys)
-    bearish = Bearish(path=path, api_keys=source_api_keys)
+    bearish = _bearish_from(path, api_keys)
     with console.status("[bold green]Fetching Tickers data..."):
         bearish.write_assets()
         filter = Filter(countries=countries, filters=filters)
@@ -481,8 +490,7 @@ def tickers(
         logger.info(
             f"Writing assets to database for countries: {countries}",
         )
-        source_api_keys = SourceApiKeys.from_file(api_keys)
-        bearish = Bearish(path=path, api_keys=source_api_keys)
+        bearish = _bearish_from(path, api_keys)
         if not skip_base_tickers:
             console.log("[green]Fetching base Tickers[/green]")
             bearish.write_assets()
@@ -500,8 +508,7 @@ def financials(
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Fetching Financial data..."):
-        source_api_keys = SourceApiKeys.from_file(api_keys)
-        bearish = Bearish(path=path, api_keys=source_api_keys)
+        bearish = _bearish_from(path, api_keys)
         filter = Filter(countries=countries, filters=filters)
         bearish.get_financials(filter)
         console.log("[bold][red]Financial data downloaded!")
@@ -515,11 +522,24 @@ def prices(
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Fetching Price data..."):
-        source_api_keys = SourceApiKeys.from_file(api_keys)
-        bearish = Bearish(path=path, api_keys=source_api_keys)
+        bearish = _bearish_from(path, api_keys)
         filter = Filter(countries=countries, filters=filters)
         bearish.get_prices(filter)
         console.log("[bold][red]Price data downloaded!")
+
+
+@app.command()
+def filings(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    with console.status("[bold green]Fetching EDGAR filings..."):
+        bearish = _bearish_from(path, api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        bearish.get_filings(filter)
+        console.log("[bold][red]Filings downloaded!")
 
 
 @app.command()
@@ -528,8 +548,7 @@ def sec(
     api_keys: Optional[Path] = None,
 ) -> None:
     with console.status("[bold green]Fetching SEC data..."):
-        source_api_keys = SourceApiKeys.from_file(api_keys)
-        bearish = Bearish(path=path, api_keys=source_api_keys)
+        bearish = _bearish_from(path, api_keys)
         Secs.upload(bearish._bearish_db)  # type: ignore
 
 
@@ -544,8 +563,7 @@ def update(  # noqa: PLR0913
     api_keys: Optional[Path] = None,
     series_length: str = "1mo",
 ) -> None:
-    source_api_keys = SourceApiKeys.from_file(api_keys)
-    bearish = Bearish(path=path, api_keys=source_api_keys)
+    bearish = _bearish_from(path, api_keys)
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
     if index:
         bearish.get_prices_index(series_length=series_length)  # type: ignore

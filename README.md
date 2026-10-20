@@ -38,12 +38,15 @@ Bearish pulls data from multiple sources:
 - [📦 FinanceDatabase](https://github.com/JerBouma/FinanceDatabase) for basic ticker information
 - [🌐 InvestPy](https://github.com/alvarobartt/investpy) for country-level equity listings
 - [📉 yFinance](https://pypi.org/project/yfinance/) as the primary source of prices and fundamentals
-- [📊 Financial Modeling Prep (FMP)](https://financialmodelingprep.com/)
-- [🔍 AlphaVantage](https://www.alphavantage.co/)
-- [📈 Tiingo](https://www.tiingo.com/)
+- [🔎 YahooQuery](https://pypi.org/project/yahooquery/) as a fallback for prices and fundamentals
+- [📈 Tiingo](https://www.tiingo.com/) for prices (API key required)
+- [🏛️ SEC EDGAR](https://www.sec.gov/) for 13F institutional holdings
 
-> Ticker information is **enriched** using additional sources like yFinance, FMP, etc.  
+> Ticker information is **enriched** using additional sources like yFinance, YahooQuery, etc.  
 > Bearish is also **extensible** — you can add support for any data source or API.
+>
+> ℹ️ Support for **Financial Modeling Prep (FMP)** was removed: FMP discontinued
+> its legacy API endpoints for subscriptions created after August 31, 2025.
 
 By default, Bearish relies primarily on **yFinance** due to limitations in free-tier APIs of other providers. However, if you have a **premium subscription**, you can use other sources more fully.
 
@@ -89,12 +92,36 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ```json
 {
-  "FMPAssets": "your Financial Modeling Prep API key",
-  "FMP": "your Financial Modeling Prep API key",
-  "AlphaVantage": "your Alphavantage API key",
   "Tiingo": "your Tiingo API key"
 }
 ```
+
+---
+
+## 🧑‍💼 Analyst data & filings
+
+Alongside statements and prices, Bearish records raw analyst data from
+yFinance on every financials run:
+
+- **`pricetarget`** — dated snapshots of analyst price targets
+  (mean/high/low/median, number of analysts, recommendation mean/key).
+  One row per fetch date, so a history accumulates across runs.
+- **`analystrecommendation`** — the provider's recommendation trend
+  (strong buy / buy / hold / sell / strong sell counts) per relative period
+  bucket (`0m`, `-1m`, …), snapshotted per fetch date.
+
+For US tickers, SEC EDGAR filing metadata can be fetched into the
+**`filing`** table (form type, period of report, filed date, accession
+number) and the filing date is copied onto financial statement rows whose
+`(symbol, period_end)` matches exactly (`filed_date` column):
+
+```bash
+bearish filings /path/to/sqlite/db US --filters NVDA,AAPL
+```
+
+Earnings rows (`earningsdate`) also store `is_forward`, a fetch-time flag
+marking rows whose earnings date was still in the future when fetched, and
+price rows include dividends and stock splits.
 
 ---
 
@@ -148,6 +175,26 @@ bearish run /path/to/sqlite/db US --filters NVDA,TSLA,RHM.DE --api-keys=config.j
 ## 🛠️ Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests to improve Bearish.
+
+### Development
+
+The project is managed with [uv](https://github.com/astral-sh/uv):
+
+```bash
+uv sync                                      # install dependencies
+uv run pytest -m "not network and not lfs"   # offline, deterministic tests
+uv run pytest                                # full suite (live APIs + git-lfs test db)
+uv run ruff check                            # lint
+uv run mypy                                  # type check
+```
+
+Database schema changes are managed with **Alembic** (migrations live in
+`bearish/database/alembic/versions`):
+
+```bash
+uv run python -m bearish.database.scripts.create_revision   # autogenerate a revision
+uv run python -m bearish.database.scripts.upgrade           # upgrade a database to head
+```
 
 ---
 

@@ -14,6 +14,9 @@ from bearish.sources.yfinance import (
 )
 
 
+
+pytestmark = pytest.mark.network
+
 def test_yfinance():
     ticker_ = yf.Ticker("AAPL")
     results = YfinanceFinancialMetrics.from_ticker(ticker_)
@@ -116,3 +119,45 @@ def test_bug_financials():
     assert financial_metrics
     assert balance_sheets
     assert not cash_flows
+
+
+def test_read_series_fetches_dividends():
+    # AAPL pays quarterly, so a 6-month window always contains a dividend row
+    source = yFinanceSource(pause=0)
+    prices = source._read_series(["AAPL"], "6mo")
+    assert prices
+    dividends = [p.dividends for p in prices if p.dividends]
+    assert any(d > 0 for d in dividends)
+
+
+def test_earnings_dates_alias_columns_exist_live():
+    """Catch provider column drift via the SourceCheck/daily CI.
+
+    The revenue aliases ("Revenue Estimate"/"Reported Revenue") are NOT
+    required here: the pinned yfinance version does not return them (verified
+    against its source); they are mapped opportunistically for versions that
+    do. Only the columns the current version documents are asserted.
+    """
+    frame = yf.Ticker("AAPL").earnings_dates
+    assert frame is not None and not frame.empty
+    live_columns = set(frame.columns)
+    assert {"EPS Estimate", "Reported EPS"} <= live_columns, (
+        f"yfinance earnings_dates columns drifted: {sorted(live_columns)}"
+    )
+
+
+def test_price_target_live():
+    from bearish.sources.yfinance import yFinancePriceTarget
+
+    targets = yFinancePriceTarget.from_ticker(yf.Ticker("AAPL"))
+    assert len(targets) == 1
+    assert targets[0].target_mean is not None
+    assert targets[0].target_mean > 0
+
+
+def test_analyst_recommendations_live():
+    from bearish.sources.yfinance import yFinanceAnalystRecommendation
+
+    rows = yFinanceAnalystRecommendation.from_ticker(yf.Ticker("AAPL"))
+    assert rows
+    assert rows[0].period is not None

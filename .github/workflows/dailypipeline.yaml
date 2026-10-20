@@ -5,6 +5,10 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 
+env:
+  TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+  FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -14,20 +18,14 @@ jobs:
         with:
           lfs: true
           ref: ${{ github.ref_name }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Install graphviz
-        run: |
-          sudo apt update
-          sudo apt install graphviz
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-      - name: Install dependencies
-        run: poetry install
 
-      - name: Install nox dependencies
-        run: poetry run nox -s install
-      - name: Run tests
-        run: poetry run nox -s tests
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run full test suite (live data sources)
+        run: uv run pytest

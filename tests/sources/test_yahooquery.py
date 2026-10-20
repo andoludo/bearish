@@ -1,6 +1,10 @@
+import pytest
 from bearish.models.base import Ticker
 from bearish.sources.yahooquery import YahooQueryEquity, YahooQuerySource
 
+
+
+pytestmark = pytest.mark.network
 
 def test_yahooquery_equity():
     tickers = [Ticker(symbol="HO.PA"), Ticker(symbol="GOOG")]

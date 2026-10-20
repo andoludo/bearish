@@ -1,0 +1,27 @@
+{
+  "columns": [
+    "EPS Estimate",
+    "Reported EPS",
+    "Surprise(%)"
+  ],
+  "rows": [
+    {
+      "date": "2025-05-06",
+      "EPS Estimate": 2.63,
+      "Reported EPS": 2.7,
+      "Surprise(%)": 2.57
+    },
+    {
+      "date": "2025-02-06",
+      "EPS Estimate": 2.09,
+      "Reported EPS": 2.42,
+      "Surprise(%)": 16.06
+    },
+    {
+      "date": "2024-10-31",
+      "EPS Estimate": 1.92,
+      "Reported EPS": 1.55,
+      "Surprise(%)": -19.36
+    }
+  ]
+}

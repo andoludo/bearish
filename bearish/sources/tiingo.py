@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any, cast, ClassVar
 
-import requests  # type: ignore
+import requests
 
+from bearish.exceptions import InvalidApiKeyError
 from bearish.exchanges.exchanges import Countries
 from bearish.models.assets.assets import Assets
 from bearish.models.base import SourceBase
@@ -49,7 +50,7 @@ class TiingoPrice(TiingoSourceBase, Price):
 class TiingoSource(TiingoSourceBase, AbstractSource):
     countries: List[Countries] = ["US"]  # noqa: RUF012
 
-    def set_api_key(self, api_key: str) -> None:
+    def set_api_key(self, api_key: Optional[str]) -> None:
         TiingoSourceBase.__api_key__ = api_key
 
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
@@ -59,6 +60,8 @@ class TiingoSource(TiingoSourceBase, AbstractSource):
         return [Financials()]
 
     def _read_series(self, tickers: List[str], type: SeriesLength) -> List[TiingoPrice]:  # type: ignore
+        if self.__api_key__ is None:
+            raise InvalidApiKeyError("Tiingo requires an API key (TIINGO_API_KEY)")
         from_ = get_start_date(type)
         prices = []
         for ticker in tickers:

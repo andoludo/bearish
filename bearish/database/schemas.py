@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional, Dict
 
 from sqlalchemy import JSON, Column
@@ -11,6 +11,7 @@ from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.assets.index import Index
 from bearish.models.base import PriceTracker, FinancialsTracker
+from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
 from bearish.models.financials.cash_flow import CashFlow, QuarterlyCashFlow
 from bearish.models.financials.earnings_date import EarningsDate
@@ -19,6 +20,7 @@ from bearish.models.financials.metrics import (
     QuarterlyFinancialMetrics,
 )
 from bearish.models.price.price import Price
+from bearish.models.sec.filing import Filing
 from bearish.models.sec.sec import Sec, SecShareIncrease
 
 
@@ -88,30 +90,53 @@ class PriceEtfORM(SQLModel, Price, table=True):  # type: ignore
 
 class FinancialMetricsORM(BaseFinancials, FinancialMetrics, table=True):  # type: ignore
     __tablename__ = "financialmetrics"
+    filed_date: Optional[date] = Field(default=None, index=True)
 
 
 class BalanceSheetORM(BaseFinancials, BalanceSheet, table=True):  # type: ignore
     __tablename__ = "balancesheet"
+    filed_date: Optional[date] = Field(default=None, index=True)
 
 
 class CashFlowORM(BaseFinancials, CashFlow, table=True):  # type: ignore
     __tablename__ = "cashflow"
+    filed_date: Optional[date] = Field(default=None, index=True)
 
 
 class QuarterlyFinancialMetricsORM(BaseFinancials, QuarterlyFinancialMetrics, table=True):  # type: ignore
     __tablename__ = "quarterlyfinancialmetrics"
+    filed_date: Optional[date] = Field(default=None, index=True)
 
 
 class QuarterlyBalanceSheetORM(BaseFinancials, QuarterlyBalanceSheet, table=True):  # type: ignore
     __tablename__ = "quarterlybalancesheet"
+    filed_date: Optional[date] = Field(default=None, index=True)
 
 
 class QuarterlyCashFlowORM(BaseFinancials, QuarterlyCashFlow, table=True):  # type: ignore
     __tablename__ = "quarterlycashflow"
+    filed_date: Optional[date] = Field(default=None, index=True)
 
 
 class EarningsDateORM(BaseFinancials, EarningsDate, table=True):  # type: ignore
     __tablename__ = "earningsdate"
+
+
+class PriceTargetORM(BaseFinancials, PriceTarget, table=True):  # type: ignore
+    __tablename__ = "pricetarget"
+
+
+class AnalystRecommendationORM(BaseFinancials, AnalystRecommendation, table=True):  # type: ignore
+    __tablename__ = "analystrecommendation"
+    period: str = Field(primary_key=True, index=True)
+
+
+class FilingORM(SQLModel, Filing, table=True):
+    __tablename__ = "filing"
+    accession_number: str = Field(primary_key=True)
+    symbol: str = Field(index=True)
+    period_end: date = Field(index=True)
+    filed_date: date = Field(index=True)
 
 
 class SourcesORM(SQLModel, table=True):

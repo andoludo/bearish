@@ -225,7 +225,7 @@ class YahooQuerySource(YahooQueryBase, AbstractSource):
         "US",
     ]
 
-    def set_api_key(self, api_key: str) -> None: ...
+    def set_api_key(self, api_key: Optional[str]) -> None: ...
     def _read_assets(self, query: Optional[AssetQuery] = None) -> Assets:
         if query is None:
             return Assets()
