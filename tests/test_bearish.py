@@ -163,11 +163,11 @@ def test_update_financials(bear_db: BearishDb) -> None:
 
 
 @pytest.mark.network
-def test_index_query(bearish_db_index: BearishDb) -> None:
+def test_index_query(bearish_db: BearishDb) -> None:
     with requests_mock.Mocker() as req:
         mock_finance_database_urls(req, index=True)
         bearish = Bearish(
-            path=bearish_db_index.database_path, asset_sources=[FinanceDatabaseSource()]
+            path=bearish_db.database_path, asset_sources=[FinanceDatabaseSource()]
         )
         bearish.write_assets()
         bearish.get_prices_index()
