@@ -157,6 +157,27 @@ bearish macro /path/to/sqlite/db
 bearish macro /path/to/sqlite/db FRA DEU --categories rates --categories credit --start 2015-01-01
 ```
 
+Three more commands fill the tables around the macro store:
+
+```bash
+# commodity reference + futures prices (pricecommodity), World Bank Pink Sheet
+# monthly history and CFTC positioning (macroobservation), and each country's
+# export/import share per commodity from UN Comtrade (countrycommodityexposure)
+bearish commodities /path/to/sqlite/db --year 2024
+
+# SEC Form 4 insider transactions for US filers (insidertransaction)
+bearish insiders /path/to/sqlite/db US --filters NVDA,AAPL --since 2025-01-01
+
+# linking tables: country references/aliases (equitycountry view maps
+# equity.country to ISO-3), curated sector <-> commodity sensitivities, and ETF
+# exposure to countries, regions, commodities and sectors
+bearish link /path/to/sqlite/db
+```
+
+US financial statements are now taken from **SEC XBRL companyfacts** first
+(as reported, with the real `filed_date`), falling back to Yahoo for tickers
+the SEC does not cover.
+
 Tables: `macroseries` (catalog mirror), `macroobservation`
 (`series_id, date, value, as_of`), `macrotracker` (last fetched date per
 series, used by `bearish update --macro` to refresh only what is due and to
