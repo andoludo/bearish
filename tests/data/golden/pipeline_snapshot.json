@@ -2,6 +2,10 @@
   "analystrecommendation": [],
   "balancesheet": [],
   "cashflow": [],
+  "commodity": [],
+  "countryalias": [],
+  "countrycommodityexposure": [],
+  "countryref": [],
   "crypto": [
     {
       "base_symbol": "AAVE-CAD",
@@ -7467,6 +7471,7 @@
       "ytd_return": null
     }
   ],
+  "etfexposure": [],
   "filing": [],
   "financialmetrics": [],
   "financialstracker": [],
@@ -7888,6 +7893,10 @@
       "symbol": "^GSPC"
     }
   ],
+  "insidertransaction": [],
+  "macroobservation": [],
+  "macroseries": [],
+  "macrotracker": [],
   "price": [
     {
       "close": 106.84,
@@ -27247,6 +27256,7 @@
       "volume": 40755567.0
     }
   ],
+  "pricecommodity": [],
   "priceetf": [],
   "priceindex": [],
   "pricetarget": [],
@@ -27263,6 +27273,7 @@
   "quarterlyfinancialmetrics": [],
   "sec": [],
   "secshareincrease": [],
+  "sectorcommoditysensitivity": [],
   "sources": [
     {
       "source": "FinanceDatabase"

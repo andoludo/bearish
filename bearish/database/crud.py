@@ -34,6 +34,8 @@ from bearish.database.schemas import (
     SecORM,
     SecShareIncreaseORM,
 )
+from bearish.database.macro_crud import MacroCrudMixin
+from bearish.database.reference_crud import ReferenceCrudMixin
 from bearish.database.scripts.upgrade import upgrade
 from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.interface.interface import BearishDbBase
@@ -67,7 +69,7 @@ logger = logging.getLogger(__name__)
 BATCH_SIZE = 5000
 
 
-class BearishDb(BearishDbBase):
+class BearishDb(MacroCrudMixin, ReferenceCrudMixin, BearishDbBase):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     database_path: Path
     auto_migration: bool = True

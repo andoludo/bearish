@@ -14,6 +14,7 @@ Sources = Literal[
     "FinanceDatabase",
     "AlphaVantage",
     "YahooQuery",
+    "SEC",
 ]
 
 SeriesLength = Literal["max", "1d", "5d", "1mo", "3mo", "6mo"]
