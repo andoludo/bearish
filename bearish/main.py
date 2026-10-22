@@ -43,6 +43,8 @@ from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.models.sec.sec import Secs
 from bearish.sources.edgar_filings import fetch_filings
+from bearish.sources.sec_insiders import fetch_insider_transactions
+from bearish.sources.sec_xbrl import SecXbrlSource
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.investpy import InvestPySource
@@ -91,6 +93,12 @@ def _default_detailed_sources() -> List[AbstractSource]:
     return [yFinanceSource(), YahooQuerySource()]
 
 
+def _default_financials_sources() -> List[AbstractSource]:
+    # SEC XBRL first: as-reported statements with real filing dates for US
+    # filers; it yields nothing for other tickers, which fall through to Yahoo.
+    return [SecXbrlSource(), yFinanceSource(), YahooQuerySource()]
+
+
 def _default_price_sources() -> List[AbstractSource]:
     return [yFinanceSource(), YahooQuerySource(), TiingoSource()]
 
@@ -106,7 +114,7 @@ class Bearish(BaseModel):
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
     asset_sources: List[AbstractSource] = Field(default_factory=_default_asset_sources)
     detailed_asset_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
-    financials_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
+    financials_sources: List[AbstractSource] = Field(default_factory=_default_financials_sources)
     price_sources: List[AbstractSource] = Field(default_factory=_default_price_sources)
     macro_sources: List[AbstractMacroSource] = Field(default_factory=default_macro_sources)
 
@@ -256,32 +264,48 @@ class Bearish(BaseModel):
         return self._get_tracked_tickers(TrackerQuery(), PriceTracker)
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
+        """Fetch statements per batch, falling through the financials sources per ticker.
+
+        The first source is asked for the whole batch; tickers it returns
+        nothing for (e.g. non-US names when SEC XBRL is first) are passed to
+        the next source, so each ticker is filled by the first provider that
+        covers it.
+        """
         logger.warning(f"Found tickers without financials: {len(tickers)}")
-        chunks = batch(tickers, size=self.batch_size)
-        source = self.financials_sources[0]
+        for chunk in batch(tickers, size=self.batch_size):
+            remaining = list(chunk)
+            for source in self.financials_sources:
+                if not remaining:
+                    break
+                logger.debug(f"getting financial data for {len(remaining)} tickers from {source.__source__}")
+                try:
+                    financials_ = source.read_financials(remaining)
+                except Exception as e:  # keep going: one failed batch must not stop the run
+                    logger.error(f"Error reading data using {source.__source__}: {e}")
+                    continue
+                covered = self._symbols_with_financials(financials_)
+                if not covered:
+                    continue
+                self._bearish_db.write_financials(financials_)
+                self._bearish_db.write_trackers(
+                    [
+                        FinancialsTracker(symbol=t.symbol, source=source.__source__, exchange=t.exchange)
+                        for t in remaining
+                        if t.symbol in covered
+                    ]
+                )
+                remaining = [t for t in remaining if t.symbol not in covered]
+            if remaining:
+                logger.warning(f"No financial data found for {[t.symbol for t in remaining]}")
 
-        for chunk in chunks:
-            logger.debug(f"getting financial data for {len(chunk)} tickers")
-            try:
-                financials_ = source.read_financials(chunk)
-            except Exception as e:  # keep going: one failed batch must not stop the run
-                logger.error(f"Error reading data using {source.__source__}: {e}")
-                continue
-
-            if not financials_:
-                logger.warning("No financial data found.")
-                continue
-            self._bearish_db.write_financials(financials_)
-            self._bearish_db.write_trackers(
-                [
-                    FinancialsTracker(
-                        symbol=t.symbol,
-                        source=source.__source__,
-                        exchange=t.exchange,
-                    )
-                    for t in chunk
-                ]
-            )
+    @staticmethod
+    def _symbols_with_financials(financials: List[Financials]) -> set[str]:
+        return {
+            item.symbol
+            for financial in financials
+            for field in type(financial).model_fields
+            for item in getattr(financial, field)
+        }
 
     @validate_call
     def write_many_series(
@@ -358,6 +382,27 @@ class Bearish(BaseModel):
         self._bearish_db.write_filings(filings)
         self._bearish_db.backfill_filed_dates()
 
+    def get_insiders(
+        self,
+        filter: Filter,
+        since: Optional[datetime.date] = None,
+        max_filings: int = 50,
+    ) -> int:
+        """Fetch SEC Form 4 insider transactions for the filtered tickers; returns rows written."""
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        transactions = fetch_insider_transactions(
+            [t.symbol for t in tickers], since=since, max_filings=max_filings
+        )
+        logger.debug(f"Fetched {len(transactions)} insider transactions")
+        self._bearish_db.write_insider_transactions(transactions)
+        return len(transactions)
+
     def get_prices(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
@@ -380,9 +425,22 @@ class Bearish(BaseModel):
         )
 
     def get_prices_etf(
-        self, series_length: SeriesLength = "max", limit: Optional[int] = None
+        self,
+        series_length: SeriesLength = "max",
+        limit: Optional[int] = None,
+        exchanges: Optional[List[str]] = None,
     ) -> List[str]:
-        query_etfs = "SELECT DISTINCT symbol from etf;"
+        """Fetch ETF prices; ``exchanges`` restricts to listings on those exchange codes.
+
+        Many ETF rows are secondary listings (Berlin, Munich, ...) with no price
+        history at the providers, so callers interested in liquid data pass the
+        primary exchanges (e.g. ``["NYSE", "PCX", "NMS"]``).
+        """
+        query_etfs = "SELECT DISTINCT symbol FROM etf"
+        if exchanges:
+            exchange_list = ",".join(f"'{exchange}'" for exchange in exchanges)
+            query_etfs += f" WHERE exchange IN ({exchange_list})"
+        query_etfs += " ORDER BY symbol;"
         etf_symbols = self._bearish_db.read_query(query_etfs)["symbol"].tolist()
         if limit:
             etf_symbols = etf_symbols[:limit]
@@ -606,6 +664,23 @@ def filings(
         filter = Filter(countries=countries, filters=filters)
         bearish.get_filings(filter)
         console.log("[bold][red]Filings downloaded!")
+
+
+@app.command()
+def insiders(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    since: Annotated[Optional[datetime.datetime], typer.Option(help="Only filings filed on/after this date")] = None,
+    max_filings: Annotated[int, typer.Option(help="Newest Form 4 filings fetched per symbol")] = 50,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch SEC Form 4 insider transactions (US filers) into the insidertransaction table."""
+    with console.status("[bold green]Fetching insider transactions..."):
+        bearish = _bearish_from(path, api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        written = bearish.get_insiders(filter, since=since.date() if since else None, max_filings=max_filings)
+        console.log(f"[bold][red]{written} insider transactions downloaded!")
 
 
 @app.command()
