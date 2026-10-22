@@ -18,6 +18,7 @@ from typing import Any, Dict, List
 
 import pytest
 import requests_mock
+import time_machine
 
 from bearish.main import Bearish
 from bearish.models.api_keys.api_keys import SourceApiKeys
@@ -31,6 +32,10 @@ GOLDEN_PATH = Path(__file__).parent / "data" / "golden" / "pipeline_snapshot.jso
 
 # Volatile columns that legitimately differ between runs.
 VOLATILE_COLUMNS = {"created_at", "id"}
+
+# Snapshot-style rows (assets) are stamped with ``date.today()``; freeze the
+# clock so the golden file stays valid regardless of when the suite runs.
+FROZEN_TODAY = "2026-07-12"
 
 
 def _snapshot_database(db_path: Path) -> Dict[str, List[Dict[str, Any]]]:
@@ -78,6 +83,7 @@ def _run_pipeline(db_path: Path) -> None:
         bearish.write_many_series([Ticker(symbol="AAPL", exchange="NASDAQ")], "max")
 
 
+@time_machine.travel(FROZEN_TODAY, tick=False)
 def test_golden_pipeline(tmp_path: Path) -> None:
     db_path = tmp_path / "bear.db"
     _run_pipeline(db_path)
