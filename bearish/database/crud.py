@@ -107,8 +107,8 @@ class BearishDb(BearishDbBase):
             data = [serie.model_dump() for serie in series]
             chunks = batch(data, BATCH_SIZE)
             for chunk in chunks:
-                stmt = insert(price_orm).prefix_with("OR REPLACE").values(chunk)
-                session.exec(stmt)
+                stmt = insert(price_orm).prefix_with("OR REPLACE")
+                session.exec(stmt, params=chunk)
             session.commit()
 
     def _write_sec(self, secs: List["Sec"]) -> None:
@@ -117,8 +117,8 @@ class BearishDb(BearishDbBase):
             data = [sec.model_dump() for sec in secs]
             chunks = batch(data, BATCH_SIZE)
             for chunk in chunks:
-                stmt = insert(SecORM).prefix_with("OR REPLACE").values(chunk)
-                session.exec(stmt)
+                stmt = insert(SecORM).prefix_with("OR REPLACE")
+                session.exec(stmt, params=chunk)
             session.commit()
 
     def _read_sec(self, ticker: str) -> List[Sec]:
@@ -133,8 +133,8 @@ class BearishDb(BearishDbBase):
         with Session(self._engine) as session:
             data = [filing.model_dump() for filing in filings]
             for chunk in batch(data, BATCH_SIZE):
-                stmt = insert(FilingORM).prefix_with("OR REPLACE").values(chunk)
-                session.exec(stmt)
+                stmt = insert(FilingORM).prefix_with("OR REPLACE")
+                session.exec(stmt, params=chunk)
             session.commit()
 
     def _read_filings(self, symbol: str) -> List[Filing]:
@@ -231,8 +231,8 @@ class BearishDb(BearishDbBase):
             data = [serie.model_dump() for serie in series]
             chunks = batch(data, BATCH_SIZE)
             for chunk in chunks:
-                stmt = insert(table).prefix_with("OR REPLACE").values(chunk)
-                session.exec(stmt)
+                stmt = insert(table).prefix_with("OR REPLACE")
+                session.exec(stmt, params=chunk)
             session.commit()
 
     def _read_series(
@@ -535,8 +535,6 @@ class BearishDb(BearishDbBase):
             data = [serie.model_dump() for serie in sec_shares]
             chunks = batch(data, BATCH_SIZE)
             for chunk in chunks:
-                stmt = (
-                    insert(SecShareIncreaseORM).prefix_with("OR REPLACE").values(chunk)
-                )
-                session.exec(stmt)
+                stmt = insert(SecShareIncreaseORM).prefix_with("OR REPLACE")
+                session.exec(stmt, params=chunk)
             session.commit()
