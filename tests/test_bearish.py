@@ -180,7 +180,8 @@ def test_index_query(bearish_db: BearishDb) -> None:
 @pytest.mark.network
 def test_price_etf(bear_db: BearishDb) -> None:
     bearish = Bearish(path=bear_db.database_path)
-    etf_symbols = bearish.get_prices_etf(series_length="1d", limit=5)
+    # Primary US listings: secondary European listings (BER, MUN, ...) have no price history.
+    etf_symbols = bearish.get_prices_etf(series_length="1d", limit=5, exchanges=["NYSE", "PCX", "NMS"])
     assets_query = AssetQuery(
         symbols=Symbols(index=[Ticker(symbol=symbol) for symbol in etf_symbols])
     )

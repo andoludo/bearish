@@ -3,7 +3,7 @@ import logging
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Any, get_args, Annotated, cast, Union, Type, Callable
+from typing import Optional, List, Any, Dict, get_args, Annotated, cast, Union, Type, Callable
 
 import pandas as pd
 import typer
@@ -32,6 +32,7 @@ from bearish.macro.catalog import select_series
 from bearish.macro.countries import iso3_from
 from bearish.macro.models import MacroQuery, Observation
 from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
+from bearish.macro.pipelines.linking import run_linking
 from bearish.macro.sources import AbstractMacroSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
@@ -499,6 +500,10 @@ class Bearish(BaseModel):
     def read_observations(self, query: Optional[MacroQuery] = None) -> List[Observation]:
         return self._bearish_db.read_observations(query)
 
+    def link(self) -> Dict[str, int]:
+        """Populate the linking tables: country references, sector-commodity sensitivities, ETF exposure."""
+        return run_linking(self._bearish_db)
+
     def _update(
         self,
         tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
@@ -715,6 +720,15 @@ def macro(  # noqa: PLR0913
         f"[bold][red]Macro downloaded! {report.series_with_data}/{report.series_requested} series, "
         f"{report.vintages_written} new vintages ({report.sources})"
     )
+
+
+@app.command()
+def link(path: Path, api_keys: Optional[Path] = None) -> None:
+    """Build the tables that connect macro/commodity entities to equities, sectors and ETFs."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Building linking tables..."):
+        counts = bearish.link()
+    console.log(f"[bold][red]Linking tables built! {counts}")
 
 
 @app.command()
