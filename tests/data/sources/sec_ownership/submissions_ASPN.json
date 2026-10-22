@@ -1,0 +1,84 @@
+{
+ "cik": "0001145986",
+ "name": "ASPEN AEROGELS INC",
+ "tickers": [
+  "ASPN"
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001493152-26-047542",
+    "0001193125-26-401393",
+    "0000919574-26-005154",
+    "0000102909-26-000744",
+    "0000919574-26-000984",
+    "0001172661-25-002178",
+    "0001172661-25-002177",
+    "0000315066-25-000754",
+    "0000932471-24-000839",
+    "0000315066-24-002639"
+   ],
+   "form": [
+    "SCHEDULE 13G",
+    "SCHEDULE 13D/A",
+    "SCHEDULE 13G/A",
+    "SCHEDULE 13G/A",
+    "SCHEDULE 13G",
+    "SCHEDULE 13G/A",
+    "SCHEDULE 13G/A",
+    "SCHEDULE 13G/A",
+    "SC 13G/A",
+    "SC 13G"
+   ],
+   "filingDate": [
+    "2026-10-19",
+    "2026-09-24",
+    "2026-08-13",
+    "2026-03-26",
+    "2026-02-13",
+    "2025-05-15",
+    "2025-05-15",
+    "2025-02-12",
+    "2024-11-12",
+    "2024-11-12"
+   ],
+   "primaryDocument": [
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "xslSCHEDULE_13D_X02/primary_doc.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "xslSCHEDULE_13G_X01/primary_doc.xml",
+    "xslSCHEDULE_13G_X01/primary_doc.xml",
+    "xslSCHEDULE_13G_X01/primary_doc.xml",
+    "xslSCHEDULE_13G_X01/primary_doc.xml",
+    "UnitedStates_13G__AspenAerog.txt",
+    "filing.txt"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  "files": []
+ }
+}

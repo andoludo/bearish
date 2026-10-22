@@ -7475,6 +7475,8 @@
   "filing": [],
   "financialmetrics": [],
   "financialstracker": [],
+  "holding13f": [],
+  "holding13fsummary": [],
   "index": [
     {
       "base_symbol": "000008",
@@ -7897,6 +7899,7 @@
   "macroobservation": [],
   "macroseries": [],
   "macrotracker": [],
+  "ownership13dg": [],
   "price": [
     {
       "close": 106.84,

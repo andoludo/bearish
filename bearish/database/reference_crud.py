@@ -14,11 +14,15 @@ from bearish.database.schemas import (
     CountryCommodityExposureORM,
     CountryRefORM,
     EtfExposureORM,
+    Holding13FORM,
+    Holding13FSummaryORM,
     InsiderTransactionORM,
+    Ownership13DGORM,
     SectorCommoditySensitivityORM,
 )
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
+from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.utils.utils import batch
 
@@ -84,6 +88,26 @@ class ReferenceCrudMixin:
 
     def _read_insider_transactions(self, symbol: Optional[str] = None) -> List[InsiderTransaction]:
         return self._select(InsiderTransactionORM, InsiderTransaction, symbol=symbol)
+
+    def _write_holdings13f(self, holdings: List[Holding13F]) -> None:
+        self._upsert(Holding13FORM, [h.model_dump() for h in holdings])
+
+    def _read_holdings13f(self, symbol: Optional[str] = None, manager_cik: Optional[str] = None) -> List[Holding13F]:
+        return self._select(Holding13FORM, Holding13F, symbol=symbol, manager_cik=manager_cik)
+
+    def _write_holdings13f_summary(self, summaries: List[Holding13FSummary]) -> None:
+        self._upsert(Holding13FSummaryORM, [s.model_dump() for s in summaries])
+
+    def _read_holdings13f_summary(
+        self, symbol: Optional[str] = None, cusip: Optional[str] = None
+    ) -> List[Holding13FSummary]:
+        return self._select(Holding13FSummaryORM, Holding13FSummary, symbol=symbol, cusip=cusip)
+
+    def _write_ownership13dg(self, rows: List[Ownership13DG]) -> None:
+        self._upsert(Ownership13DGORM, [r.model_dump() for r in rows])
+
+    def _read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]:
+        return self._select(Ownership13DGORM, Ownership13DG, symbol=symbol)
 
     # linking -------------------------------------------------------------
 

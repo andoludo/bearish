@@ -45,7 +45,9 @@ from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.models.sec.sec import Secs
 from bearish.sources.edgar_filings import fetch_filings
+from bearish.sources.sec_13f import HoldingsReport, SecurityMapper, list_data_sets, load_holdings, pick_data_sets
 from bearish.sources.sec_insiders import fetch_insider_transactions
+from bearish.sources.sec_ownership import fetch_ownership
 from bearish.sources.sec_xbrl import SecXbrlSource
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
@@ -405,6 +407,51 @@ class Bearish(BaseModel):
         self._bearish_db.write_insider_transactions(transactions)
         return len(transactions)
 
+    def get_holdings(
+        self,
+        windows: int = 2,
+        managers: Optional[List[str]] = None,
+        top_managers: int = 300,
+        data_sets: Optional[List[str]] = None,
+    ) -> HoldingsReport:
+        """Load Form 13F institutional holdings from the SEC bulk data sets.
+
+        ``windows`` newest filing windows are loaded (two give the latest
+        quarter plus the one before it, which is what the per-security flows
+        need). Per-manager rows are kept for ``managers`` plus the
+        ``top_managers`` largest filers; summaries cover every security.
+        """
+        available = list_data_sets()
+        refs, unknown = pick_data_sets(available, windows, data_sets)
+        if unknown:
+            raise ValueError(f"Unknown 13F data sets: {unknown}. Available: {[r.name for r in available[:8]]}...")
+        return load_holdings(
+            self._bearish_db,
+            refs,
+            managers=managers,
+            top_n=top_managers,
+            mapper=SecurityMapper.from_db(self._bearish_db),
+        )
+
+    def get_ownership(
+        self,
+        filter: Filter,
+        since: Optional[datetime.date] = None,
+        max_filings: int = 100,
+    ) -> int:
+        """Fetch Schedule 13D/13G beneficial-ownership filings (>= 5 % holders) for the filtered tickers."""
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        rows = fetch_ownership([t.symbol for t in tickers], since=since, max_filings=max_filings)
+        logger.debug(f"Fetched {len(rows)} Schedule 13D/13G rows")
+        self._bearish_db.write_ownership13dg(rows)
+        return len(rows)
+
     def get_prices(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
@@ -707,6 +754,43 @@ def insiders(  # noqa: PLR0913
         filter = Filter(countries=countries, filters=filters)
         written = bearish.get_insiders(filter, since=since.date() if since else None, max_filings=max_filings)
         console.log(f"[bold][red]{written} insider transactions downloaded!")
+
+
+@app.command()
+def holdings(  # noqa: PLR0913
+    path: Path,
+    windows: Annotated[int, typer.Option(help="Newest 13F filing windows to load (2 = latest quarter + prior)")] = 2,
+    managers: Annotated[Optional[List[str]], typer.Option(help="Manager CIKs always stored")] = None,
+    top_managers: Annotated[int, typer.Option(help="Also store the N largest managers by reported value")] = 300,
+    data_set: Annotated[Optional[List[str]], typer.Option(help="Explicit data set names instead of --windows")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Load Form 13F institutional holdings (per manager) and per-security holder flows from the SEC bulk data sets."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Loading 13F data sets (about 100 MB each)..."):
+        report = bearish.get_holdings(windows=windows, managers=managers, top_managers=top_managers, data_sets=data_set)
+    console.log(
+        f"[bold][red]13F loaded! {report.holdings_written} positions for {report.managers_stored} managers, "
+        f"{report.summaries_written} security summaries ({report.symbols_resolved} with a symbol), "
+        f"periods {report.periods}"
+    )
+
+
+@app.command()
+def ownership(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    since: Annotated[Optional[datetime.datetime], typer.Option(help="Filed on/after this date")] = None,
+    max_filings: Annotated[int, typer.Option(help="Newest Schedule 13D/13G filings fetched per symbol")] = 100,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch Schedule 13D/13G filings (holders crossing 5 %, activists) into the ownership13dg table."""
+    with console.status("[bold green]Fetching Schedule 13D/13G filings..."):
+        bearish = _bearish_from(path, api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        written = bearish.get_ownership(filter, since=since.date() if since else None, max_filings=max_filings)
+        console.log(f"[bold][red]{written} beneficial-ownership rows downloaded!")
 
 
 @app.command()

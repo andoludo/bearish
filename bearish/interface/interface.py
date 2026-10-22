@@ -12,6 +12,7 @@ from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.models import MacroQuery, MacroSeries, MacroTracker, Observation
+from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.assets.assets import Assets
 from bearish.models.base import (
@@ -195,6 +196,29 @@ class BearishDbBase(BaseModel):
         return self._read_insider_transactions(symbol=symbol)
 
     @validate_call
+    def write_holdings13f(self, holdings: List[Holding13F]) -> None:
+        return self._write_holdings13f(holdings)
+
+    def read_holdings13f(self, symbol: Optional[str] = None, manager_cik: Optional[str] = None) -> List[Holding13F]:
+        return self._read_holdings13f(symbol=symbol, manager_cik=manager_cik)
+
+    @validate_call
+    def write_holdings13f_summary(self, summaries: List[Holding13FSummary]) -> None:
+        return self._write_holdings13f_summary(summaries)
+
+    def read_holdings13f_summary(
+        self, symbol: Optional[str] = None, cusip: Optional[str] = None
+    ) -> List[Holding13FSummary]:
+        return self._read_holdings13f_summary(symbol=symbol, cusip=cusip)
+
+    @validate_call
+    def write_ownership13dg(self, rows: List[Ownership13DG]) -> None:
+        return self._write_ownership13dg(rows)
+
+    def read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]:
+        return self._read_ownership13dg(symbol=symbol)
+
+    @validate_call
     def write_country_references(self, refs: List[CountryRef], aliases: List[CountryAlias]) -> None:
         return self._write_country_references(refs, aliases)
 
@@ -255,6 +279,28 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _read_insider_transactions(self, symbol: Optional[str] = None) -> List[InsiderTransaction]: ...
+
+    @abc.abstractmethod
+    def _write_holdings13f(self, holdings: List[Holding13F]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_holdings13f(
+        self, symbol: Optional[str] = None, manager_cik: Optional[str] = None
+    ) -> List[Holding13F]: ...
+
+    @abc.abstractmethod
+    def _write_holdings13f_summary(self, summaries: List[Holding13FSummary]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_holdings13f_summary(
+        self, symbol: Optional[str] = None, cusip: Optional[str] = None
+    ) -> List[Holding13FSummary]: ...
+
+    @abc.abstractmethod
+    def _write_ownership13dg(self, rows: List[Ownership13DG]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]: ...
 
     @abc.abstractmethod
     def _write_country_references(self, refs: List[CountryRef], aliases: List[CountryAlias]) -> None: ...

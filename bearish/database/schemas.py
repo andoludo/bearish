@@ -24,6 +24,7 @@ from bearish.models.price.price import Price
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.models import MacroSeries, MacroTracker, Observation
+from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.sec.filing import Filing
 from bearish.models.sec.sec import Sec, SecShareIncrease
@@ -265,3 +266,28 @@ class EtfExposureORM(SQLModel, EtfExposure, table=True):  # type: ignore
     entity_type: str = Field(primary_key=True)  # type: ignore[assignment]
     entity: str = Field(primary_key=True, index=True)
     method: str  # type: ignore[assignment]
+
+
+class Holding13FORM(SQLModel, Holding13F, table=True):  # type: ignore
+    __tablename__ = "holding13f"
+    accession_number: str = Field(primary_key=True)
+    cusip: str = Field(primary_key=True, index=True)
+    put_call: str = Field(primary_key=True, default="")  # type: ignore[assignment]
+    manager_cik: str = Field(index=True)
+    symbol: Optional[str] = Field(default=None, index=True)
+    period: dt.date = Field(index=True)
+
+
+class Holding13FSummaryORM(SQLModel, Holding13FSummary, table=True):  # type: ignore
+    __tablename__ = "holding13fsummary"
+    cusip: str = Field(primary_key=True)
+    period: dt.date = Field(primary_key=True, index=True)
+    symbol: Optional[str] = Field(default=None, index=True)
+
+
+class Ownership13DGORM(SQLModel, Ownership13DG, table=True):  # type: ignore
+    __tablename__ = "ownership13dg"
+    accession_number: str = Field(primary_key=True)
+    reporting_person: str = Field(primary_key=True)
+    symbol: str = Field(index=True)
+    filed_date: dt.date = Field(index=True)

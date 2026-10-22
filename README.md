@@ -174,6 +174,27 @@ bearish insiders /path/to/sqlite/db US --filters NVDA,AAPL --since 2025-01-01
 bearish link /path/to/sqlite/db
 ```
 
+Institutional ownership comes from two more SEC sources:
+
+```bash
+# Form 13F: every institutional manager's quarter-end positions, from the SEC
+# bulk data sets (one ~100 MB zip per filing window, all filers at once).
+# Per-manager rows go to holding13f for --managers plus the --top-managers
+# largest filers; holding13fsummary holds, for EVERY security and quarter,
+# the number of holders, total shares/value and the flows against the prior
+# quarter (new holders, closed holders, share and value change).
+bearish holdings /path/to/sqlite/db --windows 2 --managers 0001067983
+
+# Schedule 13D/13G: beneficial owners crossing 5 % (13D = activists, filed
+# within days; 13G = passive), parsed from EDGAR's structured XML (filings
+# since December 2024) into ownership13dg.
+bearish ownership /path/to/sqlite/db US --filters AAPL,ASPN
+```
+
+13F positions are published up to 45 days after quarter end, so treat them as
+a lagging, quarterly signal; `holding13f.filed_date` and
+`holding13fsummary.latest_filed_date` record when each snapshot became public.
+
 US financial statements are now taken from **SEC XBRL companyfacts** first
 (as reported, with the real `filed_date`), falling back to Yahoo for tickers
 the SEC does not cover.

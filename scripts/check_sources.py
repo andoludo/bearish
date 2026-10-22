@@ -325,6 +325,15 @@ def _dbnomics() -> str:
     return f"{len(observations)} DBnomics observations"
 
 
+@probe("SEC-13DG")
+def _sec_13dg() -> str:
+    from bearish.sources.sec_ownership import fetch_ownership
+
+    rows = fetch_ownership(["AAPL"], max_filings=2)
+    assert rows, "no Schedule 13D/13G rows parsed"
+    return f"{len(rows)} reporting persons from 2 filings for AAPL"
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("SOURCE HEALTH SUMMARY")

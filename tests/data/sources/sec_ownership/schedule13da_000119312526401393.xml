@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><edgarSubmission xmlns="http://www.sec.gov/edgar/schedule13D" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <schemaVersion>X0202</schemaVersion>
+<headerData>
+    <submissionType>SCHEDULE 13D/A</submissionType>
+    <filerInfo>
+      <filer>
+        <filerCredentials>
+          <cik>0001888978</cik>
+          <ccc>XXXXXXXX</ccc>
+        </filerCredentials>
+      </filer>
+      <liveTestFlag>LIVE</liveTestFlag>
+
+
+
+    </filerInfo>
+  </headerData>
+  <formData>
+    <coverPageHeader>
+      <amendmentNo>6</amendmentNo>
+      <securitiesClassTitle>Common stock, par value $0.00001 per share</securitiesClassTitle>
+      <dateOfEvent>09/23/2026</dateOfEvent>
+      <previouslyFiledFlag>false</previouslyFiledFlag>
+      <issuerInfo>
+        <issuerCIK>0001145986</issuerCIK>
+        <issuerCusips>
+          <issuerCusipNumber>04523Y105</issuerCusipNumber>
+        </issuerCusips>
+        <issuerName>Aspen Aerogels, Inc.</issuerName>
+        <address>
+          <street1 xmlns="http://www.sec.gov/edgar/common">30 Forbes Road, Building B</street1>
+          <city xmlns="http://www.sec.gov/edgar/common">Northborough</city>
+          <stateOrCountry xmlns="http://www.sec.gov/edgar/common">MA</stateOrCountry>
+          <zipCode xmlns="http://www.sec.gov/edgar/common">01532</zipCode>
+        </address>
+      </issuerInfo>
+      <authorizedPersons>
+        <notificationInfo>
+          <personName>Koch, Inc.</personName>
+          <personPhoneNum>(316) 828 8310</personPhoneNum>
+          <personAddress>
+            <street1 xmlns="http://www.sec.gov/edgar/common">4111 East 37th Street North</street1>
+            <city xmlns="http://www.sec.gov/edgar/common">Wichita</city>
+            <stateOrCountry xmlns="http://www.sec.gov/edgar/common">KS</stateOrCountry>
+            <zipCode xmlns="http://www.sec.gov/edgar/common">67220</zipCode>
+          </personAddress>
+        </notificationInfo>
+      </authorizedPersons>
+    </coverPageHeader>
+    <reportingPersons>
+      <reportingPersonInfo>
+        <reportingPersonCIK>0001888978</reportingPersonCIK>
+        <reportingPersonNoCIK>N</reportingPersonNoCIK>
+        <reportingPersonName>Wood River Capital, LLC</reportingPersonName>
+        <fundType>AF</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>DE</citizenshipOrOrganization>
+        <soleVotingPower>0</soleVotingPower>
+        <sharedVotingPower>0</sharedVotingPower>
+        <soleDispositivePower>0</soleDispositivePower>
+        <sharedDispositivePower>0</sharedDispositivePower>
+        <aggregateAmountOwned>0</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>0</percentOfClass>
+        <typeOfReportingPerson>OO</typeOfReportingPerson>
+      </reportingPersonInfo>
+      <reportingPersonInfo>
+        <reportingPersonCIK>0002027344</reportingPersonCIK>
+        <reportingPersonNoCIK>N</reportingPersonNoCIK>
+        <reportingPersonName>Koch, Inc.</reportingPersonName>
+        <fundType>AF</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>KS</citizenshipOrOrganization>
+        <soleVotingPower>0</soleVotingPower>
+        <sharedVotingPower>0</sharedVotingPower>
+        <soleDispositivePower>0</soleDispositivePower>
+        <sharedDispositivePower>0</sharedDispositivePower>
+        <aggregateAmountOwned>0</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>0</percentOfClass>
+        <typeOfReportingPerson>CO</typeOfReportingPerson>
+      </reportingPersonInfo>
+    </reportingPersons>
+    <items1To7>
+      <item1>
+        <securityTitle>Common stock, par value $0.00001 per share</securityTitle>
+        <issuerName>Aspen Aerogels, Inc.</issuerName>
+        <issuerPrincipalAddress>
+          <street1 xmlns="http://www.sec.gov/edgar/common">30 Forbes Road, Building B</street1>
+          <city xmlns="http://www.sec.gov/edgar/common">Northborough</city>
+          <stateOrCountry xmlns="http://www.sec.gov/edgar/common">MA</stateOrCountry>
+          <zipCode xmlns="http://www.sec.gov/edgar/common">01532</zipCode>
+        </issuerPrincipalAddress>
+        <commentText>Explanatory Note: This Amendment No. 6 to a Statement on Schedule 13D (this "Schedule 13D Amendment") relates to the shares of common stock, par value $0.00001 per share ("Public Shares"), of Aspen Aerogels, Inc., a Delaware corporation (the "Issuer"), and amends the initial statement on Schedule 13D filed by certain of the Reporting Persons identified therein on April 5, 2022, as amended and restated by Amendment No. 5 thereto filed on August 19, 2024 (as amended and restated, the "Initial Schedule 13D"), and as further amended by this Amendment No. 6, the "Schedule 13D"). Except as specifically provided herein, this Amendment No. 6 does not modify any of the information previously reported in the Initial Schedule 13D. Capitalized terms used but not defined in this Amendment No. 6 shall have the same meanings herein as are ascribed to such terms in the Initial Schedule 13D.
+
+The filing of this Schedule 13D Amendment and the information contained in the Schedule 13D shall not be construed as an admission that any of SCC Holdings, LLC, KIM, LLC, Koch Investments Group, LLC, Koch Investments Group Holdings, LLC, Koch Companies, LLC, or Koch, Inc. is for purposes of Section 13(d) or 13(g) of the Exchange Act, the beneficial owner of any Public Shares covered by this Schedule 13D.</commentText>
+      </item1>
+      <item2>
+        <filingPersonName>Item 2(a) of the Initial Schedule 13D is hereby amended and supplemented as follows: The information set forth in the amended and restated Schedule A attached to this Amendment No. 6 is incorporated by reference in Item 2 and supersedes the previously filed Schedule A</filingPersonName>
+        <hasBeenConvicted>Item 2(d) of the Initial Schedule 13D is hereby amended and supplemented as follows: During the last five years, none of the Reporting Persons nor, to the knowledge of the Reporting Persons, any of the persons listed on Schedule A to the Schedule 13D, has been convicted in a criminal proceeding (excluding traffic violations or similar misdemeanors).</hasBeenConvicted>
+        <convictionDescription>Item 2(e) of the Initial Schedule 13D is hereby amended and supplemented as follows: During the last five years, none of the Reporting Persons nor, to the knowledge of the Reporting Persons any of the perons listed on Shcedule A to the Schedule 13D, has been a party to a civil proceeding of a judicial or administrative body of competent jurisdiction and as a result of such proceeding was or is subject to judgment, decree or final order enjoining future violations of, or prohibiting or mandating activities subject to, federal or state securities laws, or finding any violation with respect to such laws.</convictionDescription>
+      </item2>
+      <item4>
+        <transactionPurpose>Item 4 of the Initial Schedule 13D is hereby amended and supplemented as follows: On September 23, 2026, the Reporting Persons disposed of all Public Shares beneficially owned by the Reporting Persons and ceased to be the beneficial owner of any Public Shares. The Reporting Persons do not have any present plans or proposals that relate to or would result in any of the actions specified in Item 4(a) through 4(j) of this Schedule 13D.</transactionPurpose>
+      </item4>
+      <item5>
+        <percentageOfClassSecurities>Item 5(a) of the Initial Schedule 13D is hereby amended and restated as follows: As of the date hereof, the Reporting Persons hold no Public Shares.</percentageOfClassSecurities>
+        <numberOfShares>Item 5(b) of the Initial Schedule 13D is hereby amended and restated as follows: As of the date hereof, the Reporting Persons hold no Public Shares.</numberOfShares>
+        <transactionDesc>Item 5(c) of the Initial Schedule 13D is hereby amended and supplemented as follows: On September 23, 2026, the Reporting Persons sold 12,280,426 Public Shares at a price of $4.73 per share in a block trade. Except as set forth in this Schedule 13D, no transactions in the Public Shares were effected by the Reporting Persons, or, to the knowledge of the Reporting Persons, any of the persons listed on Schedule A hereto in the 60 days preceding the date hereof.</transactionDesc>
+        <listOfShareholders>Item 5(d) of the Initial Schedule 13D is hereby amended and supplemented as follows: Except as set forth in this Schedule 13D, to the knowledge of the Reporting Persons, no other person has the right to receive or the power to direct the receipt of dividends from, or the proceeds from the sale of, any Public Shares of the Issuer beneficially owned by the Reporting Persons as described in this Item 5.</listOfShareholders>
+        <date5PercentOwnership>09/23/2026</date5PercentOwnership>
+      </item5>
+    </items1To7>
+    <signatureInfo>
+      <signaturePerson>
+        <signatureReportingPerson>Wood River Capital, LLC</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Adam Schaeffer</signature>
+          <title>Adam Schaeffer, Vice President and Secretary</title>
+          <date>09/24/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+      <signaturePerson>
+        <signatureReportingPerson>Koch, Inc.</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Adam Fitzsimmons</signature>
+          <title>Adam Fitzsimmons, Assistant Secretary</title>
+          <date>09/24/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+    </signatureInfo>
+  </formData>
+
+</edgarSubmission>
