@@ -15,6 +15,7 @@ MacroSources = Literal[
     "USTreasury",
     "EPU",
     "GPR",
+    "AtlantaFed",
     "DBnomics",
     "WorldBankPinkSheet",
     "CFTC",

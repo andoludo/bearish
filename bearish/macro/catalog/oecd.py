@@ -25,7 +25,10 @@ _CPI_NON_MEMBERS = {"BRA", "CHN", "IND", "IDN", "ZAF", "ARG", "SAU", "RUS"}
 
 _members = [c for c in priority_countries() if c.oecd]
 _cli_countries = [c for c in priority_countries() if c.oecd or c.iso3 in _CLI_NON_MEMBERS]
-_cpi_countries = [c for c in priority_countries() if c.oecd or c.iso3 in _CPI_NON_MEMBERS]
+# EU members take headline/core CPI from the Eurostat HICP (continuous across
+# national methodology changes); OECD covers the rest.
+_cpi_countries = [c for c in priority_countries() if (c.oecd or c.iso3 in _CPI_NON_MEMBERS) and not c.eu]
+_core_cpi_countries = [c for c in _members if c.iso3 != "USA" and not c.eu]
 # FRED owns the US yield curve (daily, longer history).
 _rate_countries = [c for c in _members if c.iso3 != "USA"]
 
@@ -39,13 +42,7 @@ SERIES: List[MacroSeries] = [
     *for_countries("BIZ_CONF", _cli_countries, "OECD", _template(_STES, measure="BCICP"), "M", seasonal_adj=True),
     *for_countries("CONS_CONF", _cli_countries, "OECD", _template(_STES, measure="CCICP"), "M", seasonal_adj=True),
     *for_countries("CPI_YOY", _cpi_countries, "OECD", _template(_PRICES, expenditure="_T"), "M"),
-    *for_countries(
-        "CORE_CPI_YOY",
-        [c for c in _members if c.iso3 != "USA"],
-        "OECD",
-        _template(_PRICES, expenditure="_TXCP01_NRG"),
-        "M",
-    ),
+    *for_countries("CORE_CPI_YOY", _core_cpi_countries, "OECD", _template(_PRICES, expenditure="_TXCP01_NRG"), "M"),
     *for_countries("UNEMP_RATE", _members, "OECD", _UNEMPLOYMENT, "M", seasonal_adj=True),
     *for_countries("GDP_YOY", _cli_countries, "OECD", _GDP, "Q", seasonal_adj=True),
     *for_countries(

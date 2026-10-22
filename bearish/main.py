@@ -32,6 +32,7 @@ from bearish.macro.catalog import select_series
 from bearish.macro.countries import iso3_from
 from bearish.macro.models import MacroQuery, Observation
 from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
+from bearish.macro.pipelines.commodities import run_commodities
 from bearish.macro.pipelines.linking import run_linking
 from bearish.macro.sources import AbstractMacroSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
@@ -500,6 +501,26 @@ class Bearish(BaseModel):
     def read_observations(self, query: Optional[MacroQuery] = None) -> List[Observation]:
         return self._bearish_db.read_observations(query)
 
+    def commodities(  # noqa: PLR0913
+        self,
+        year: Optional[int] = None,
+        series_length: SeriesLength = "max",
+        prices: bool = True,
+        observations: bool = True,
+        exposures: bool = True,
+        pause: float = 6.0,
+    ) -> None:
+        """Commodity reference, futures prices, Pink Sheet / COT observations and trade exposure."""
+        run_commodities(
+            self,
+            year=year,
+            series_length=series_length,
+            prices=prices,
+            observations=observations,
+            exposures=exposures,
+            pause=pause,
+        )
+
     def link(self) -> Dict[str, int]:
         """Populate the linking tables: country references, sector-commodity sensitivities, ETF exposure."""
         return run_linking(self._bearish_db)
@@ -720,6 +741,29 @@ def macro(  # noqa: PLR0913
         f"[bold][red]Macro downloaded! {report.series_with_data}/{report.series_requested} series, "
         f"{report.vintages_written} new vintages ({report.sources})"
     )
+
+
+@app.command()
+def commodities(  # noqa: PLR0913
+    path: Path,
+    year: Annotated[Optional[int], typer.Option(help="Comtrade reference year (default: two years ago)")] = None,
+    series_length: str = "max",
+    prices: bool = True,
+    observations: bool = True,
+    exposures: Annotated[bool, typer.Option(help="Country trade exposure from Comtrade (slow, rate limited)")] = True,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch commodity prices, monthly Pink Sheet history, CFTC positioning and country trade exposure."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching commodity data..."):
+        bearish.commodities(
+            year=year,
+            series_length=series_length,  # type: ignore[arg-type]
+            prices=prices,
+            observations=observations,
+            exposures=exposures,
+        )
+    console.log("[bold][red]Commodity data downloaded!")
 
 
 @app.command()

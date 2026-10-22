@@ -65,10 +65,14 @@ def test_oecd_groups_countries_into_one_request(oecd_api: requests_mock.Mocker) 
 
 def test_oecd_catalog_concepts_all_parse(oecd_api: requests_mock.Mocker) -> None:
     concepts = ["CLI", "BIZ_CONF", "CONS_CONF", "CPI_YOY", "CORE_CPI_YOY", "UNEMP_RATE", "GDP_YOY", "IP_YOY", "RETAIL_YOY", "Y10", "Y3M"]
-    entries = select_series(MacroQuery(concepts=concepts, entities=["FRA", "DEU", "JPN"]), sources=["OECD"])
+    # CPI for EU members (FRA, DEU) is owned by Eurostat and US core CPI by FRED,
+    # so of these four only CPI_YOY.USA (and JPN, absent from the fixture) stay with OECD.
+    entries = select_series(MacroQuery(concepts=concepts, entities=["FRA", "DEU", "JPN", "USA"]), sources=["OECD"])
+    assert {s.entity for s in entries if s.concept == "CPI_YOY"} == {"JPN", "USA"}
+    assert not [s for s in entries if s.concept == "CORE_CPI_YOY"]
     observations = OecdSource(pause=0).read_observations(entries, start=datetime.date(2025, 6, 1))
     got = {o.series_id.split(".")[0] for o in observations}
-    assert got == set(concepts)
+    assert got == set(concepts) - {"CORE_CPI_YOY"}
     ip = [o for o in observations if o.series_id == "IP_YOY.FRA"]
     assert ip and all(abs(o.value) < 30 for o in ip)  # transformed to y/y %
     assert series_by_id()["Y10.FRA"].source == "OECD"
