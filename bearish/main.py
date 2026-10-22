@@ -5,6 +5,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, List, Any, get_args, Annotated, cast, Union, Type, Callable
 
+import pandas as pd
 import typer
 from pydantic import (
     BaseModel,
@@ -25,7 +26,13 @@ from bearish.exchanges.exchanges import (
     ExchangeQuery,
     Exchanges,
 )
+from bearish.exceptions import InvalidApiKeyError
 from bearish.interface.interface import BearishDbBase
+from bearish.macro.catalog import select_series
+from bearish.macro.countries import iso3_from
+from bearish.macro.models import MacroQuery, Observation
+from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
+from bearish.macro.sources import AbstractMacroSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
@@ -101,6 +108,7 @@ class Bearish(BaseModel):
     detailed_asset_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
     financials_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
     price_sources: List[AbstractSource] = Field(default_factory=_default_price_sources)
+    macro_sources: List[AbstractMacroSource] = Field(default_factory=default_macro_sources)
 
     def model_post_init(self, __context: Any) -> None:
         self._bearish_db = BearishDb(
@@ -109,6 +117,18 @@ class Bearish(BaseModel):
         for source in self._all_sources():
             source.set_pause(self.pause)
             self._set_api_key_or_drop(source)
+        for macro_source in list(self.macro_sources):
+            self._set_macro_api_key_or_drop(macro_source)
+
+    def _set_macro_api_key_or_drop(self, source: AbstractMacroSource) -> None:
+        """Macro providers read ``<SOURCE>_API_KEY`` or the key file; keyless ones ignore it."""
+        name = source.__source__
+        api_key = self.api_keys.keys.get(name, os.environ.get(f"{name.upper()}_API_KEY"))
+        try:
+            source.set_api_key(api_key)
+        except InvalidApiKeyError as e:
+            logger.warning(f"{e}. {name} will be skipped")
+            self.macro_sources.remove(source)
 
     def _all_sources(self) -> set[AbstractSource]:
         return set(
@@ -375,6 +395,52 @@ class Bearish(BaseModel):
         )
         return etf_symbols
 
+    # --- macro -------------------------------------------------------------
+
+    @staticmethod
+    def _macro_query(
+        countries: Optional[List[str]] = None,
+        categories: Optional[List[str]] = None,
+        sources: Optional[List[str]] = None,
+        concepts: Optional[List[str]] = None,
+    ) -> MacroQuery:
+        """Build a catalog query; country names/ISO-2 are accepted and mapped to ISO-3."""
+        entities: List[str] = []
+        for country in countries or []:
+            iso3 = iso3_from(country) or country.upper()
+            entities.append(iso3)
+        return MacroQuery(
+            entities=entities,
+            categories=categories or [],
+            sources=sources or [],
+            concepts=concepts or [],
+        )
+
+    def write_macro(
+        self,
+        query: Optional[MacroQuery] = None,
+        start: Optional[datetime.date] = None,
+    ) -> MacroRunReport:
+        """Fetch every catalog series matching ``query`` (all priority series when None)."""
+        series = select_series(query)
+        if query and query.entities:
+            # Regional/global series are always relevant when a country is asked for.
+            series += [
+                s
+                for s in select_series(query.model_copy(update={"entities": []}))
+                if s.entity_type in {"region", "global"} and s not in series
+            ]
+        return fetch_macro(self._bearish_db, self.macro_sources, series, start=start)
+
+    def update_macro(self, query: Optional[MacroQuery] = None, delay: int = 1) -> MacroRunReport:
+        return update_macro(self._bearish_db, self.macro_sources, query=query, delay_days=delay)
+
+    def read_macro(self, query: Optional[MacroQuery] = None) -> pd.DataFrame:
+        return self._bearish_db.read_macro_frame(query)
+
+    def read_observations(self, query: Optional[MacroQuery] = None) -> List[Observation]:
+        return self._bearish_db.read_observations(query)
+
     def _update(
         self,
         tracker_type: Union[Type[PriceTracker], Type[FinancialsTracker]],
@@ -553,12 +619,37 @@ def sec(
 
 
 @app.command()
+def macro(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[
+        Optional[List[str]],
+        typer.Argument(help="ISO-3/ISO-2 codes or names; default: every priority country"),
+    ] = None,
+    categories: Annotated[Optional[List[str]], typer.Option(help="growth, inflation, rates, credit, ...")] = None,
+    sources: Annotated[Optional[List[str]], typer.Option(help="Restrict to providers, e.g. OECD FRED")] = None,
+    concepts: Annotated[Optional[List[str]], typer.Option(help="Restrict to concepts, e.g. CPI_YOY")] = None,
+    start: Annotated[Optional[datetime.datetime], typer.Option(help="Earliest observation date")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch macro-economic series (growth, inflation, rates, credit, sentiment) point-in-time."""
+    bearish = _bearish_from(path, api_keys)
+    query = Bearish._macro_query(countries, categories, sources, concepts)
+    with console.status("[bold green]Fetching macro data..."):
+        report = bearish.write_macro(query, start=start.date() if start else None)
+    console.log(
+        f"[bold][red]Macro downloaded! {report.series_with_data}/{report.series_requested} series, "
+        f"{report.vintages_written} new vintages ({report.sources})"
+    )
+
+
+@app.command()
 def update(  # noqa: PLR0913
     path: Path,
     etf: bool = True,
     index: bool = True,
     sec: bool = True,
     financials: bool = True,
+    macro: bool = True,
     symbols: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
     series_length: str = "1mo",
@@ -573,6 +664,9 @@ def update(  # noqa: PLR0913
         Secs.upload(bearish._bearish_db)  # type: ignore
     if financials:
         bearish.update_financials(symbols)
+    if macro:
+        report = bearish.update_macro()
+        console.log(f"[bold][red]Macro updated! {report.vintages_written} new vintages")
 
 
 if __name__ == "__main__":

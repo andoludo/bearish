@@ -125,6 +125,54 @@ price rows include dividends and stock splits.
 
 ---
 
+## 🌐 Macro, commodity & regime data
+
+Beyond tickers, Bearish stores **open macro-economic data keyed by concept
+and entity** so that countries and commodities can be compared on the same
+footing and later turned into KPIs:
+
+- a **concept** is a normalised meaning (`CPI_YOY`, `POLICY_RATE`, `CLI`,
+  `HY_SPREAD`, `COT_NET_SPEC`, …; see `bearish/macro/catalog/concepts.py`);
+- an **entity** is an ISO-3 country (`FRA`), a region (`EA20`, `WLD`) or a
+  commodity code (`BRENT`, `COPPER`; see `bearish/macro/commodities.py`);
+- the **catalog** (`bearish/macro/catalog/`) maps each `concept.entity` to
+  exactly one provider series. Providers are keyless open APIs: OECD, FRED,
+  IMF, World Bank, BIS, ECB, Eurostat, policy-uncertainty and geopolitical
+  risk indices, CFTC positioning, the World Bank Pink Sheet, Ken French
+  factors (FRED also accepts an optional `FRED_API_KEY`).
+
+Observations are stored **point-in-time**: every value carries the `as_of`
+date on which it was known, and a provider revision is written as a new
+vintage instead of overwriting the old one. `macrolatest` is a view of the
+newest vintage per `(series_id, date)`; `read_observations(as_of=...)` answers
+"what was known on that day", which is what keeps a backtest of
+LLM-generated recommendations honest.
+
+```bash
+# every priority country (G7 + China + India + the countries supported by the
+# equity pipeline), every category
+bearish macro /path/to/sqlite/db
+
+# a subset: two countries, only rates and credit, from 2015
+bearish macro /path/to/sqlite/db FRA DEU --categories rates --categories credit --start 2015-01-01
+```
+
+Tables: `macroseries` (catalog mirror), `macroobservation`
+(`series_id, date, value, as_of`), `macrotracker` (last fetched date per
+series, used by `bearish update --macro` to refresh only what is due and to
+re-request a revision window). From Python:
+
+```python
+from bearish.main import Bearish
+from bearish.macro.models import MacroQuery
+
+bearish = Bearish(path="/path/to/sqlite/db")
+frame = bearish.read_macro(MacroQuery(entities=["FRA", "USA"], categories=["inflation", "rates"]))
+known_then = bearish.read_observations(MacroQuery(concepts=["GDP_YOY"], as_of="2025-06-30"))
+```
+
+---
+
 ## 🔄 Updating Data
 
 ### 💵 Update Prices
