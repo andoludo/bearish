@@ -1,6 +1,6 @@
 [project]
 name = "bearishpy"
-version = "0.50.0"
+version = "0.51.0"
 description = "Query financial and price data from various sources and persist it into a well-structured SQLite database for further analysis."
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
