@@ -38,6 +38,7 @@ from bearish.macro.sources import AbstractMacroSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
+from bearish.models.assets.snapshots import Snapshots
 from bearish.models.base import Ticker, TrackerQuery, FinancialsTracker, PriceTracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
@@ -222,6 +223,9 @@ class Bearish(BaseModel):
                 f"writing assets from {type(source).__name__}. Number of symbols: {len(assets_.symbols())}"
             )
             self._bearish_db.write_assets(assets_)
+            snapshots = Snapshots.from_assets(assets_)
+            if not snapshots.is_empty():
+                self._bearish_db.write_snapshots(snapshots)
             self._bearish_db.write_source(source.__source__)
             if use_all_sources:
                 continue

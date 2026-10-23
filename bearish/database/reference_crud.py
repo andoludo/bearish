@@ -13,7 +13,9 @@ from bearish.database.schemas import (
     CountryAliasORM,
     CountryCommodityExposureORM,
     CountryRefORM,
+    EquitySnapshotORM,
     EtfExposureORM,
+    EtfSnapshotORM,
     Holding13FORM,
     Holding13FSummaryORM,
     InsiderTransactionORM,
@@ -24,6 +26,7 @@ from bearish.database.schemas import (
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.sectors import SectorAlias
+from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.utils.utils import batch
@@ -82,6 +85,18 @@ class ReferenceCrudMixin:
         self, country: Optional[str] = None, commodity: Optional[str] = None
     ) -> List[CountryCommodityExposure]:
         return self._select(CountryCommodityExposureORM, CountryCommodityExposure, country=country, commodity=commodity)
+
+    # snapshots -----------------------------------------------------------
+
+    def _write_snapshots(self, snapshots: Snapshots) -> None:
+        self._upsert(EquitySnapshotORM, [s.model_dump() for s in snapshots.equities])
+        self._upsert(EtfSnapshotORM, [s.model_dump() for s in snapshots.etfs])
+
+    def _read_equity_snapshots(self, symbol: Optional[str] = None) -> List[EquitySnapshot]:
+        return self._select(EquitySnapshotORM, EquitySnapshot, symbol=symbol)
+
+    def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
+        return self._select(EtfSnapshotORM, EtfSnapshot, symbol=symbol)
 
     # insiders ------------------------------------------------------------
 

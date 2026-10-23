@@ -3642,6 +3642,7 @@
       "zipcode": null
     }
   ],
+  "equitysnapshot": [],
   "etf": [
     {
       "annual_holdings_turnover": null,
@@ -7472,6 +7473,7 @@
     }
   ],
   "etfexposure": [],
+  "etfsnapshot": [],
   "filing": [],
   "financialmetrics": [],
   "financialstracker": [],

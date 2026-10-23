@@ -98,6 +98,24 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ---
 
+## 📸 Daily snapshots of asset fields
+
+The `equity` and `etf` tables are overwritten on every detailed fetch, so
+Bearish also appends a dated copy of their fast-moving fields on each run:
+
+- **`equitysnapshot`** — per `(symbol, source, as_of)`: market capitalisation,
+  shares outstanding, float, **short interest** (`short_shares`,
+  `short_ratio`), valuation ratios (P/E, P/B, P/S, PEG, dividend yield),
+  margins and growth as the provider reports them that day.
+- **`etfsnapshot`** — per `(symbol, source, as_of)`: **assets under
+  management** (`total_net_assets`), `nav_price`, expense ratio, turnover,
+  valuation ratios, top holdings and sector weights.
+
+Nothing is derived; fund flows, premium / discount to NAV, short-interest and
+valuation trends are downstream calculations on these histories.
+
+---
+
 ## 🧑‍💼 Analyst data & filings
 
 Alongside statements and prices, Bearish records raw analyst data from

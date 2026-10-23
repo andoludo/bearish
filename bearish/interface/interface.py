@@ -16,6 +16,7 @@ from bearish.macro.sectors import SectorAlias
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.assets.assets import Assets
+from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
 from bearish.models.base import (
     TrackerQuery,
     Ticker,
@@ -42,6 +43,16 @@ class BearishDbBase(BaseModel):
     @validate_call
     def write_assets(self, assets: Assets) -> None:
         return self._write_assets(assets)
+
+    @validate_call
+    def write_snapshots(self, snapshots: Snapshots) -> None:
+        return self._write_snapshots(snapshots)
+
+    def read_equity_snapshots(self, symbol: Optional[str] = None) -> List[EquitySnapshot]:
+        return self._read_equity_snapshots(symbol=symbol)
+
+    def read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
+        return self._read_etf_snapshots(symbol=symbol)
 
     @observability
     @validate_call
@@ -335,6 +346,15 @@ class BearishDbBase(BaseModel):
     def _read_etf_exposures(
         self, symbol: Optional[str] = None, entity: Optional[str] = None
     ) -> List[EtfExposure]: ...
+
+    @abc.abstractmethod
+    def _write_snapshots(self, snapshots: Snapshots) -> None: ...
+
+    @abc.abstractmethod
+    def _read_equity_snapshots(self, symbol: Optional[str] = None) -> List[EquitySnapshot]: ...
+
+    @abc.abstractmethod
+    def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]: ...
 
     @abc.abstractmethod
     def _write_series(

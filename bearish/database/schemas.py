@@ -11,6 +11,7 @@ from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.assets.index import Index
+from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot
 from bearish.models.base import PriceTracker, FinancialsTracker
 from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
@@ -70,6 +71,22 @@ class CurrencyORM(BaseTable, Currency, table=True):  # type: ignore
 class EtfORM(BaseTable, Etf, table=True):  # type: ignore
     __tablename__ = "etf"
 
+    holding_percent: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
+    sector_weightings: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
+
+
+class EquitySnapshotORM(SQLModel, EquitySnapshot, table=True):  # type: ignore
+    __tablename__ = "equitysnapshot"
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
+
+
+class EtfSnapshotORM(SQLModel, EtfSnapshot, table=True):  # type: ignore
+    __tablename__ = "etfsnapshot"
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
     holding_percent: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
     sector_weightings: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
 
