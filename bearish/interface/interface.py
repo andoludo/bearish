@@ -9,6 +9,11 @@ from pydantic import BaseModel, ConfigDict, validate_call
 from sqlmodel import SQLModel
 
 from bearish.exchanges.exchanges import ExchangeQuery
+from bearish.macro.commodities import Commodity, CountryCommodityExposure
+from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
+from bearish.macro.models import MacroQuery, MacroSeries, MacroTracker, Observation
+from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
+from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.assets.assets import Assets
 from bearish.models.base import (
     TrackerQuery,
@@ -130,8 +135,192 @@ class BearishDbBase(BaseModel):
     def read_query(self, query: str) -> pd.DataFrame:
         return self._read_query(query)
 
+    # --- macro -----------------------------------------------------------
+
+    @validate_call
+    def write_macro_series(self, series: List[MacroSeries]) -> None:
+        return self._write_macro_series(series)
+
+    @validate_call
+    def read_macro_series(self, query: Optional[MacroQuery] = None) -> List[MacroSeries]:
+        return self._read_macro_series(query or MacroQuery())
+
+    @validate_call
+    def write_observations(self, observations: List[Observation]) -> int:
+        """Store observations point-in-time; returns the number of new vintages written."""
+        return self._write_observations(observations)
+
+    @validate_call
+    def read_observations(self, query: Optional[MacroQuery] = None) -> List[Observation]:
+        return self._read_observations(query or MacroQuery())
+
+    def read_macro_frame(self, query: Optional[MacroQuery] = None) -> pd.DataFrame:
+        """Observations as a wide frame: one row per date, one column per series_id."""
+        observations = self.read_observations(query)
+        if not observations:
+            return pd.DataFrame()
+        frame = pd.DataFrame([o.model_dump() for o in observations])
+        return frame.pivot_table(index="date", columns="series_id", values="value", aggfunc="last").sort_index()
+
+    @validate_call
+    def write_macro_trackers(self, trackers: List[MacroTracker]) -> None:
+        return self._write_macro_trackers(trackers)
+
+    @validate_call
+    def read_macro_trackers(self) -> List[MacroTracker]:
+        return self._read_macro_trackers()
+
+    # --- reference & linking tables ---------------------------------------
+
+    @validate_call
+    def write_commodities(self, commodities: List[Commodity]) -> None:
+        return self._write_commodities(commodities)
+
+    def read_commodities(self) -> List[Commodity]:
+        return self._read_commodities()
+
+    @validate_call
+    def write_country_exposures(self, exposures: List[CountryCommodityExposure]) -> None:
+        return self._write_country_exposures(exposures)
+
+    def read_country_exposures(
+        self, country: Optional[str] = None, commodity: Optional[str] = None
+    ) -> List[CountryCommodityExposure]:
+        return self._read_country_exposures(country=country, commodity=commodity)
+
+    @validate_call
+    def write_insider_transactions(self, transactions: List[InsiderTransaction]) -> None:
+        return self._write_insider_transactions(transactions)
+
+    def read_insider_transactions(self, symbol: Optional[str] = None) -> List[InsiderTransaction]:
+        return self._read_insider_transactions(symbol=symbol)
+
+    @validate_call
+    def write_holdings13f(self, holdings: List[Holding13F]) -> None:
+        return self._write_holdings13f(holdings)
+
+    def read_holdings13f(self, symbol: Optional[str] = None, manager_cik: Optional[str] = None) -> List[Holding13F]:
+        return self._read_holdings13f(symbol=symbol, manager_cik=manager_cik)
+
+    @validate_call
+    def write_holdings13f_summary(self, summaries: List[Holding13FSummary]) -> None:
+        return self._write_holdings13f_summary(summaries)
+
+    def read_holdings13f_summary(
+        self, symbol: Optional[str] = None, cusip: Optional[str] = None
+    ) -> List[Holding13FSummary]:
+        return self._read_holdings13f_summary(symbol=symbol, cusip=cusip)
+
+    @validate_call
+    def write_ownership13dg(self, rows: List[Ownership13DG]) -> None:
+        return self._write_ownership13dg(rows)
+
+    def read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]:
+        return self._read_ownership13dg(symbol=symbol)
+
+    @validate_call
+    def write_country_references(self, refs: List[CountryRef], aliases: List[CountryAlias]) -> None:
+        return self._write_country_references(refs, aliases)
+
+    def read_country_references(self) -> List[CountryRef]:
+        return self._read_country_references()
+
+    @validate_call
+    def write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None:
+        return self._write_sector_sensitivities(sensitivities)
+
+    def read_sector_sensitivities(self, commodity: Optional[str] = None) -> List[SectorCommoditySensitivity]:
+        return self._read_sector_sensitivities(commodity=commodity)
+
+    @validate_call
+    def write_etf_exposures(self, exposures: List[EtfExposure]) -> None:
+        return self._write_etf_exposures(exposures)
+
+    def read_etf_exposures(self, symbol: Optional[str] = None, entity: Optional[str] = None) -> List[EtfExposure]:
+        return self._read_etf_exposures(symbol=symbol, entity=entity)
+
     @abc.abstractmethod
     def _write_assets(self, assets: Assets) -> None: ...
+
+    @abc.abstractmethod
+    def _write_macro_series(self, series: List[MacroSeries]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_macro_series(self, query: MacroQuery) -> List[MacroSeries]: ...
+
+    @abc.abstractmethod
+    def _write_observations(self, observations: List[Observation]) -> int: ...
+
+    @abc.abstractmethod
+    def _read_observations(self, query: MacroQuery) -> List[Observation]: ...
+
+    @abc.abstractmethod
+    def _write_macro_trackers(self, trackers: List[MacroTracker]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_macro_trackers(self) -> List[MacroTracker]: ...
+
+    @abc.abstractmethod
+    def _write_commodities(self, commodities: List[Commodity]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_commodities(self) -> List[Commodity]: ...
+
+    @abc.abstractmethod
+    def _write_country_exposures(self, exposures: List[CountryCommodityExposure]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_country_exposures(
+        self, country: Optional[str] = None, commodity: Optional[str] = None
+    ) -> List[CountryCommodityExposure]: ...
+
+    @abc.abstractmethod
+    def _write_insider_transactions(self, transactions: List[InsiderTransaction]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_insider_transactions(self, symbol: Optional[str] = None) -> List[InsiderTransaction]: ...
+
+    @abc.abstractmethod
+    def _write_holdings13f(self, holdings: List[Holding13F]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_holdings13f(
+        self, symbol: Optional[str] = None, manager_cik: Optional[str] = None
+    ) -> List[Holding13F]: ...
+
+    @abc.abstractmethod
+    def _write_holdings13f_summary(self, summaries: List[Holding13FSummary]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_holdings13f_summary(
+        self, symbol: Optional[str] = None, cusip: Optional[str] = None
+    ) -> List[Holding13FSummary]: ...
+
+    @abc.abstractmethod
+    def _write_ownership13dg(self, rows: List[Ownership13DG]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]: ...
+
+    @abc.abstractmethod
+    def _write_country_references(self, refs: List[CountryRef], aliases: List[CountryAlias]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_country_references(self) -> List[CountryRef]: ...
+
+    @abc.abstractmethod
+    def _write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_sector_sensitivities(self, commodity: Optional[str] = None) -> List[SectorCommoditySensitivity]: ...
+
+    @abc.abstractmethod
+    def _write_etf_exposures(self, exposures: List[EtfExposure]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_etf_exposures(
+        self, symbol: Optional[str] = None, entity: Optional[str] = None
+    ) -> List[EtfExposure]: ...
 
     @abc.abstractmethod
     def _write_series(

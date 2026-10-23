@@ -3,8 +3,9 @@ import logging
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Any, get_args, Annotated, cast, Union, Type, Callable
+from typing import Optional, List, Any, Dict, get_args, Annotated, cast, Union, Type, Callable
 
+import pandas as pd
 import typer
 from pydantic import (
     BaseModel,
@@ -25,7 +26,15 @@ from bearish.exchanges.exchanges import (
     ExchangeQuery,
     Exchanges,
 )
+from bearish.exceptions import InvalidApiKeyError
 from bearish.interface.interface import BearishDbBase
+from bearish.macro.catalog import select_series
+from bearish.macro.countries import iso3_from
+from bearish.macro.models import MacroQuery, Observation
+from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
+from bearish.macro.pipelines.commodities import run_commodities
+from bearish.macro.pipelines.linking import run_linking
+from bearish.macro.sources import AbstractMacroSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
@@ -36,6 +45,10 @@ from bearish.models.price.prices import Prices
 from bearish.models.query.query import AssetQuery, Symbols
 from bearish.models.sec.sec import Secs
 from bearish.sources.edgar_filings import fetch_filings
+from bearish.sources.sec_13f import HoldingsReport, SecurityMapper, list_data_sets, load_holdings, pick_data_sets
+from bearish.sources.sec_insiders import fetch_insider_transactions
+from bearish.sources.sec_ownership import fetch_ownership
+from bearish.sources.sec_xbrl import SecXbrlSource
 from bearish.sources.base import AbstractSource
 from bearish.sources.financedatabase import FinanceDatabaseSource
 from bearish.sources.investpy import InvestPySource
@@ -84,6 +97,12 @@ def _default_detailed_sources() -> List[AbstractSource]:
     return [yFinanceSource(), YahooQuerySource()]
 
 
+def _default_financials_sources() -> List[AbstractSource]:
+    # SEC XBRL first: as-reported statements with real filing dates for US
+    # filers; it yields nothing for other tickers, which fall through to Yahoo.
+    return [SecXbrlSource(), yFinanceSource(), YahooQuerySource()]
+
+
 def _default_price_sources() -> List[AbstractSource]:
     return [yFinanceSource(), YahooQuerySource(), TiingoSource()]
 
@@ -99,8 +118,9 @@ class Bearish(BaseModel):
     exchanges: Exchanges = Field(default_factory=exchanges_factory)
     asset_sources: List[AbstractSource] = Field(default_factory=_default_asset_sources)
     detailed_asset_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
-    financials_sources: List[AbstractSource] = Field(default_factory=_default_detailed_sources)
+    financials_sources: List[AbstractSource] = Field(default_factory=_default_financials_sources)
     price_sources: List[AbstractSource] = Field(default_factory=_default_price_sources)
+    macro_sources: List[AbstractMacroSource] = Field(default_factory=default_macro_sources)
 
     def model_post_init(self, __context: Any) -> None:
         self._bearish_db = BearishDb(
@@ -109,6 +129,18 @@ class Bearish(BaseModel):
         for source in self._all_sources():
             source.set_pause(self.pause)
             self._set_api_key_or_drop(source)
+        for macro_source in list(self.macro_sources):
+            self._set_macro_api_key_or_drop(macro_source)
+
+    def _set_macro_api_key_or_drop(self, source: AbstractMacroSource) -> None:
+        """Macro providers read ``<SOURCE>_API_KEY`` or the key file; keyless ones ignore it."""
+        name = source.__source__
+        api_key = self.api_keys.keys.get(name, os.environ.get(f"{name.upper()}_API_KEY"))
+        try:
+            source.set_api_key(api_key)
+        except InvalidApiKeyError as e:
+            logger.warning(f"{e}. {name} will be skipped")
+            self.macro_sources.remove(source)
 
     def _all_sources(self) -> set[AbstractSource]:
         return set(
@@ -236,32 +268,48 @@ class Bearish(BaseModel):
         return self._get_tracked_tickers(TrackerQuery(), PriceTracker)
 
     def write_many_financials(self, tickers: List[Ticker]) -> None:
+        """Fetch statements per batch, falling through the financials sources per ticker.
+
+        The first source is asked for the whole batch; tickers it returns
+        nothing for (e.g. non-US names when SEC XBRL is first) are passed to
+        the next source, so each ticker is filled by the first provider that
+        covers it.
+        """
         logger.warning(f"Found tickers without financials: {len(tickers)}")
-        chunks = batch(tickers, size=self.batch_size)
-        source = self.financials_sources[0]
+        for chunk in batch(tickers, size=self.batch_size):
+            remaining = list(chunk)
+            for source in self.financials_sources:
+                if not remaining:
+                    break
+                logger.debug(f"getting financial data for {len(remaining)} tickers from {source.__source__}")
+                try:
+                    financials_ = source.read_financials(remaining)
+                except Exception as e:  # keep going: one failed batch must not stop the run
+                    logger.error(f"Error reading data using {source.__source__}: {e}")
+                    continue
+                covered = self._symbols_with_financials(financials_)
+                if not covered:
+                    continue
+                self._bearish_db.write_financials(financials_)
+                self._bearish_db.write_trackers(
+                    [
+                        FinancialsTracker(symbol=t.symbol, source=source.__source__, exchange=t.exchange)
+                        for t in remaining
+                        if t.symbol in covered
+                    ]
+                )
+                remaining = [t for t in remaining if t.symbol not in covered]
+            if remaining:
+                logger.warning(f"No financial data found for {[t.symbol for t in remaining]}")
 
-        for chunk in chunks:
-            logger.debug(f"getting financial data for {len(chunk)} tickers")
-            try:
-                financials_ = source.read_financials(chunk)
-            except Exception as e:  # keep going: one failed batch must not stop the run
-                logger.error(f"Error reading data using {source.__source__}: {e}")
-                continue
-
-            if not financials_:
-                logger.warning("No financial data found.")
-                continue
-            self._bearish_db.write_financials(financials_)
-            self._bearish_db.write_trackers(
-                [
-                    FinancialsTracker(
-                        symbol=t.symbol,
-                        source=source.__source__,
-                        exchange=t.exchange,
-                    )
-                    for t in chunk
-                ]
-            )
+    @staticmethod
+    def _symbols_with_financials(financials: List[Financials]) -> set[str]:
+        return {
+            item.symbol
+            for financial in financials
+            for field in type(financial).model_fields
+            for item in getattr(financial, field)
+        }
 
     @validate_call
     def write_many_series(
@@ -338,6 +386,72 @@ class Bearish(BaseModel):
         self._bearish_db.write_filings(filings)
         self._bearish_db.backfill_filed_dates()
 
+    def get_insiders(
+        self,
+        filter: Filter,
+        since: Optional[datetime.date] = None,
+        max_filings: int = 50,
+    ) -> int:
+        """Fetch SEC Form 4 insider transactions for the filtered tickers; returns rows written."""
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        transactions = fetch_insider_transactions(
+            [t.symbol for t in tickers], since=since, max_filings=max_filings
+        )
+        logger.debug(f"Fetched {len(transactions)} insider transactions")
+        self._bearish_db.write_insider_transactions(transactions)
+        return len(transactions)
+
+    def get_holdings(
+        self,
+        windows: int = 2,
+        managers: Optional[List[str]] = None,
+        top_managers: int = 300,
+        data_sets: Optional[List[str]] = None,
+    ) -> HoldingsReport:
+        """Load Form 13F institutional holdings from the SEC bulk data sets.
+
+        ``windows`` newest filing windows are loaded (two give the latest
+        quarter plus the one before it, which is what the per-security flows
+        need). Per-manager rows are kept for ``managers`` plus the
+        ``top_managers`` largest filers; summaries cover every security.
+        """
+        available = list_data_sets()
+        refs, unknown = pick_data_sets(available, windows, data_sets)
+        if unknown:
+            raise ValueError(f"Unknown 13F data sets: {unknown}. Available: {[r.name for r in available[:8]]}...")
+        return load_holdings(
+            self._bearish_db,
+            refs,
+            managers=managers,
+            top_n=top_managers,
+            mapper=SecurityMapper.from_db(self._bearish_db),
+        )
+
+    def get_ownership(
+        self,
+        filter: Filter,
+        since: Optional[datetime.date] = None,
+        max_filings: int = 100,
+    ) -> int:
+        """Fetch Schedule 13D/13G beneficial-ownership filings (>= 5 % holders) for the filtered tickers."""
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        tickers = filter.filter(tickers)
+        rows = fetch_ownership([t.symbol for t in tickers], since=since, max_filings=max_filings)
+        logger.debug(f"Fetched {len(rows)} Schedule 13D/13G rows")
+        self._bearish_db.write_ownership13dg(rows)
+        return len(rows)
+
     def get_prices(self, filter: Filter) -> None:
         tickers = self.get_tickers(
             self.exchanges.get_exchange_query(
@@ -360,9 +474,22 @@ class Bearish(BaseModel):
         )
 
     def get_prices_etf(
-        self, series_length: SeriesLength = "max", limit: Optional[int] = None
+        self,
+        series_length: SeriesLength = "max",
+        limit: Optional[int] = None,
+        exchanges: Optional[List[str]] = None,
     ) -> List[str]:
-        query_etfs = "SELECT DISTINCT symbol from etf;"
+        """Fetch ETF prices; ``exchanges`` restricts to listings on those exchange codes.
+
+        Many ETF rows are secondary listings (Berlin, Munich, ...) with no price
+        history at the providers, so callers interested in liquid data pass the
+        primary exchanges (e.g. ``["NYSE", "PCX", "NMS"]``).
+        """
+        query_etfs = "SELECT DISTINCT symbol FROM etf"
+        if exchanges:
+            exchange_list = ",".join(f"'{exchange}'" for exchange in exchanges)
+            query_etfs += f" WHERE exchange IN ({exchange_list})"
+        query_etfs += " ORDER BY symbol;"
         etf_symbols = self._bearish_db.read_query(query_etfs)["symbol"].tolist()
         if limit:
             etf_symbols = etf_symbols[:limit]
@@ -374,6 +501,76 @@ class Bearish(BaseModel):
             track=False,
         )
         return etf_symbols
+
+    # --- macro -------------------------------------------------------------
+
+    @staticmethod
+    def _macro_query(
+        countries: Optional[List[str]] = None,
+        categories: Optional[List[str]] = None,
+        sources: Optional[List[str]] = None,
+        concepts: Optional[List[str]] = None,
+    ) -> MacroQuery:
+        """Build a catalog query; country names/ISO-2 are accepted and mapped to ISO-3."""
+        entities: List[str] = []
+        for country in countries or []:
+            iso3 = iso3_from(country) or country.upper()
+            entities.append(iso3)
+        return MacroQuery(
+            entities=entities,
+            categories=categories or [],
+            sources=sources or [],
+            concepts=concepts or [],
+        )
+
+    def write_macro(
+        self,
+        query: Optional[MacroQuery] = None,
+        start: Optional[datetime.date] = None,
+    ) -> MacroRunReport:
+        """Fetch every catalog series matching ``query`` (all priority series when None)."""
+        series = select_series(query)
+        if query and query.entities:
+            # Regional/global series are always relevant when a country is asked for.
+            series += [
+                s
+                for s in select_series(query.model_copy(update={"entities": []}))
+                if s.entity_type in {"region", "global"} and s not in series
+            ]
+        return fetch_macro(self._bearish_db, self.macro_sources, series, start=start)
+
+    def update_macro(self, query: Optional[MacroQuery] = None, delay: int = 1) -> MacroRunReport:
+        return update_macro(self._bearish_db, self.macro_sources, query=query, delay_days=delay)
+
+    def read_macro(self, query: Optional[MacroQuery] = None) -> pd.DataFrame:
+        return self._bearish_db.read_macro_frame(query)
+
+    def read_observations(self, query: Optional[MacroQuery] = None) -> List[Observation]:
+        return self._bearish_db.read_observations(query)
+
+    def commodities(  # noqa: PLR0913
+        self,
+        year: Optional[int] = None,
+        series_length: SeriesLength = "max",
+        prices: bool = True,
+        observations: bool = True,
+        exposures: bool = True,
+        pause: float = 6.0,
+    ) -> None:
+        """Commodity reference, futures prices, Pink Sheet / COT observations and trade exposure."""
+        run_commodities(
+            self,
+            year=year,
+            series_length=series_length,
+            prices=prices,
+            observations=observations,
+            exposures=exposures,
+            pause=pause,
+        )
+
+    def link(self) -> Dict[str, int]:
+        """Populate the linking tables: country references, sector-commodity sensitivities, ETF exposure."""
+        return run_linking(self._bearish_db)
 
     def _update(
         self,
@@ -543,6 +740,60 @@ def filings(
 
 
 @app.command()
+def insiders(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    since: Annotated[Optional[datetime.datetime], typer.Option(help="Only filings filed on/after this date")] = None,
+    max_filings: Annotated[int, typer.Option(help="Newest Form 4 filings fetched per symbol")] = 50,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch SEC Form 4 insider transactions (US filers) into the insidertransaction table."""
+    with console.status("[bold green]Fetching insider transactions..."):
+        bearish = _bearish_from(path, api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        written = bearish.get_insiders(filter, since=since.date() if since else None, max_filings=max_filings)
+        console.log(f"[bold][red]{written} insider transactions downloaded!")
+
+
+@app.command()
+def holdings(  # noqa: PLR0913
+    path: Path,
+    windows: Annotated[int, typer.Option(help="Newest 13F filing windows to load (2 = latest quarter + prior)")] = 2,
+    managers: Annotated[Optional[List[str]], typer.Option(help="Manager CIKs always stored")] = None,
+    top_managers: Annotated[int, typer.Option(help="Also store the N largest managers by reported value")] = 300,
+    data_set: Annotated[Optional[List[str]], typer.Option(help="Explicit data set names instead of --windows")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Load Form 13F institutional holdings (per manager) and per-security holder flows from the SEC bulk data sets."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Loading 13F data sets (about 100 MB each)..."):
+        report = bearish.get_holdings(windows=windows, managers=managers, top_managers=top_managers, data_sets=data_set)
+    console.log(
+        f"[bold][red]13F loaded! {report.holdings_written} positions for {report.managers_stored} managers, "
+        f"{report.summaries_written} security summaries ({report.symbols_resolved} with a symbol), "
+        f"periods {report.periods}"
+    )
+
+
+@app.command()
+def ownership(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    since: Annotated[Optional[datetime.datetime], typer.Option(help="Filed on/after this date")] = None,
+    max_filings: Annotated[int, typer.Option(help="Newest Schedule 13D/13G filings fetched per symbol")] = 100,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch Schedule 13D/13G filings (holders crossing 5 %, activists) into the ownership13dg table."""
+    with console.status("[bold green]Fetching Schedule 13D/13G filings..."):
+        bearish = _bearish_from(path, api_keys)
+        filter = Filter(countries=countries, filters=filters)
+        written = bearish.get_ownership(filter, since=since.date() if since else None, max_filings=max_filings)
+        console.log(f"[bold][red]{written} beneficial-ownership rows downloaded!")
+
+
+@app.command()
 def sec(
     path: Path,
     api_keys: Optional[Path] = None,
@@ -553,12 +804,69 @@ def sec(
 
 
 @app.command()
+def macro(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[
+        Optional[List[str]],
+        typer.Argument(help="ISO-3/ISO-2 codes or names; default: every priority country"),
+    ] = None,
+    categories: Annotated[Optional[List[str]], typer.Option(help="growth, inflation, rates, credit, ...")] = None,
+    sources: Annotated[Optional[List[str]], typer.Option(help="Restrict to providers, e.g. OECD FRED")] = None,
+    concepts: Annotated[Optional[List[str]], typer.Option(help="Restrict to concepts, e.g. CPI_YOY")] = None,
+    start: Annotated[Optional[datetime.datetime], typer.Option(help="Earliest observation date")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch macro-economic series (growth, inflation, rates, credit, sentiment) point-in-time."""
+    bearish = _bearish_from(path, api_keys)
+    query = Bearish._macro_query(countries, categories, sources, concepts)
+    with console.status("[bold green]Fetching macro data..."):
+        report = bearish.write_macro(query, start=start.date() if start else None)
+    console.log(
+        f"[bold][red]Macro downloaded! {report.series_with_data}/{report.series_requested} series, "
+        f"{report.vintages_written} new vintages ({report.sources})"
+    )
+
+
+@app.command()
+def commodities(  # noqa: PLR0913
+    path: Path,
+    year: Annotated[Optional[int], typer.Option(help="Comtrade reference year (default: two years ago)")] = None,
+    series_length: str = "max",
+    prices: bool = True,
+    observations: bool = True,
+    exposures: Annotated[bool, typer.Option(help="Country trade exposure from Comtrade (slow, rate limited)")] = True,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch commodity prices, monthly Pink Sheet history, CFTC positioning and country trade exposure."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching commodity data..."):
+        bearish.commodities(
+            year=year,
+            series_length=series_length,  # type: ignore[arg-type]
+            prices=prices,
+            observations=observations,
+            exposures=exposures,
+        )
+    console.log("[bold][red]Commodity data downloaded!")
+
+
+@app.command()
+def link(path: Path, api_keys: Optional[Path] = None) -> None:
+    """Build the tables that connect macro/commodity entities to equities, sectors and ETFs."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Building linking tables..."):
+        counts = bearish.link()
+    console.log(f"[bold][red]Linking tables built! {counts}")
+
+
+@app.command()
 def update(  # noqa: PLR0913
     path: Path,
     etf: bool = True,
     index: bool = True,
     sec: bool = True,
     financials: bool = True,
+    macro: bool = True,
     symbols: Optional[List[str]] = None,
     api_keys: Optional[Path] = None,
     series_length: str = "1mo",
@@ -573,6 +881,9 @@ def update(  # noqa: PLR0913
         Secs.upload(bearish._bearish_db)  # type: ignore
     if financials:
         bearish.update_financials(symbols)
+    if macro:
+        report = bearish.update_macro()
+        console.log(f"[bold][red]Macro updated! {report.vintages_written} new vintages")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><edgarSubmission xmlns="http://www.sec.gov/edgar/schedule13g" xmlns:com="http://www.sec.gov/edgar/common">
+  <schemaVersion>X0202</schemaVersion>
+<headerData>
+    <submissionType>SCHEDULE 13G</submissionType>
+    <filerInfo>
+      <filer>
+        <filerCredentials>
+          <!-- Field: Pseudo-Tag; ID: Name; Data: HIRSCHMAN ORIN -->
+          <cik>0001131362</cik>
+          <ccc>XXXXXXXX</ccc>
+        </filerCredentials>
+      </filer>
+      <liveTestFlag>LIVE</liveTestFlag>
+
+
+
+    </filerInfo>
+  </headerData>
+  <formData>
+    <coverPageHeader>
+      <securitiesClassTitle>Common Stock, $0.00001 par value per share</securitiesClassTitle>
+      <eventDateRequiresFilingThisStatement>09/30/2026</eventDateRequiresFilingThisStatement>
+      <issuerInfo>
+        <issuerCik>0001145986</issuerCik>
+        <issuerName>ASPEN AEROGELS, INC.</issuerName>
+        <issuerCusips>
+          <issuerCusipNumber>04523Y105</issuerCusipNumber>
+        </issuerCusips>
+        <issuerPrincipalExecutiveOfficeAddress>
+          <com:street1>30 Forbes Road</com:street1>
+          <com:street2>Building B</com:street2>
+          <com:city>Northborough</com:city>
+          <com:stateOrCountry>MA</com:stateOrCountry>
+          <com:zipCode>01532</com:zipCode>
+        </issuerPrincipalExecutiveOfficeAddress>
+      </issuerInfo>
+      <designateRulesPursuantThisScheduleFiled>
+        <designateRulePursuantThisScheduleFiled>Rule 13d-1(b)</designateRulePursuantThisScheduleFiled>
+      </designateRulesPursuantThisScheduleFiled>
+    </coverPageHeader>
+    <coverPageHeaderReportingPersonDetails>
+
+
+      <reportingPersonName>Orin Hirschman</reportingPersonName>
+      <memberGroup>b</memberGroup>
+      <citizenshipOrOrganization>X1</citizenshipOrOrganization>
+      <reportingPersonBeneficiallyOwnedNumberOfShares>
+        <soleVotingPower>7150126.00</soleVotingPower>
+        <sharedVotingPower>0.00</sharedVotingPower>
+        <soleDispositivePower>7150126.00</soleDispositivePower>
+        <sharedDispositivePower>0.00</sharedDispositivePower>
+      </reportingPersonBeneficiallyOwnedNumberOfShares>
+      <reportingPersonBeneficiallyOwnedAggregateNumberOfShares>7150126.00</reportingPersonBeneficiallyOwnedAggregateNumberOfShares>
+      <aggregateAmountExcludesCertainSharesFlag>N</aggregateAmountExcludesCertainSharesFlag>
+      <classPercent>8.6</classPercent>
+      <typeOfReportingPerson>HC</typeOfReportingPerson>
+      <typeOfReportingPerson>IN</typeOfReportingPerson>
+    </coverPageHeaderReportingPersonDetails>
+    <coverPageHeaderReportingPersonDetails>
+
+
+      <reportingPersonName>AIGH Capital Management LLC</reportingPersonName>
+      <memberGroup>b</memberGroup>
+      <citizenshipOrOrganization>DE</citizenshipOrOrganization>
+      <reportingPersonBeneficiallyOwnedNumberOfShares>
+        <soleVotingPower>7150126.00</soleVotingPower>
+        <sharedVotingPower>0.00</sharedVotingPower>
+        <soleDispositivePower>7150126.00</soleDispositivePower>
+        <sharedDispositivePower>0.00</sharedDispositivePower>
+      </reportingPersonBeneficiallyOwnedNumberOfShares>
+      <reportingPersonBeneficiallyOwnedAggregateNumberOfShares>7150126.00</reportingPersonBeneficiallyOwnedAggregateNumberOfShares>
+      <aggregateAmountExcludesCertainSharesFlag>N</aggregateAmountExcludesCertainSharesFlag>
+      <classPercent>8.6</classPercent>
+      <typeOfReportingPerson>IA</typeOfReportingPerson>
+      <typeOfReportingPerson>OO</typeOfReportingPerson>
+    </coverPageHeaderReportingPersonDetails>
+    <items>
+      <item1>
+        <issuerName>ASPEN AEROGELS, INC.</issuerName>
+        <issuerPrincipalExecutiveOfficeAddress>30 Forbes Road, Building B, Northborough, MA 01532</issuerPrincipalExecutiveOfficeAddress>
+      </item1>
+      <item2>
+        <filingPersonName>This Schedule 13G is being jointly filed by each of the following persons pursuant to Rule 13d-1 promulgated by the Securities and Exchange Commission pursuant to Section 13 of the Securities Exchange Act of 1934, as amended (the "Act"):
+
+ (i)   AIGH Capital Management, LLC, a Maryland limited liability company ("AIGH CM"), as an Advisor or Sub-Advisor with respect to shares of Common Stock (as defined in Item 2(d) below) held by AIGH Investment Partners, L.P., and WVP Emerging Manger Onshore Fund, LLC - AIGH Series.
+
+ (ii)   AIGH Investment Partners, L.L.C., a Delaware limited liability company ("AIGH LLC";), with respect to shares of Common Stock (as defined in Item 2(d) below) directly held by it;
+
+ (iii)   Mr. Orin Hirschman ("Mr. Hirschman"), who is the Managing Member of AIGH Capital Management, LLC and president of AIGH LLC, with respect to shares of Common Stock (as defined in Item 2(d) below) indirectly held through AIGH CM, directly by AIGH LLC and Mr. Hirschman and his family directly.
+
+AIGH Capital Management LLC., AIGH Investment Partners LLC, and Mr. Hirschman are hereinafter sometimes collectively referred to as the "Reporting Persons." Any disclosures herein with respect to persons other than the Reporting Persons are made on information and belief after making inquiry to the appropriate party.</filingPersonName>
+        <principalBusinessOfficeOrResidenceAddress>The principal office and business address of AIGH Capital Management LLC, AIGH Investment Partners LLC, and Mr.Hirschman is: 6006 Berkeley Avenue, Baltimore MD 21209</principalBusinessOfficeOrResidenceAddress>
+        <citizenship>See Item 2(a) above and Item 4 of each cover page.</citizenship>
+      </item2>
+      <item3>
+        <notApplicableFlag>N</notApplicableFlag>
+        <typeOfPersonFiling>IA</typeOfPersonFiling>
+      </item3>
+      <item4>
+        <amountBeneficiallyOwned>7,150,126</amountBeneficiallyOwned>
+        <classPercent>8.6</classPercent>
+        <numberOfSharesPersonHas>
+          <solePowerOrDirectToVote>7,150,126</solePowerOrDirectToVote>
+          <sharedPowerOrDirectToVote>0</sharedPowerOrDirectToVote>
+          <solePowerOrDirectToDispose>7,150,126</solePowerOrDirectToDispose>
+          <sharedPowerOrDirectToDispose>0</sharedPowerOrDirectToDispose>
+        </numberOfSharesPersonHas>
+      </item4>
+      <item5>
+        <notApplicableFlag>Y</notApplicableFlag>
+      </item5>
+      <item6>
+        <notApplicableFlag>Y</notApplicableFlag>
+      </item6>
+      <item7>
+        <notApplicableFlag>Y</notApplicableFlag>
+      </item7>
+      <item8>
+        <notApplicableFlag>Y</notApplicableFlag>
+      </item8>
+      <item9>
+        <notApplicableFlag>Y</notApplicableFlag>
+      </item9>
+      <item10>
+        <notApplicableFlag>N</notApplicableFlag>
+        <certifications>By signing below I certify that, to the best of my knowledge and belief, the securities referred to above were acquired and are held in the ordinary course of business and were not acquired and are not held for the purpose of or with the effect of changing or influencing the control of the issuer of the securities and were not acquired and are not held in connection with or as a participant in any transaction having that purpose or effect, other than activities solely in connection with a nomination under § 240.14a-11.</certifications>
+      </item10>
+    </items>
+    <signatureInformation>
+      <reportingPersonName>Orin Hirschman</reportingPersonName>
+      <signatureDetails>
+        <signature>Orin Hirschman</signature>
+        <title>Orin Hirschman</title>
+        <date>10/19/2026</date>
+      </signatureDetails>
+    </signatureInformation>
+    <signatureInformation>
+      <reportingPersonName>AIGH Capital Management LLC</reportingPersonName>
+      <signatureDetails>
+        <signature>Orin Hirschman</signature>
+        <title>Orin Hirschman, Managing Member</title>
+        <date>10/19/2026</date>
+      </signatureDetails>
+    </signatureInformation>
+  </formData>
+</edgarSubmission>

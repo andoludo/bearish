@@ -131,6 +131,209 @@ def _sec() -> str:
     return f"{len(secs.secs)} filings parsed"
 
 
+@probe("SEC-XBRL")
+def _sec_xbrl() -> str:
+    from bearish.models.base import Ticker
+    from bearish.sources.sec_xbrl import SecXbrlSource
+
+    financials = SecXbrlSource().read_financials([Ticker(symbol="AAPL", exchange="NMS")])
+    assert financials and financials[0].financial_metrics, "no XBRL statements returned"
+    latest = financials[0].financial_metrics[-1]
+    return f"{len(financials[0].financial_metrics)} annual rows for AAPL, latest filed {latest.filed_date}"
+
+
+@probe("SEC-Form4")
+def _sec_form4() -> str:
+    from bearish.sources.sec_insiders import fetch_insider_transactions
+
+    transactions = fetch_insider_transactions(["AAPL"], max_filings=2)
+    assert transactions, "no Form 4 transactions parsed"
+    return f"{len(transactions)} transaction lines from 2 AAPL filings"
+
+
+@probe("KenFrench")
+def _kenfrench() -> str:
+    import datetime
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.kenfrench import KenFrenchSource
+
+    entries = select_series(MacroQuery(series_ids=["FF_MKT.USA", "FF_MKT.EUR"]))
+    observations = KenFrenchSource().read_observations(
+        entries, start=datetime.date.today() - datetime.timedelta(days=120)
+    )
+    assert {o.series_id for o in observations} == {"FF_MKT.USA", "FF_MKT.EUR"}, "missing factor series"
+    return f"{len(observations)} factor observations"
+
+
+@probe("WorldBankPinkSheet")
+def _pink_sheet() -> str:
+    import datetime
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.pinksheet import PinkSheetSource
+
+    entries = select_series(MacroQuery(entities=["BRENT", "GOLD", "COPPER"]), sources=["WorldBankPinkSheet"])
+    observations = PinkSheetSource().read_observations(
+        entries, start=datetime.date.today() - datetime.timedelta(days=400)
+    )
+    assert {o.series_id for o in observations} == {e.series_id for e in entries}, "missing Pink Sheet series"
+    return f"{len(observations)} monthly price observations"
+
+
+@probe("CFTC")
+def _cftc() -> str:
+    import datetime
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.cftc import CftcSource
+
+    entries = select_series(MacroQuery(entities=["WTI", "GOLD"]), sources=["CFTC"])
+    observations = CftcSource().read_observations(entries, start=datetime.date.today() - datetime.timedelta(days=60))
+    assert {o.series_id for o in observations} == {e.series_id for e in entries}, "missing COT series"
+    return f"{len(observations)} weekly positioning observations"
+
+
+@probe("Comtrade")
+def _comtrade() -> str:
+    import datetime
+
+    from bearish.macro.countries import country_from
+    from bearish.macro.sources.comtrade import fetch_country_exposures
+
+    belgium = country_from("BEL")
+    assert belgium is not None
+    exposures = fetch_country_exposures([belgium], datetime.date.today().year - 2, pause=6)
+    assert {e.direction for e in exposures} == {"export", "import"}, "missing export or import rows"
+    return f"{len(exposures)} exposure rows for BEL"
+
+
+@probe("ECB")
+def _ecb() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.ecb import EcbSource
+
+    entries = select_series(MacroQuery(series_ids=["FX_USD.EA20"]))
+    observations = EcbSource().read_observations(entries, start=date.today() - timedelta(days=30))
+    assert observations, "no observations returned"
+    return f"{len(observations)} EUR/USD observations"
+
+
+@probe("Eurostat")
+def _eurostat() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.eurostat import EurostatSource
+
+    entries = select_series(MacroQuery(concepts=["ESI"], entities=["FRA", "EU27"]))
+    observations = EurostatSource().read_observations(entries, start=date.today() - timedelta(days=120))
+    assert {o.series_id for o in observations} == {"ESI.FRA", "ESI.EU27"}, "missing ESI series"
+    return f"{len(observations)} ESI observations"
+
+
+@probe("EPU")
+def _epu() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.epu import EpuSource
+
+    observations = EpuSource().read_observations(
+        select_series(MacroQuery(series_ids=["EPU.WLD", "EPU.USA"])), start=date(2025, 1, 1)
+    )
+    assert {o.series_id for o in observations} == {"EPU.WLD", "EPU.USA"}, "missing EPU series"
+    return f"{len(observations)} EPU observations"
+
+
+@probe("GPR")
+def _gpr() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.gpr import GprSource
+
+    observations = GprSource().read_observations(
+        select_series(MacroQuery(series_ids=["GPR.WLD", "GPR.USA"])), start=date(2025, 1, 1)
+    )
+    assert {o.series_id for o in observations} == {"GPR.WLD", "GPR.USA"}, "missing GPR series"
+    return f"{len(observations)} GPR observations"
+
+
+@probe("AtlantaFed-GDPNow")
+def _gdpnow() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.sources.gdpnow import GdpNowSource
+
+    observations = GdpNowSource().read_observations(
+        select_series(sources=["AtlantaFed"]), start=date.today() - timedelta(days=120)
+    )
+    assert observations, "no nowcast observations returned"
+    return f"{len(observations)} nowcast dates, latest {observations[-1].value:.2f}"
+
+
+@probe("IMF")
+def _imf() -> str:
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.imf import ImfSource
+
+    entries = select_series(MacroQuery(concepts=["GDP_FCST"], entities=["USA", "WLD"]))
+    observations = ImfSource().read_observations(entries, start=date(date.today().year - 2, 1, 1))
+    assert {o.series_id for o in observations} == {"GDP_FCST.USA", "GDP_FCST.WLD"}, "missing series"
+    return f"{len(observations)} WEO observations"
+
+
+@probe("WorldBank")
+def _worldbank() -> str:
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.worldbank import WorldBankSource
+
+    entries = select_series(MacroQuery(concepts=["TRADE_GDP"], entities=["FRA", "CHN"]))
+    observations = WorldBankSource().read_observations(entries, start=date(date.today().year - 5, 1, 1))
+    assert {o.series_id for o in observations} == {"TRADE_GDP.FRA", "TRADE_GDP.CHN"}, "missing series"
+    return f"{len(observations)} WDI observations"
+
+
+@probe("BIS")
+def _bis() -> str:
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.bis import BisSource
+
+    entries = select_series(MacroQuery(concepts=["POLICY_RATE", "REER"], entities=["USA", "EA20"]))
+    observations = BisSource().read_observations(entries, start=date.today() - timedelta(days=180))
+    assert {o.series_id for o in observations} == {s.series_id for s in entries}, "missing series"
+    return f"{len(observations)} BIS observations"
+
+
+@probe("DBnomics")
+def _dbnomics() -> str:
+
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.dbnomics import DbnomicsSource
+
+    entries = select_series(MacroQuery(concepts=["UNEMP_RATE"], entities=["CHN", "BRA"]), sources=["DBnomics"])
+    observations = DbnomicsSource().read_observations(entries, start=date(date.today().year - 3, 1, 1))
+    assert {o.series_id for o in observations} == {s.series_id for s in entries}, "missing series"
+    return f"{len(observations)} DBnomics observations"
+
+
+@probe("SEC-13DG")
+def _sec_13dg() -> str:
+    from bearish.sources.sec_ownership import fetch_ownership
+
+    rows = fetch_ownership(["AAPL"], max_filings=2)
+    assert rows, "no Schedule 13D/13G rows parsed"
+    return f"{len(rows)} reporting persons from 2 filings for AAPL"
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("SOURCE HEALTH SUMMARY")

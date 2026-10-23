@@ -1,0 +1,40 @@
+FREQ,BORROWERS_CTY,TC_BORROWERS,TC_LENDERS,VALUATION,UNIT_TYPE,TC_ADJUST,COLLECTION,DECIMALS,UNIT_MULT,UNIT_MEASURE,TITLE_TS,TIME_PERIOD,OBS_VALUE,OBS_STATUS,OBS_PRE_BREAK,OBS_CONF
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q1,193.2,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q2,193.5,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q3,194,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q4,193,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q1,198.2,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q2,198.4,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q3,198.8,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q4,197.9,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q1,201.9,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q2,201.8,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q3,201.5,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q4,200.8,A,,F
+Q,CN,P,A,M,770,A,E,1,0,367,China - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2026-Q1,204.1,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q1,223.4,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q2,220.5,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q3,218,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q4,216.3,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q1,213.7,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q2,213.6,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q3,212.7,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q4,213,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q1,213.9,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q2,214.1,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q3,214.2,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q4,214.6,A,,F
+Q,FR,P,A,M,770,A,E,1,0,367,France - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2026-Q1,214.3,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q1,151.7,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q2,150.1,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q3,148.5,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2023-Q4,147.1,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q1,146.1,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q2,145.2,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q3,144.6,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2024-Q4,142.5,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q1,141.6,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q2,141,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q3,140.6,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2025-Q4,140.2,A,,F
+Q,US,P,A,M,770,A,E,1,0,367,United States - Credit to Private non-financial sector from All sectors at Market value - Percentage of GDP - Adjusted for breaks,2026-Q1,139.7,A,,F

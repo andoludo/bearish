@@ -163,11 +163,11 @@ def test_update_financials(bear_db: BearishDb) -> None:
 
 
 @pytest.mark.network
-def test_index_query(bearish_db_index: BearishDb) -> None:
+def test_index_query(bearish_db: BearishDb) -> None:
     with requests_mock.Mocker() as req:
         mock_finance_database_urls(req, index=True)
         bearish = Bearish(
-            path=bearish_db_index.database_path, asset_sources=[FinanceDatabaseSource()]
+            path=bearish_db.database_path, asset_sources=[FinanceDatabaseSource()]
         )
         bearish.write_assets()
         bearish.get_prices_index()
@@ -180,7 +180,8 @@ def test_index_query(bearish_db_index: BearishDb) -> None:
 @pytest.mark.network
 def test_price_etf(bear_db: BearishDb) -> None:
     bearish = Bearish(path=bear_db.database_path)
-    etf_symbols = bearish.get_prices_etf(series_length="1d", limit=5)
+    # Primary US listings: secondary European listings (BER, MUN, ...) have no price history.
+    etf_symbols = bearish.get_prices_etf(series_length="1d", limit=5, exchanges=["NYSE", "PCX", "NMS"])
     assets_query = AssetQuery(
         symbols=Symbols(index=[Ticker(symbol=symbol) for symbol in etf_symbols])
     )
