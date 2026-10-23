@@ -7,6 +7,7 @@
   "countryalias": [],
   "countrycommodityexposure": [],
   "countryref": [],
+  "coverage": [],
   "crypto": [
     {
       "base_symbol": "AAVE-CAD",
@@ -3643,6 +3644,7 @@
       "zipcode": null
     }
   ],
+  "equitysnapshot": [],
   "etf": [
     {
       "annual_holdings_turnover": null,
@@ -7473,6 +7475,7 @@
     }
   ],
   "etfexposure": [],
+  "etfsnapshot": [],
   "eventreturn": [],
   "filing": [],
   "financialmetrics": [],
@@ -7897,6 +7900,7 @@
       "symbol": "^GSPC"
     }
   ],
+  "indexmember": [],
   "insidertransaction": [],
   "macroobservation": [],
   "macroseries": [],
@@ -27264,6 +27268,7 @@
     }
   ],
   "pricecommodity": [],
+  "pricecurrency": [],
   "priceetf": [],
   "priceindex": [],
   "pricetarget": [],
@@ -27280,6 +27285,7 @@
   "quarterlyfinancialmetrics": [],
   "sec": [],
   "secshareincrease": [],
+  "sectoralias": [],
   "sectorcommoditysensitivity": [],
   "sources": [
     {

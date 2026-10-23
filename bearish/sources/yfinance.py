@@ -264,6 +264,10 @@ class YfinanceFinancialMetrics(YfinanceFinancialBase, QuarterlyFinancialMetrics)
         "Cost Of Revenue": "cost_of_revenue",
         "Tax Provision": "tax_provision",
         "Tax Rate For Calcs": "tax_rate",
+        "Interest Expense": "interest_expense",
+        "Research And Development": "research_and_development",
+        "Selling General And Administration": "selling_general_and_administrative",
+        "Diluted Average Shares": "diluted_average_shares",
     }
 
     @classmethod
@@ -364,6 +368,7 @@ class yFinanceCashFlow(YfinanceFinancialBase, QuarterlyCashFlow):
         "Common Stock Issuance": "proceeds_from_issuance_of_common_stock",
         "Changes In Cash": "changes_in_cash",
         "Net Income From Continuing Operations": "net_income_from_continuing_operations",
+        "Stock Based Compensation": "stock_based_compensation",
     }
 
     @classmethod

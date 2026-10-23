@@ -12,10 +12,14 @@ from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.models import MacroQuery, MacroSeries, MacroTracker, Observation
+from bearish.macro.sectors import SectorAlias
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.signals.models import CongressTrade, EventReturn, MarketEvent, PredictionQuote, TickerSignal
 from bearish.models.assets.assets import Assets
+from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
+from bearish.models.assets.index_members import IndexMember
+from bearish.models.coverage import Coverage
 from bearish.models.base import (
     TrackerQuery,
     Ticker,
@@ -43,6 +47,34 @@ class BearishDbBase(BaseModel):
     def write_assets(self, assets: Assets) -> None:
         return self._write_assets(assets)
 
+    @validate_call
+    def write_snapshots(self, snapshots: Snapshots) -> None:
+        return self._write_snapshots(snapshots)
+
+    def read_equity_snapshots(self, symbol: Optional[str] = None) -> List[EquitySnapshot]:
+        return self._read_equity_snapshots(symbol=symbol)
+
+    def read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
+        return self._read_etf_snapshots(symbol=symbol)
+
+    @validate_call
+    def write_index_members(self, members: List[IndexMember]) -> None:
+        return self._write_index_members(members)
+
+    def read_index_members(
+        self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
+    ) -> List[IndexMember]:
+        """Members of an index (or the indices a symbol belongs to); ``latest`` keeps only the newest snapshot."""
+        return self._read_index_members(index_symbol=index_symbol, symbol=symbol, latest=latest)
+
+    @validate_call
+    def write_coverage(self, rows: List[Coverage], replace: bool = True) -> None:
+        """Store a coverage census; ``replace`` drops the previous census first (a full run), else upserts."""
+        return self._write_coverage(rows, replace=replace)
+
+    def read_coverage(self, symbol: Optional[str] = None, table_name: Optional[str] = None) -> List[Coverage]:
+        return self._read_coverage(symbol=symbol, table_name=table_name)
+
     @observability
     @validate_call
     def write_series(
@@ -59,8 +91,8 @@ class BearishDbBase(BaseModel):
         return self._write_filings(filings)
 
     @validate_call
-    def read_filings(self, symbol: str) -> List[Filing]:
-        return self._read_filings(symbol)
+    def read_filings(self, symbol: str, forms: Optional[List[str]] = None) -> List[Filing]:
+        return self._read_filings(symbol, forms=forms)
 
     def backfill_filed_dates(self) -> None:
         return self._backfill_filed_dates()
@@ -286,6 +318,13 @@ class BearishDbBase(BaseModel):
         return self._read_country_references()
 
     @validate_call
+    def write_sector_aliases(self, aliases: List[SectorAlias]) -> None:
+        return self._write_sector_aliases(aliases)
+
+    def read_sector_aliases(self, level: Optional[str] = None) -> List[SectorAlias]:
+        return self._read_sector_aliases(level=level)
+
+    @validate_call
     def write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None:
         return self._write_sector_sensitivities(sensitivities)
 
@@ -412,6 +451,12 @@ class BearishDbBase(BaseModel):
     def _read_country_references(self) -> List[CountryRef]: ...
 
     @abc.abstractmethod
+    def _write_sector_aliases(self, aliases: List[SectorAlias]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_sector_aliases(self, level: Optional[str] = None) -> List[SectorAlias]: ...
+
+    @abc.abstractmethod
     def _write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None: ...
 
     @abc.abstractmethod
@@ -426,6 +471,29 @@ class BearishDbBase(BaseModel):
     ) -> List[EtfExposure]: ...
 
     @abc.abstractmethod
+    def _write_snapshots(self, snapshots: Snapshots) -> None: ...
+
+    @abc.abstractmethod
+    def _read_equity_snapshots(self, symbol: Optional[str] = None) -> List[EquitySnapshot]: ...
+
+    @abc.abstractmethod
+    def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]: ...
+
+    @abc.abstractmethod
+    def _write_index_members(self, members: List[IndexMember]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_index_members(
+        self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
+    ) -> List[IndexMember]: ...
+
+    @abc.abstractmethod
+    def _write_coverage(self, rows: List[Coverage], replace: bool = True) -> None: ...
+
+    @abc.abstractmethod
+    def _read_coverage(self, symbol: Optional[str] = None, table_name: Optional[str] = None) -> List[Coverage]: ...
+
+    @abc.abstractmethod
     def _write_series(
         self, series: List[Price], table: Optional[Type[SQLModel]] = None
     ) -> None: ...
@@ -437,7 +505,7 @@ class BearishDbBase(BaseModel):
     def _write_filings(self, filings: List[Filing]) -> None: ...
 
     @abc.abstractmethod
-    def _read_filings(self, symbol: str) -> List[Filing]: ...
+    def _read_filings(self, symbol: str, forms: Optional[List[str]] = None) -> List[Filing]: ...
 
     @abc.abstractmethod
     def _backfill_filed_dates(self) -> None: ...

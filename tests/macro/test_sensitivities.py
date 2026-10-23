@@ -3,25 +3,12 @@ from pathlib import Path
 
 from bearish.database.crud import BearishDb
 from bearish.macro.commodities import commodities_by_code
+from bearish.macro.sectors import is_known_group
 from bearish.macro.sensitivities import SECTOR_COMMODITY_SENSITIVITIES, write_sector_sensitivities
-
-# GICS-style sector names stored in equity.sector / industry (checked against bear.db).
-KNOWN_GROUPS = {
-    "Energy", "Materials", "Industrials", "Utilities", "Consumer Staples", "Consumer Discretionary",
-    "Oil, Gas & Consumable Fuels", "Energy Equipment & Services", "Airlines", "Air Freight & Logistics", "Marine",
-    "Road & Rail", "Transportation Infrastructure", "Metals & Mining", "Chemicals", "Construction Materials",
-    "Paper & Forest Products", "Containers & Packaging", "Electric Utilities", "Gas Utilities", "Multi-Utilities",
-    "Independent Power and Renewable Electricity Producers", "Food Products", "Beverages",
-    "Hotels, Restaurants & Leisure", "Food & Staples Retailing", "Agricultural Products", "Automobiles",
-    "Auto Components", "Household Durables", "Textiles, Apparel & Luxury Goods", "Electrical Equipment", "Machinery",
-    "Building Products", "Aerospace & Defense", "Semiconductors & Semiconductor Equipment",
-    "Electronic Equipment, Instruments & Components",
-}
-
 
 def test_sensitivities_reference_known_sectors_and_commodities() -> None:
     assert SECTOR_COMMODITY_SENSITIVITIES
-    unknown_sectors = {s.sector for s in SECTOR_COMMODITY_SENSITIVITIES} - KNOWN_GROUPS
+    unknown_sectors = {s.sector for s in SECTOR_COMMODITY_SENSITIVITIES if not is_known_group(s.sector)}
     assert not unknown_sectors, unknown_sectors
     unknown_commodities = {s.commodity for s in SECTOR_COMMODITY_SENSITIVITIES} - set(commodities_by_code())
     assert not unknown_commodities, unknown_commodities
@@ -33,7 +20,7 @@ def test_sensitivities_reference_known_sectors_and_commodities() -> None:
 def test_required_pairs_present() -> None:
     signs = {(s.sector, s.commodity): s.direction for s in SECTOR_COMMODITY_SENSITIVITIES}
     assert signs[("Energy", "BRENT")] == 1
-    assert signs[("Airlines", "BRENT")] == -1
+    assert signs[("Passenger Airlines", "BRENT")] == -1
     assert signs[("Metals & Mining", "COPPER")] == 1
     assert signs[("Utilities", "NATGAS_HH")] == -1
     assert signs[("Consumer Staples", "WHEAT")] == -1

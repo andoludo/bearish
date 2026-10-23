@@ -100,3 +100,42 @@ def test_sec_xbrl_live() -> None:
     financials = SecXbrlSource().read_financials([Ticker(symbol="MSFT", exchange="NMS")])
     assert financials and financials[0].financial_metrics
     assert financials[0].financial_metrics[-1].filed_date is not None
+
+
+def _fact(val: float, end: str, filed: str, form: str = "10-K", start: str | None = None, fp: str = "FY") -> dict:
+    fact = {"val": val, "end": end, "filed": filed, "form": form, "fp": fp, "fy": int(end[:4])}
+    if start:
+        fact["start"] = start
+    return fact
+
+
+def test_parse_companyfacts_detail_fields_and_share_units() -> None:
+    annual = {"start": "2023-10-01", "end": "2024-09-28", "filed": "2024-11-01"}
+    payload = {
+        "facts": {
+            "us-gaap": {
+                "Revenues": {"units": {"USD": [_fact(100.0, **annual)]}},
+                "InterestExpenseNonoperating": {"units": {"USD": [_fact(3.0, **annual)]}},
+                "ResearchAndDevelopmentExpense": {"units": {"USD": [_fact(12.0, **annual)]}},
+                "SellingGeneralAndAdministrativeExpense": {"units": {"USD": [_fact(20.0, **annual)]}},
+                "WeightedAverageNumberOfDilutedSharesOutstanding": {"units": {"shares": [_fact(15_000.0, **annual)]}},
+                "NetCashProvidedByUsedInOperatingActivities": {"units": {"USD": [_fact(40.0, **annual)]}},
+                "ShareBasedCompensation": {"units": {"USD": [_fact(7.0, **annual)]}},
+            }
+        }
+    }
+    financials = parse_companyfacts(payload, "TEST")
+    metrics = financials.financial_metrics[0]
+    assert metrics.interest_expense == 3.0  # second candidate tag picked up
+    assert metrics.research_and_development == 12.0
+    assert metrics.selling_general_and_administrative == 20.0
+    assert metrics.diluted_average_shares == 15_000.0  # read from the "shares" unit
+    cash_flow = financials.cash_flows[0]
+    assert cash_flow.stock_based_compensation == 7.0
+    assert cash_flow.operating_cash_flow == 40.0
+
+
+def test_detail_fields_absent_stay_none(companyfacts: dict) -> None:
+    financials = parse_companyfacts(companyfacts, "AAPL")
+    assert all(m.interest_expense is None for m in financials.financial_metrics)
+    assert all(c.stock_based_compensation is None for c in financials.cash_flows)

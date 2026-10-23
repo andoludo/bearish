@@ -98,6 +98,75 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ---
 
+## 🗂️ Coverage census
+
+Before judging a stock it helps to know whether the database can support
+the judgement. `bearish coverage` (also run at the end of `bearish run` and
+`bearish update`) writes one row per `(symbol, table_name, source)` into
+**`coverage`** with the first date, last date and row count of every dated
+table (prices, statements, earnings, analyst rows, filings, insiders, 13F
+summaries, 13D/G, snapshots, index membership). Grading it ("enough years
+of statements?", "prices fresh?") is downstream work.
+
+```bash
+bearish coverage /path/to/sqlite/db              # full census
+bearish coverage /path/to/sqlite/db NVDA AAPL    # refresh two symbols
+```
+
+---
+
+## 🧩 Index constituents
+
+`bearish members` stores who is in the major indices (S&P 500, Nasdaq-100,
+Dow Jones, DAX, CAC 40, BEL 20, AEX, FTSE 100, Euro Stoxx 50, SMI, IBEX 35,
+FTSE MIB, Nikkei 225) from the Wikipedia constituent tables into
+**`indexmember`** as a dated snapshot `(index_symbol, symbol, as_of)`, with
+symbols in Yahoo Finance notation (`BRK-B`, `ADS.DE`, `III.L`). Breadth
+measures and ETF tracking need this; `bearish run` and `bearish update`
+refresh it with the index prices.
+
+```bash
+bearish members /path/to/sqlite/db                 # every configured index
+bearish members /path/to/sqlite/db ^GSPC ^GDAXI    # a subset
+```
+
+---
+
+## 💱 FX rates
+
+Assets are priced in their listing currency. `bearish fx` stores the daily
+Yahoo Finance quotes of every `USD<CCY>=X` pair for the currencies found in
+the `equity`, `etf` and `index` tables (plus a core set: EUR, GBP, JPY, CHF,
+CAD, AUD, CNY, ...) in **`pricecurrency`**; the **`fxrate`** view reads them
+as `(date, base, quote, rate)` with `rate` = units of `quote` per one `base`.
+Any cross rate is the ratio of two USD pairs. `bearish run` and
+`bearish update` include this step (`--no-fx` to skip).
+
+```bash
+bearish fx /path/to/sqlite/db            # every currency in use
+bearish fx /path/to/sqlite/db EUR JPY    # a subset
+```
+
+---
+
+## 📸 Daily snapshots of asset fields
+
+The `equity` and `etf` tables are overwritten on every detailed fetch, so
+Bearish also appends a dated copy of their fast-moving fields on each run:
+
+- **`equitysnapshot`** — per `(symbol, source, as_of)`: market capitalisation,
+  shares outstanding, float, **short interest** (`short_shares`,
+  `short_ratio`), valuation ratios (P/E, P/B, P/S, PEG, dividend yield),
+  margins and growth as the provider reports them that day.
+- **`etfsnapshot`** — per `(symbol, source, as_of)`: **assets under
+  management** (`total_net_assets`), `nav_price`, expense ratio, turnover,
+  valuation ratios, top holdings and sector weights.
+
+Nothing is derived; fund flows, premium / discount to NAV, short-interest and
+valuation trends are downstream calculations on these histories.
+
+---
+
 ## 🧑‍💼 Analyst data & filings
 
 Alongside statements and prices, Bearish records raw analyst data from
@@ -112,8 +181,13 @@ yFinance on every financials run:
 
 For US tickers, SEC EDGAR filing metadata can be fetched into the
 **`filing`** table (form type, period of report, filed date, accession
-number) and the filing date is copied onto financial statement rows whose
-`(symbol, period_end)` matches exactly (`filed_date` column):
+number) and the 10-K / 10-Q filing date is copied onto financial statement
+rows whose `(symbol, period_end)` matches exactly (`filed_date` column).
+8-K current reports are stored too, with their EDGAR **item codes** in
+`items` (`2.02` results, `4.01` auditor change, `4.02` restatement, `5.02`
+officer departure, `1.03` bankruptcy, ...) and the event date in
+`period_end`, so downstream analysis can tell a routine results filing from
+a structural red flag without parsing the documents:
 
 ```bash
 bearish filings /path/to/sqlite/db US --filters NVDA,AAPL

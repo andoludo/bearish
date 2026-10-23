@@ -2,10 +2,11 @@
 references, trade exposure, sector sensitivities, ETF exposure) and insider
 transactions. All are simple upsert / filtered-read tables."""
 
+import datetime
 from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import Engine, insert
+from sqlalchemy import Engine, delete, insert
 from sqlmodel import Session, SQLModel, col, select
 
 from bearish.database.schemas import (
@@ -13,15 +14,24 @@ from bearish.database.schemas import (
     CountryAliasORM,
     CountryCommodityExposureORM,
     CountryRefORM,
+    CoverageORM,
+    EquitySnapshotORM,
     EtfExposureORM,
+    EtfSnapshotORM,
     Holding13FORM,
     Holding13FSummaryORM,
+    IndexMemberORM,
     InsiderTransactionORM,
     Ownership13DGORM,
+    SectorAliasORM,
     SectorCommoditySensitivityORM,
 )
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
+from bearish.macro.sectors import SectorAlias
+from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
+from bearish.models.assets.index_members import IndexMember
+from bearish.models.coverage import Coverage
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.utils.utils import batch
@@ -81,6 +91,46 @@ class ReferenceCrudMixin:
     ) -> List[CountryCommodityExposure]:
         return self._select(CountryCommodityExposureORM, CountryCommodityExposure, country=country, commodity=commodity)
 
+    # snapshots -----------------------------------------------------------
+
+    def _write_snapshots(self, snapshots: Snapshots) -> None:
+        self._upsert(EquitySnapshotORM, [s.model_dump() for s in snapshots.equities])
+        self._upsert(EtfSnapshotORM, [s.model_dump() for s in snapshots.etfs])
+
+    def _read_equity_snapshots(self, symbol: Optional[str] = None) -> List[EquitySnapshot]:
+        return self._select(EquitySnapshotORM, EquitySnapshot, symbol=symbol)
+
+    def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
+        return self._select(EtfSnapshotORM, EtfSnapshot, symbol=symbol)
+
+    # coverage ------------------------------------------------------------
+
+    def _write_coverage(self, rows: List[Coverage], replace: bool = True) -> None:
+        if replace:
+            with Session(self._reference_engine()) as session:
+                session.exec(delete(CoverageORM))
+                session.commit()
+        self._upsert(CoverageORM, [r.model_dump() for r in rows])
+
+    def _read_coverage(self, symbol: Optional[str] = None, table_name: Optional[str] = None) -> List[Coverage]:
+        return self._select(CoverageORM, Coverage, symbol=symbol, table_name=table_name)
+
+    # index membership ----------------------------------------------------
+
+    def _write_index_members(self, members: List[IndexMember]) -> None:
+        self._upsert(IndexMemberORM, [m.model_dump() for m in members])
+
+    def _read_index_members(
+        self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
+    ) -> List[IndexMember]:
+        members = self._select(IndexMemberORM, IndexMember, index_symbol=index_symbol, symbol=symbol)
+        if not latest:
+            return members
+        newest: Dict[str, datetime.date] = {}
+        for member in members:
+            newest[member.index_symbol] = max(newest.get(member.index_symbol, member.as_of), member.as_of)
+        return [member for member in members if member.as_of == newest[member.index_symbol]]
+
     # insiders ------------------------------------------------------------
 
     def _write_insider_transactions(self, transactions: List[InsiderTransaction]) -> None:
@@ -117,6 +167,12 @@ class ReferenceCrudMixin:
 
     def _read_country_references(self) -> List[CountryRef]:
         return self._select(CountryRefORM, CountryRef)
+
+    def _write_sector_aliases(self, aliases: List[SectorAlias]) -> None:
+        self._upsert(SectorAliasORM, [a.model_dump() for a in aliases])
+
+    def _read_sector_aliases(self, level: Optional[str] = None) -> List[SectorAlias]:
+        return self._select(SectorAliasORM, SectorAlias, level=level)
 
     def _write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None:
         self._upsert(SectorCommoditySensitivityORM, [s.model_dump() for s in sensitivities])

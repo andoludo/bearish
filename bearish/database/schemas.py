@@ -11,6 +11,9 @@ from bearish.models.assets.crypto import Crypto
 from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.assets.index import Index
+from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot
+from bearish.models.assets.index_members import IndexMember
+from bearish.models.coverage import Coverage
 from bearish.models.base import PriceTracker, FinancialsTracker
 from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
@@ -24,6 +27,7 @@ from bearish.models.price.price import Price
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.models import MacroSeries, MacroTracker, Observation
+from bearish.macro.sectors import SectorAlias
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.signals.models import CongressTrade, EventReturn, MarketEvent, PredictionQuote, TickerSignal
@@ -74,6 +78,36 @@ class EtfORM(BaseTable, Etf, table=True):  # type: ignore
     sector_weightings: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
 
 
+class EquitySnapshotORM(SQLModel, EquitySnapshot, table=True):  # type: ignore
+    __tablename__ = "equitysnapshot"
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
+
+
+class EtfSnapshotORM(SQLModel, EtfSnapshot, table=True):  # type: ignore
+    __tablename__ = "etfsnapshot"
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
+    holding_percent: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
+    sector_weightings: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
+
+
+class IndexMemberORM(SQLModel, IndexMember, table=True):  # type: ignore
+    __tablename__ = "indexmember"
+    index_symbol: str = Field(primary_key=True, index=True)
+    symbol: str = Field(primary_key=True, index=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
+
+
+class CoverageORM(SQLModel, Coverage, table=True):  # type: ignore
+    __tablename__ = "coverage"
+    symbol: str = Field(primary_key=True, index=True)
+    table_name: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, default="")
+
+
 class PriceORM(SQLModel, Price, table=True):  # type: ignore
     __tablename__ = "price"
     date: datetime = Field(primary_key=True, index=True)
@@ -90,6 +124,15 @@ class PriceIndexORM(SQLModel, Price, table=True):  # type: ignore
 
 class PriceCommodityORM(SQLModel, Price, table=True):  # type: ignore
     __tablename__ = "pricecommodity"
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, index=True)  # type: ignore[assignment]
+    date: datetime = Field(primary_key=True, index=True)
+
+
+class PriceCurrencyORM(SQLModel, Price, table=True):  # type: ignore
+    """Daily quotes of ``USD<CCY>=X`` pairs: units of CCY per one US dollar."""
+
+    __tablename__ = "pricecurrency"
     symbol: str = Field(primary_key=True, index=True)
     source: str = Field(primary_key=True, index=True)  # type: ignore[assignment]
     date: datetime = Field(primary_key=True, index=True)
@@ -149,6 +192,7 @@ class FilingORM(SQLModel, Filing, table=True):
     __tablename__ = "filing"
     accession_number: str = Field(primary_key=True)
     symbol: str = Field(index=True)
+    form_type: str = Field(index=True)
     period_end: date = Field(index=True)
     filed_date: date = Field(index=True)
 
@@ -251,6 +295,13 @@ class CountryAliasORM(SQLModel, CountryAlias, table=True):  # type: ignore
     __tablename__ = "countryalias"
     alias: str = Field(primary_key=True)
     iso3: str = Field(index=True)
+
+
+class SectorAliasORM(SQLModel, SectorAlias, table=True):  # type: ignore
+    __tablename__ = "sectoralias"
+    alias: str = Field(primary_key=True)
+    level: str = Field(primary_key=True)  # type: ignore[assignment]
+    name: str = Field(index=True)
 
 
 class SectorCommoditySensitivityORM(SQLModel, SectorCommoditySensitivity, table=True):  # type: ignore

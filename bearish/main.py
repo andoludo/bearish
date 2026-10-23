@@ -55,6 +55,10 @@ from bearish.macro.sources import AbstractMacroSource, ArxivSource, default_macr
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
+from bearish.models.assets.snapshots import Snapshots
+from bearish.coverage import write_coverage
+from bearish.fx import write_fx_prices
+from bearish.sources.wikipedia_index import fetch_index_members, pages_for
 from bearish.models.base import Ticker, TrackerQuery, FinancialsTracker, PriceTracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
@@ -239,6 +243,9 @@ class Bearish(BaseModel):
                 f"writing assets from {type(source).__name__}. Number of symbols: {len(assets_.symbols())}"
             )
             self._bearish_db.write_assets(assets_)
+            snapshots = Snapshots.from_assets(assets_)
+            if not snapshots.is_empty():
+                self._bearish_db.write_snapshots(snapshots)
             self._bearish_db.write_source(source.__source__)
             if use_all_sources:
                 continue
@@ -601,6 +608,22 @@ class Bearish(BaseModel):
         )
         return etf_symbols
 
+    def get_prices_fx(
+        self, series_length: SeriesLength = "max", currencies: Optional[List[str]] = None
+    ) -> List[str]:
+        """Daily USD<CCY>=X quotes into ``pricecurrency`` for every currency in use (plus the core set)."""
+        return write_fx_prices(self, series_length=series_length, currencies=currencies)
+
+    def get_index_members(self, indices: Optional[List[str]] = None) -> int:
+        """Index constituent snapshots (Wikipedia) into ``indexmember``; returns rows written."""
+        members = fetch_index_members(pages_for(indices))
+        self._bearish_db.write_index_members(members)
+        return len(members)
+
+    def coverage(self, symbols: Optional[List[str]] = None) -> int:
+        """Refresh the per-symbol data census in ``coverage``; returns rows written."""
+        return write_coverage(self._bearish_db, symbols=symbols)
+
     # --- macro -------------------------------------------------------------
 
     @staticmethod
@@ -745,6 +768,7 @@ def run(  # noqa: PLR0913
     api_keys: Optional[Path] = None,
     etf: bool = True,
     index: bool = True,
+    fx: bool = True,
     sec: bool = True,
     financials: bool = True,
 ) -> None:
@@ -764,10 +788,17 @@ def run(  # noqa: PLR0913
         with console.status("[bold green]Fetching Price index..."):
             bearish.get_prices_index()
             console.log("[bold][red]Price index downloaded!")
+        with console.status("[bold green]Fetching index constituents..."):
+            bearish.get_index_members()
+            console.log("[bold][red]Index constituents downloaded!")
     if etf:
         with console.status("[bold green]Fetching Etf price..."):
             bearish.get_prices_etf()
             console.log("[bold][red]Price etf downloaded!")
+    if fx:
+        with console.status("[bold green]Fetching FX rates..."):
+            bearish.get_prices_fx()
+            console.log("[bold][red]FX rates downloaded!")
     if sec:
         with console.status("[bold green]Fetching SEC data..."):
             Secs.upload(bearish._bearish_db)  # type: ignore
@@ -776,6 +807,9 @@ def run(  # noqa: PLR0913
         with console.status("[bold green]Fetching Financial data..."):
             bearish.get_financials(filter)
             console.log("[bold][red]Financial downloaded!")
+    with console.status("[bold green]Taking the coverage census..."):
+        bearish.coverage()
+        console.log("[bold][red]Coverage updated!")
 
 
 @app.command()
@@ -951,6 +985,48 @@ def commodities(  # noqa: PLR0913
             exposures=exposures,
         )
     console.log("[bold][red]Commodity data downloaded!")
+
+
+@app.command()
+def coverage(
+    path: Path,
+    symbols: Annotated[Optional[List[str]], typer.Argument(help="Restrict the census to these symbols")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Summarise, per symbol and table, the first / last date and row count into the coverage table."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Taking the coverage census..."):
+        written = bearish.coverage(symbols)
+    console.log(f"[bold][red]Coverage census written: {written} rows!")
+
+
+@app.command()
+def members(
+    path: Path,
+    indices: Annotated[
+        Optional[List[str]], typer.Argument(help="Index symbols, e.g. ^GSPC ^GDAXI; default: all")
+    ] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch index constituents (S&P 500, Nasdaq-100, DAX, CAC 40, BEL 20, FTSE 100, ...) into indexmember."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching index constituents..."):
+        written = bearish.get_index_members(indices)
+    console.log(f"[bold][red]{written} index constituents downloaded!")
+
+
+@app.command()
+def fx(
+    path: Path,
+    currencies: Annotated[Optional[List[str]], typer.Argument(help="ISO codes; default: every currency in use")] = None,
+    series_length: str = "max",
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch daily USD<CCY>=X exchange rates into the pricecurrency table (fxrate view)."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching FX rates..."):
+        symbols = bearish.get_prices_fx(series_length=series_length, currencies=currencies)  # type: ignore[arg-type]
+    console.log(f"[bold][red]FX rates downloaded for {len(symbols)} pairs!")
 
 
 @app.command()
@@ -1139,6 +1215,7 @@ def update(  # noqa: PLR0913
     path: Path,
     etf: bool = True,
     index: bool = True,
+    fx: bool = True,
     sec: bool = True,
     financials: bool = True,
     macro: bool = True,
@@ -1150,8 +1227,11 @@ def update(  # noqa: PLR0913
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
     if index:
         bearish.get_prices_index(series_length=series_length)  # type: ignore
+        bearish.get_index_members()
     if etf:
         bearish.get_prices_etf(series_length=series_length)  # type: ignore
+    if fx:
+        bearish.get_prices_fx(series_length=series_length)  # type: ignore[arg-type]
     if sec:
         Secs.upload(bearish._bearish_db)  # type: ignore
     if financials:
@@ -1159,6 +1239,7 @@ def update(  # noqa: PLR0913
     if macro:
         report = bearish.update_macro()
         console.log(f"[bold][red]Macro updated! {report.vintages_written} new vintages")
+    bearish.coverage()
 
 
 if __name__ == "__main__":

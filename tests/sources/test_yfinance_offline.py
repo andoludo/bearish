@@ -296,3 +296,21 @@ def test_analyst_data_roundtrip_through_database(tmp_path) -> None:
         "-2m",
         "-3m",
     }
+
+
+def test_statement_aliases_cover_detail_fields() -> None:
+    from bearish.sources.yfinance import YfinanceFinancialMetrics, yFinanceCashFlow
+    from bearish.sources.yahooquery import YahooQueryCashFlow, YahooQueryFinancialMetrics
+
+    detail_metrics = {
+        "interest_expense", "research_and_development", "selling_general_and_administrative", "diluted_average_shares",
+    }
+    assert detail_metrics <= set(YfinanceFinancialMetrics.__alias__.values())
+    assert detail_metrics <= set(YahooQueryFinancialMetrics.__alias__.values())
+    assert "stock_based_compensation" in yFinanceCashFlow.__alias__.values()
+    assert "stock_based_compensation" in YahooQueryCashFlow.__alias__.values()
+    metrics = YfinanceFinancialMetrics.model_validate(
+        {"symbol": "X", "date": "2024-09-28", "Interest Expense": 3.0, "Diluted Average Shares": 10.0}
+    )
+    assert metrics.interest_expense == 3.0
+    assert metrics.diluted_average_shares == 10.0

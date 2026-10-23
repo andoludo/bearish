@@ -46,6 +46,18 @@ class FinancialMetrics(FiledDateMixin, DataSourceBase):
     tax_rate: Optional[float] = Field(
         None, description="Effective tax rate used in calculations"
     )
+    interest_expense: Optional[float] = Field(
+        None, description="Interest expense on debt (positive number)"
+    )
+    research_and_development: Optional[float] = Field(
+        None, description="Research and development expense"
+    )
+    selling_general_and_administrative: Optional[float] = Field(
+        None, description="Selling, general and administrative expense"
+    )
+    diluted_average_shares: Optional[float] = Field(
+        None, description="Weighted average number of diluted shares outstanding over the period"
+    )
 
 
 class QuarterlyFinancialMetrics(FinancialMetrics): ...

@@ -7,7 +7,7 @@ from typing import List, TYPE_CHECKING, Type, Union, Any, Optional
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Engine, create_engine, insert, text
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 from sqlmodel.main import SQLModel
 
 
@@ -140,10 +140,12 @@ class BearishDb(MacroCrudMixin, ReferenceCrudMixin, SignalsCrudMixin, BearishDbB
                 session.exec(stmt, params=chunk)
             session.commit()
 
-    def _read_filings(self, symbol: str) -> List[Filing]:
+    def _read_filings(self, symbol: str, forms: Optional[List[str]] = None) -> List[Filing]:
         with Session(self._engine) as session:
             stmt = select(FilingORM).where(FilingORM.symbol == symbol)
-            rows = session.exec(stmt).all()
+            if forms:
+                stmt = stmt.where(col(FilingORM.form_type).in_(forms))
+            rows = session.exec(stmt.order_by(col(FilingORM.filed_date).desc())).all()
             return [Filing.model_validate(row.model_dump()) for row in rows]
 
     # Statement tables that carry a filed_date column.
@@ -170,12 +172,14 @@ class BearishDb(MacroCrudMixin, ReferenceCrudMixin, SignalsCrudMixin, BearishDbB
                             SELECT f.filed_date FROM filing f
                             WHERE f.symbol = {table}.symbol
                               AND f.period_end = date({table}.date)
+                              AND f.form_type IN ('10-K', '10-Q')
                             ORDER BY f.filed_date ASC LIMIT 1
                         )
                         WHERE EXISTS (
                             SELECT 1 FROM filing f
                             WHERE f.symbol = {table}.symbol
                               AND f.period_end = date({table}.date)
+                              AND f.form_type IN ('10-K', '10-Q')
                         )
                         """
                     )  # type: ignore[call-overload]

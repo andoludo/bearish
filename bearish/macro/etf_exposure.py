@@ -19,26 +19,11 @@ from bearish.macro.commodities import COMMODITIES
 from bearish.macro.countries import COUNTRIES, REGIONS
 from bearish.macro.links import EtfExposure
 from bearish.macro.models import EntityType
+from bearish.macro.sectors import sector_from
 from bearish.models.assets.etfs import Etf
 from bearish.models.query.query import AssetQuery
 
 Method = str
-
-# Yahoo sector_weightings keys → the GICS-style names used in equity.sector.
-SECTOR_KEYS: Dict[str, str] = {
-    "realestate": "Real Estate",
-    "real_estate": "Real Estate",
-    "consumer_cyclical": "Consumer Discretionary",
-    "basic_materials": "Materials",
-    "technology": "Information Technology",
-    "financial_services": "Financials",
-    "healthcare": "Health Care",
-    "consumer_defensive": "Consumer Staples",
-    "communication_services": "Communication Services",
-    "energy": "Energy",
-    "industrials": "Industrials",
-    "utilities": "Utilities",
-}
 
 # Words in a category or fund name that identify a sector.
 SECTOR_KEYWORDS: Tuple[Tuple[str, str], ...] = (
@@ -231,7 +216,7 @@ def _sector_entities(text: str) -> List[str]:
 def _sector_weightings(etf: Etf) -> Dict[str, float]:
     weights: Dict[str, float] = defaultdict(float)
     for key, value in (etf.sector_weightings or {}).items():
-        sector = SECTOR_KEYS.get(key.lower().replace(" ", "_"))
+        sector = sector_from(key)
         if sector is None or value is None or value <= 0:
             continue
         weights[sector] += float(value)

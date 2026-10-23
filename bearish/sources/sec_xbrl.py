@@ -58,6 +58,13 @@ METRICS_TAGS: Dict[str, Tuple[str, ...]] = {
     "diluted_eps": ("EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted"),
     "tax_provision": ("IncomeTaxExpenseBenefit",),
     "ebitda": ("EarningsBeforeInterestTaxesDepreciationAndAmortization",),
+    "interest_expense": ("InterestExpense", "InterestExpenseNonoperating", "InterestExpenseDebt"),
+    "research_and_development": (
+        "ResearchAndDevelopmentExpense",
+        "ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost",
+    ),
+    "selling_general_and_administrative": ("SellingGeneralAndAdministrativeExpense",),
+    "diluted_average_shares": ("WeightedAverageNumberOfDilutedSharesOutstanding",),
 }
 BALANCE_TAGS: Dict[str, Tuple[str, ...]] = {
     "total_assets": ("Assets",),
@@ -133,9 +140,10 @@ CASH_FLOW_TAGS: Dict[str, Tuple[str, ...]] = {
         "IncomeLossFromContinuingOperationsIncludingPortionAttributableToNoncontrollingInterest",
         "NetIncomeLoss",
     ),
+    "stock_based_compensation": ("ShareBasedCompensation", "AllocatedShareBasedCompensationExpense"),
 }
 # Fields whose magnitude is not USD.
-SHARE_FIELDS = {"common_stock_shares_outstanding"}
+SHARE_FIELDS = {"common_stock_shares_outstanding", "diluted_average_shares"}
 PER_SHARE_FIELDS = {"basic_eps", "diluted_eps"}
 # Cash-flow tags reported as positive outflows; the models follow yfinance's
 # sign convention (outflows negative).
