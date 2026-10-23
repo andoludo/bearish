@@ -23,7 +23,13 @@ MacroSources = Literal[
     "EIA",
     "Comtrade",
     "KenFrench",
+    "EDGAR",
+    "arXiv",
     "Yfinance",
+    "PortWatch",
+    "GDELT",
+    "OFAC",
+    "SIPRI",
 ]
 
 Category = Literal[

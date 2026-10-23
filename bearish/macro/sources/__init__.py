@@ -16,6 +16,8 @@ from bearish.macro.sources.imf import ImfSource
 from bearish.macro.sources.kenfrench import KenFrenchSource
 from bearish.macro.sources.oecd import OecdSource
 from bearish.macro.sources.pinksheet import PinkSheetSource
+from bearish.macro.sources.portwatch import PortWatchSource
+from bearish.macro.sources.sipri import SipriSource
 from bearish.macro.sources.worldbank import WorldBankSource
 
 __all__ = [
@@ -33,13 +35,19 @@ __all__ = [
     "KenFrenchSource",
     "OecdSource",
     "PinkSheetSource",
+    "PortWatchSource",
+    "SipriSource",
     "WorldBankSource",
     "default_macro_sources",
 ]
 
 
 def default_macro_sources() -> List[AbstractMacroSource]:
-    """Every provider with catalog entries; cheap keyless APIs first, bulk files last."""
+    """Providers fetched by ``bearish macro`` / ``bearish update``; cheap keyless APIs first, bulk files last.
+
+    GDELT (one ~8 MB file per day) and OFAC (a ~110 MB list) are heavy and are
+    fetched by ``bearish conflicts`` instead.
+    """
     return [
         FredSource(),
         OecdSource(),
@@ -55,4 +63,6 @@ def default_macro_sources() -> List[AbstractMacroSource]:
         EpuSource(),
         GprSource(),
         GdpNowSource(),
+        PortWatchSource(),
+        SipriSource(),
     ]

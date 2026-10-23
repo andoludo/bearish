@@ -1,0 +1,4309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sanctionsData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ENHANCED_XML https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ENHANCED_XML.xsd" xmlns="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ENHANCED_XML">
+  <publicationInfo>
+    <dataAsOf>2026-10-21T00:00:00-04:00</dataAsOf>
+    <filters>
+      <sanctionsLists>
+        <sanctionsList refId="1550">SDN List</sanctionsList>
+      </sanctionsLists>
+    </filters>
+  </publicationInfo>
+  <entities>
+    <entity id="34820">
+      <generalInfo>
+        <identityId>26444</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36857" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="37750">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27078">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24344">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54692">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49703">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>ORIENTAL REVIEW</formattedLastName>
+              <formattedFullName>ORIENTAL REVIEW</formattedFullName>
+              <nameParts>
+                <namePart id="91778">
+                  <type refId="1525">Entity Name</type>
+                  <value>Oriental Review</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52212">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45044">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46291">
+          <type featureTypeId="14">Website</type>
+          <versionId>44010</versionId>
+          <value>www.orientalreview.org</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75214">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72873</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="34821">
+      <generalInfo>
+        <identityId>26445</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36858" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="37749">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27079">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24343">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54693">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49704">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>NEW EASTERN OUTLOOK</formattedLastName>
+              <formattedFullName>NEW EASTERN OUTLOOK</formattedFullName>
+              <nameParts>
+                <namePart id="91779">
+                  <type refId="1525">Entity Name</type>
+                  <value>New Eastern Outlook</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52214">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45045">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46292">
+          <type featureTypeId="14">Website</type>
+          <versionId>44011</versionId>
+          <value>journal-neo.org</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75215">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72874</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="34817">
+      <generalInfo>
+        <identityId>26441</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36854" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="37621">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27075">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24196">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54687">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49696">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>ODNA RODYNA</formattedLastName>
+              <formattedFullName>ODNA RODYNA</formattedFullName>
+              <nameParts>
+                <namePart id="91771">
+                  <type refId="1525">Entity Name</type>
+                  <value>Odna Rodyna</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="49697">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ОДНА РОДИНА</formattedLastName>
+              <formattedFullName>ОДНА РОДИНА</formattedFullName>
+              <nameParts>
+                <namePart id="91772">
+                  <type refId="1525">Entity Name</type>
+                  <value>Одна Родина</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52206">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45041">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46777">
+          <type featureTypeId="14">Website</type>
+          <versionId>44483</versionId>
+          <value>odnarodyna.org</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12275">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34818">
+      <generalInfo>
+        <identityId>26442</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36855" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="37622">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27076">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24197">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54688">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49698">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>RHYTHM OF EURASIA</formattedLastName>
+              <formattedFullName>RHYTHM OF EURASIA</formattedFullName>
+              <nameParts>
+                <namePart id="91773">
+                  <type refId="1525">Entity Name</type>
+                  <value>Rhythm Of Eurasia</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="49699">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>РИТМ ЕВРАЗИИ</formattedLastName>
+              <formattedFullName>РИТМ ЕВРАЗИИ</formattedFullName>
+              <nameParts>
+                <namePart id="91774">
+                  <type refId="1525">Entity Name</type>
+                  <value>Ритм Евразии</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52208">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45042">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46289">
+          <type featureTypeId="14">Website</type>
+          <versionId>44008</versionId>
+          <value>www.ritmeurasia.org</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12276">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34822">
+      <generalInfo>
+        <identityId>26446</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36859" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91493" id="37755">UKRAINE-EO13660</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27080">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91494" id="24349">Executive Order 13660 (Ukraine)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54694">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49705">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>GEOPOLITICA</formattedLastName>
+              <formattedFullName>GEOPOLITICA</formattedFullName>
+              <nameParts>
+                <namePart id="91780">
+                  <type refId="1525">Entity Name</type>
+                  <value>Geopolitica</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="50231">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ГЕОПОЛИТИКА</formattedLastName>
+              <formattedFullName>ГЕОПОЛИТИКА</formattedFullName>
+              <nameParts>
+                <namePart id="92554">
+                  <type refId="1525">Entity Name</type>
+                  <value>Геополитика</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52216">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45046">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46294">
+          <type featureTypeId="14">Website</type>
+          <versionId>44013</versionId>
+          <value>Geopolitica.ru</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="51148">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>48827</versionId>
+          <value>Ukraine-/Russia-Related Sanctions Regulations, 31 CFR 589.201 and/or 589.209</value>
+          <valueRefId>92077</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12317">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="17760">DUGIN, Aleksandr</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34823">
+      <generalInfo>
+        <identityId>26447</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36860" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="37627">ELECTION-EO13848</sanctionsProgram>
+        <sanctionsProgram refId="91741" id="37751">CYBER2</sanctionsProgram>
+        <sanctionsProgram refId="91499" id="37921">UKRAINE-EO13661</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27081">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24202">Executive Order 13848 (Election)</legalAuthority>
+        <legalAuthority refId="91711" id="24346">Executive Order 13694 (Cyber)</legalAuthority>
+        <legalAuthority refId="91498" id="24521">Executive Order 13661 (Ukraine)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54695">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49706">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>UNITED WORLD INTERNATIONAL</formattedLastName>
+              <formattedFullName>UNITED WORLD INTERNATIONAL</formattedFullName>
+              <nameParts>
+                <namePart id="91781">
+                  <type refId="1525">Entity Name</type>
+                  <value>United World International</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52219">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45047">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46295">
+          <type featureTypeId="14">Website</type>
+          <versionId>44014</versionId>
+          <value>www.unitedworldint.com</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46296">
+          <type featureTypeId="14">Website</type>
+          <versionId>44015</versionId>
+          <value>www.uwidata.com</value>
+          <isPrimary>false</isPrimary>
+        </feature>
+        <feature id="51182">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>48861</versionId>
+          <value>Ukraine-/Russia-Related Sanctions Regulations, 31 CFR 589.201 and/or 589.209</value>
+          <valueRefId>92077</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12318">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="21171">PRIGOZHIN, Yevgeniy Viktorovich</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35069">
+      <generalInfo>
+        <identityId>26693</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37266" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="37953">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27461">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24549">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55174">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50264">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>LAKHTA PARK, OOO</formattedLastName>
+              <formattedFullName>LAKHTA PARK, OOO</formattedFullName>
+              <nameParts>
+                <namePart id="92620">
+                  <type refId="1525">Entity Name</type>
+                  <value>LAKHTA PARK, OOO</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="50265">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ЛАХТА ПАРК</formattedLastName>
+              <formattedFullName>ЛАХТА ПАРК</formattedFullName>
+              <nameParts>
+                <namePart id="92621">
+                  <type refId="1525">Entity Name</type>
+                  <value>Лахта Парк</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52655">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45338">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="71059">
+                  <type refId="1454">CITY</type>
+                  <value>Pargolovo</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="75255">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72914</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="24834">
+          <type refId="1596">Tax ID No.</type>
+          <name nameId="55174" nameTranslationId="50264">LAKHTA PARK, OOO</name>
+          <documentNumber>7807381808</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11171">Russia</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="12430">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="31672">PRIGOZHIN, Pavel Evgenyevich</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35068">
+      <generalInfo>
+        <identityId>26692</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37265" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="37952">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27460">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24548">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55173">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50262">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>LAKHTA PLAZA, OOO</formattedLastName>
+              <formattedFullName>LAKHTA PLAZA, OOO</formattedFullName>
+              <nameParts>
+                <namePart id="92618">
+                  <type refId="1525">Entity Name</type>
+                  <value>LAKHTA PLAZA, OOO</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="50263">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ЛАХТА ПЛАЗА</formattedLastName>
+              <formattedFullName>ЛАХТА ПЛАЗА</formattedFullName>
+              <nameParts>
+                <namePart id="92619">
+                  <type refId="1525">Entity Name</type>
+                  <value>Лахта Плаза</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52652">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45336">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="70739">
+                  <type refId="1454">CITY</type>
+                  <value>St. Petersburg</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="75254">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72913</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="24833">
+          <type refId="1596">Tax ID No.</type>
+          <name nameId="55173" nameTranslationId="50262">LAKHTA PLAZA, OOO</name>
+          <documentNumber>7801634178</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11171">Russia</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="12431">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="31672">PRIGOZHIN, Pavel Evgenyevich</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35122">
+      <generalInfo>
+        <identityId>26746</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37319" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="38012">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27520">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24607">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55234">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50343">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Anton Sergeyevich</formattedFirstName>
+              <formattedLastName>BESPALOV</formattedLastName>
+              <formattedFullName>BESPALOV, Anton Sergeyevich</formattedFullName>
+              <nameParts>
+                <namePart id="92732">
+                  <type refId="1520">Last Name</type>
+                  <value>Bespalov</value>
+                </namePart>
+                <namePart id="92733">
+                  <type refId="1521">First Name</type>
+                  <value>Anton</value>
+                </namePart>
+                <namePart id="92734">
+                  <type refId="1522">Middle Name</type>
+                  <value>Sergeyevich</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52736">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45386">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47044">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44743</versionId>
+          <value>02 Feb 1981</value>
+          <valueDate id="65933">
+            <fromDateBegin>1981-02-02</fromDateBegin>
+            <fromDateEnd>1981-02-02</fromDateEnd>
+            <toDateBegin>1981-02-02</toDateBegin>
+            <toDateEnd>1981-02-02</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47045">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44744</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47046">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44745</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12466">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35135">
+      <generalInfo>
+        <identityId>26759</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37332" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="38056">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27533">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24640">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55249">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50358">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Andrey Grigoryevich</formattedFirstName>
+              <formattedLastName>ARESHEV</formattedLastName>
+              <formattedFullName>ARESHEV, Andrey Grigoryevich</formattedFullName>
+              <nameParts>
+                <namePart id="92775">
+                  <type refId="1520">Last Name</type>
+                  <value>Areshev</value>
+                </namePart>
+                <namePart id="92776">
+                  <type refId="1521">First Name</type>
+                  <value>Andrey</value>
+                </namePart>
+                <namePart id="92777">
+                  <type refId="1522">Middle Name</type>
+                  <value>Grigoryevich</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52764">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45401">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47081">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44780</versionId>
+          <value>21 Jul 1974</value>
+          <valueDate id="65989">
+            <fromDateBegin>1974-07-21</fromDateBegin>
+            <fromDateEnd>1974-07-21</fromDateEnd>
+            <toDateBegin>1974-07-21</toDateBegin>
+            <toDateEnd>1974-07-21</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47082">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44781</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47083">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44782</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12468">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35117">
+      <generalInfo>
+        <identityId>26741</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37314" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="38002">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27515">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24597">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55228">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50337">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Svetlana Georgiyevna</formattedFirstName>
+              <formattedLastName>ZAMLELOVA</formattedLastName>
+              <formattedFullName>ZAMLELOVA, Svetlana Georgiyevna</formattedFullName>
+              <nameParts>
+                <namePart id="92713">
+                  <type refId="1520">Last Name</type>
+                  <value>Zamlelova</value>
+                </namePart>
+                <namePart id="92714">
+                  <type refId="1521">First Name</type>
+                  <value>Svetlana</value>
+                </namePart>
+                <namePart id="92715">
+                  <type refId="1522">Middle Name</type>
+                  <value>Georgiyevna</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52726">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45381">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47029">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44728</versionId>
+          <value>22 Aug 1973</value>
+          <valueDate id="65915">
+            <fromDateBegin>1973-08-22</fromDateBegin>
+            <fromDateEnd>1973-08-22</fromDateEnd>
+            <toDateBegin>1973-08-22</toDateBegin>
+            <toDateEnd>1973-08-22</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47030">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44729</versionId>
+          <value>Female</value>
+          <valueRefId>91527</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47036">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44735</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12452">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="34819">JOURNAL KAMERTON</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34896">
+      <generalInfo>
+        <identityId>26520</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36933" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="37700">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27154">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24295">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54766">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49775">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Natalya Petrovna</formattedFirstName>
+              <formattedLastName>SKOROKHODOVA</formattedLastName>
+              <formattedFullName>SKOROKHODOVA, Natalya Petrovna</formattedFullName>
+              <nameParts>
+                <namePart id="91908">
+                  <type refId="1520">Last Name</type>
+                  <value>Skorokhodova</value>
+                </namePart>
+                <namePart id="91909">
+                  <type refId="1521">First Name</type>
+                  <value>Natalya</value>
+                </namePart>
+                <namePart id="91910">
+                  <type refId="1522">Middle Name</type>
+                  <value>Petrovna</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52324">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45100">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46367">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44086</versionId>
+          <value>Female</value>
+          <valueRefId>91527</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46368">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44087</versionId>
+          <value>25 Aug 1968</value>
+          <valueDate id="64610">
+            <fromDateBegin>1968-08-25</fromDateBegin>
+            <fromDateEnd>1968-08-25</fromDateEnd>
+            <toDateBegin>1968-08-25</toDateBegin>
+            <toDateEnd>1968-08-25</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46775">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44481</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12270">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35070">
+      <generalInfo>
+        <identityId>26694</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37267" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="37954">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27462">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24550">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55175">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50266">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>LAKHTA PARK PREMIUM, OOO</formattedLastName>
+              <formattedFullName>LAKHTA PARK PREMIUM, OOO</formattedFullName>
+              <nameParts>
+                <namePart id="92622">
+                  <type refId="1525">Entity Name</type>
+                  <value>LAKHTA PARK PREMIUM, OOO</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="50267">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ЛАХТА ПАРК ПРЕМИУМ</formattedLastName>
+              <formattedFullName>ЛАХТА ПАРК ПРЕМИУМ</formattedFullName>
+              <nameParts>
+                <namePart id="92623">
+                  <type refId="1525">Entity Name</type>
+                  <value>Лахта Парк Премиум</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52658">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45339">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="70745">
+                  <type refId="1454">CITY</type>
+                  <value>St. Petersburg</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="75256">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72915</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="24836">
+          <type refId="1596">Tax ID No.</type>
+          <name nameId="55175" nameTranslationId="50266">LAKHTA PARK PREMIUM, OOO</name>
+          <documentNumber>7810764381</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11171">Russia</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="12429">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="31672">PRIGOZHIN, Pavel Evgenyevich</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35760">
+      <generalInfo>
+        <identityId>27384</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="38081" datePublished="2022-03-11">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="38659">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="28178">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="25258">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="56174">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="51771">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Maxim Dmitrievich</formattedFirstName>
+              <formattedLastName>KONDRATENKO</formattedLastName>
+              <formattedFullName>KONDRATENKO, Maxim Dmitrievich</formattedFullName>
+              <nameParts>
+                <namePart id="96101">
+                  <type refId="1520">Last Name</type>
+                  <value>Kondratenko</value>
+                </namePart>
+                <namePart id="96102">
+                  <type refId="1521">First Name</type>
+                  <value>Maxim</value>
+                </namePart>
+                <namePart id="96103">
+                  <type refId="1522">Middle Name</type>
+                  <value>Dmitrievich</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="53632">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="46042">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="48804">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>46503</versionId>
+          <value>31 Jul 1973</value>
+          <valueDate id="67382">
+            <fromDateBegin>1973-07-31</fromDateBegin>
+            <fromDateEnd>1973-07-31</fromDateEnd>
+            <toDateBegin>1973-07-31</toDateBegin>
+            <toDateEnd>1973-07-31</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="48805">
+          <type featureTypeId="224">Gender</type>
+          <versionId>46504</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="48806">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>46505</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="73227">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>70886</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="35175">
+      <generalInfo>
+        <identityId>26799</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37470" datePublished="2022-03-15">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="38079">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27573">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24674">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55309">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50420">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Gennady</formattedFirstName>
+              <formattedLastName>ZHIDKO</formattedLastName>
+              <formattedFullName>ZHIDKO, Gennady</formattedFullName>
+              <nameParts>
+                <namePart id="92872">
+                  <type refId="1520">Last Name</type>
+                  <value>ZHIDKO</value>
+                </namePart>
+                <namePart id="92873">
+                  <type refId="1521">First Name</type>
+                  <value>Gennady</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52826">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45443">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47190">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44889</versionId>
+          <value>12 Sep 1965</value>
+          <valueDate id="66092">
+            <fromDateBegin>1965-09-12</fromDateBegin>
+            <fromDateEnd>1965-09-12</fromDateEnd>
+            <toDateBegin>1965-09-12</toDateBegin>
+            <toDateEnd>1965-09-12</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47191">
+          <type featureTypeId="9">Place of Birth</type>
+          <versionId>44890</versionId>
+          <value>Uzbekistan</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47192">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44891</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47193">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44892</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75284">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72943</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="35172">
+      <generalInfo>
+        <identityId>26796</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37467" datePublished="2022-03-15">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="38076">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27570">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24671">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55305">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50416">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Ruslan</formattedFirstName>
+              <formattedLastName>TSALIKOV</formattedLastName>
+              <formattedFullName>TSALIKOV, Ruslan</formattedFullName>
+              <nameParts>
+                <namePart id="92864">
+                  <type refId="1520">Last Name</type>
+                  <value>TSALIKOV</value>
+                </namePart>
+                <namePart id="92865">
+                  <type refId="1521">First Name</type>
+                  <value>Ruslan</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52818">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45438">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47177">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44876</versionId>
+          <value>31 Jul 1956</value>
+          <valueDate id="66086">
+            <fromDateBegin>1956-07-31</fromDateBegin>
+            <fromDateEnd>1956-07-31</fromDateEnd>
+            <toDateBegin>1956-07-31</toDateBegin>
+            <toDateEnd>1956-07-31</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47178">
+          <type featureTypeId="9">Place of Birth</type>
+          <versionId>44877</versionId>
+          <value>Ordzhonikidze, North Ossetia, Russia</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47180">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44879</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47181">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44880</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75281">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72940</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="35185">
+      <generalInfo>
+        <identityId>26809</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37482" datePublished="2022-03-15">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="38089">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27583">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24684">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55326">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50437">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Dmitry</formattedFirstName>
+              <formattedLastName>BULGAKOV</formattedLastName>
+              <formattedFullName>BULGAKOV, Dmitry</formattedFullName>
+              <nameParts>
+                <namePart id="92911">
+                  <type refId="1520">Last Name</type>
+                  <value>Bulgakov</value>
+                </namePart>
+                <namePart id="92912">
+                  <type refId="1521">First Name</type>
+                  <value>Dmitry</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52847">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45454">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47226">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44925</versionId>
+          <value>20 Oct 1954</value>
+          <valueDate id="66123">
+            <fromDateBegin>1954-10-20</fromDateBegin>
+            <fromDateEnd>1954-10-20</fromDateEnd>
+            <toDateBegin>1954-10-20</toDateBegin>
+            <toDateEnd>1954-10-20</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47227">
+          <type featureTypeId="9">Place of Birth</type>
+          <versionId>44926</versionId>
+          <value>Verkhneye Gurovo, Kursk Region, Russia</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47228">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44927</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47229">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44928</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75286">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>72945</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="35120">
+      <generalInfo>
+        <identityId>26744</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37317" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="38007">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27518">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24602">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55232">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50341">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Irina Sergeyevna</formattedFirstName>
+              <formattedLastName>BUBNOVA</formattedLastName>
+              <formattedFullName>BUBNOVA, Irina Sergeyevna</formattedFullName>
+              <nameParts>
+                <namePart id="92726">
+                  <type refId="1520">Last Name</type>
+                  <value>Bubnova</value>
+                </namePart>
+                <namePart id="92727">
+                  <type refId="1521">First Name</type>
+                  <value>Irina</value>
+                </namePart>
+                <namePart id="92728">
+                  <type refId="1522">Middle Name</type>
+                  <value>Sergeyevna</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52732">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45384">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47037">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44736</versionId>
+          <value>01 Apr 1983</value>
+          <valueDate id="65923">
+            <fromDateBegin>1983-04-01</fromDateBegin>
+            <fromDateEnd>1983-04-01</fromDateEnd>
+            <toDateBegin>1983-04-01</toDateBegin>
+            <toDateEnd>1983-04-01</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47038">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44737</versionId>
+          <value>Female</value>
+          <valueRefId>91527</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47039">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44738</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="24876">
+          <type refId="1571">Passport</type>
+          <name nameId="55232" nameTranslationId="50341">BUBNOVA, Irina Sergeyevna</name>
+          <documentNumber>703828693</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11171">Russia</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="12454">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35331">
+      <generalInfo>
+        <identityId>26955</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37648" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="38242">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27749">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24839">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55604">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50801">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>ZARECHE-4 OOO</formattedLastName>
+              <formattedFullName>ZARECHE-4 OOO</formattedFullName>
+              <nameParts>
+                <namePart id="93626">
+                  <type refId="1525">Entity Name</type>
+                  <value>Zareche-4 OOO</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="50803">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ООО ЗАРЕЧЬЕ-4</formattedLastName>
+              <formattedFullName>ООО ЗАРЕЧЬЕ-4</formattedFullName>
+              <nameParts>
+                <namePart id="93628">
+                  <type refId="1525">Entity Name</type>
+                  <value>ООО Заречье-4</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="53127">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45628">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="71132">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>Alleya Berezovaya 2, Odintsovo</value>
+                </addressPart>
+                <addressPart id="71133">
+                  <type refId="1456">POSTAL CODE</type>
+                  <value>143085</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="76722">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>74381</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="25045">
+          <type refId="91760">Business Registration Number</type>
+          <name nameId="55604" nameTranslationId="50801">ZARECHE-4 OOO</name>
+          <documentNumber>1145000006832</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11171">Russia</issuingCountry>
+        </identityDocument>
+        <identityDocument id="25046">
+          <type refId="1596">Tax ID No.</type>
+          <name nameId="55604" nameTranslationId="50801">ZARECHE-4 OOO</name>
+          <documentNumber>5032999641</documentNumber>
+          <isValid>true</isValid>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="12538">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="35315">SHUVALOV, Igor Ivanovich</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34827">
+      <generalInfo>
+        <identityId>26451</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36864" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91741" id="37638">CYBER2</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="37639">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27085">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1811" id="24216">Executive Order 13382 (Non-proliferation)</legalAuthority>
+        <legalAuthority refId="91711" id="24217">Executive Order 13694 (Cyber)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54700">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49713">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Yuriy Sergeyevich</formattedFirstName>
+              <formattedLastName>FEDIN</formattedLastName>
+              <formattedFullName>FEDIN, Yuriy Sergeyevich</formattedFullName>
+              <nameParts>
+                <namePart id="91800">
+                  <type refId="1520">Last Name</type>
+                  <value>Fedin</value>
+                </namePart>
+                <namePart id="91801">
+                  <type refId="1521">First Name</type>
+                  <value>Yuriy</value>
+                </namePart>
+                <namePart id="91802">
+                  <type refId="1522">Middle Name</type>
+                  <value>Sergeyevich</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52224">
+          <country refId="11209">Ukraine</country>
+          <translations>
+            <translation id="45049">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46305">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44024</versionId>
+          <value>26 Mar 1989</value>
+          <valueDate id="64519">
+            <fromDateBegin>1989-03-26</fromDateBegin>
+            <fromDateEnd>1989-03-26</fromDateEnd>
+            <toDateBegin>1989-03-26</toDateBegin>
+            <toDateEnd>1989-03-26</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46306">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44025</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46779">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44485</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="54558">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>52237</versionId>
+          <value>Ukraine-/Russia-Related Sanctions Regulations, 31 CFR 589.201</value>
+          <valueRefId>92127</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12391">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="31451">NEWSFRONT</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35327">
+      <generalInfo>
+        <identityId>26951</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37644" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="38238">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27745">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="24835">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55598">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50790">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>AVANFORT OOO</formattedLastName>
+              <formattedFullName>AVANFORT OOO</formattedFullName>
+              <nameParts>
+                <namePart id="93615">
+                  <type refId="1525">Entity Name</type>
+                  <value>Avanfort OOO</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="50793">
+              <isPrimary>false</isPrimary>
+              <script refId="20107">Cyrillic</script>
+              <formattedLastName>ООО АВАНФОРТ</formattedLastName>
+              <formattedFullName>ООО АВАНФОРТ</formattedFullName>
+              <nameParts>
+                <namePart id="93618">
+                  <type refId="1525">Entity Name</type>
+                  <value>ООО Аванфорт</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="53121">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45625">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="71122">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>d. 6 str. 1 etazh TSOKOL, kab. 1B, per. Sechenovski</value>
+                </addressPart>
+                <addressPart id="71123">
+                  <type refId="1454">CITY</type>
+                  <value>Moscow</value>
+                </addressPart>
+                <addressPart id="71124">
+                  <type refId="1456">POSTAL CODE</type>
+                  <value>119034</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="76718">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>74377</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="25039">
+          <type refId="91760">Business Registration Number</type>
+          <name nameId="55598" nameTranslationId="50790">AVANFORT OOO</name>
+          <documentNumber>1057746164519</documentNumber>
+          <isValid>true</isValid>
+        </identityDocument>
+        <identityDocument id="25040">
+          <type refId="1596">Tax ID No.</type>
+          <name nameId="55598" nameTranslationId="50790">AVANFORT OOO</name>
+          <documentNumber>7716520363</documentNumber>
+          <isValid>true</isValid>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="12536">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="35315">SHUVALOV, Igor Ivanovich</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34819">
+      <generalInfo>
+        <identityId>26443</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36856" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="37623">ELECTION-EO13848</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27077">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24198">Executive Order 13848 (Election)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54689">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49700">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>JOURNAL KAMERTON</formattedLastName>
+              <formattedFullName>JOURNAL KAMERTON</formattedFullName>
+              <nameParts>
+                <namePart id="91775">
+                  <type refId="1525">Entity Name</type>
+                  <value>Journal Kamerton</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+        <name id="54690">
+          <isPrimary>false</isPrimary>
+          <aliasType refId="1400">A.K.A.</aliasType>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49701">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>WEB KAMERTON</formattedLastName>
+              <formattedFullName>WEB KAMERTON</formattedFullName>
+              <nameParts>
+                <namePart id="91776">
+                  <type refId="1525">Entity Name</type>
+                  <value>Web Kamerton</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+        <name id="54691">
+          <isPrimary>false</isPrimary>
+          <aliasType refId="1400">A.K.A.</aliasType>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49702">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>NETWORK LITERARY AND HISTORICAL MAGAZINE KAMERTON</formattedLastName>
+              <formattedFullName>NETWORK LITERARY AND HISTORICAL MAGAZINE KAMERTON</formattedFullName>
+              <nameParts>
+                <namePart id="91777">
+                  <type refId="1525">Entity Name</type>
+                  <value>Network Literary and Historical Magazine Kamerton</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52210">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45043">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="70019">
+                  <type refId="1454">CITY</type>
+                  <value>Moscow</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46290">
+          <type featureTypeId="14">Website</type>
+          <versionId>44009</versionId>
+          <value>www.webkamerton.ru</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12277">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="31213">THE STRATEGIC CULTURE FOUNDATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35121">
+      <generalInfo>
+        <identityId>26745</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37318" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91757" id="38008">CAATSA - RUSSIA</sanctionsProgram>
+        <sanctionsProgram refId="91741" id="38009">CYBER2</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="38052">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27519">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91758" id="24603">CAATSA - Section 224</legalAuthority>
+        <legalAuthority refId="1811" id="24604">Executive Order 13382 (Non-proliferation)</legalAuthority>
+        <legalAuthority refId="91711" id="24605">Executive Order 13694 (Cyber)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55233">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50342">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Maksim Iosifovich</formattedFirstName>
+              <formattedLastName>KRANS</formattedLastName>
+              <formattedFullName>KRANS, Maksim Iosifovich</formattedFullName>
+              <nameParts>
+                <namePart id="92729">
+                  <type refId="1520">Last Name</type>
+                  <value>Krans</value>
+                </namePart>
+                <namePart id="92730">
+                  <type refId="1521">First Name</type>
+                  <value>Maksim</value>
+                </namePart>
+                <namePart id="92731">
+                  <type refId="1522">Middle Name</type>
+                  <value>Iosifovich</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52734">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45385">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47041">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44740</versionId>
+          <value>08 Mar 1950</value>
+          <valueDate id="65926">
+            <fromDateBegin>1950-03-08</fromDateBegin>
+            <fromDateEnd>1950-03-08</fromDateEnd>
+            <toDateBegin>1950-03-08</toDateBegin>
+            <toDateEnd>1950-03-08</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47042">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44741</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47043">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44742</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="53836">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>51515</versionId>
+          <value>Ukraine-/Russia-Related Sanctions Regulations, 31 CFR 589.201</value>
+          <valueRefId>92127</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12451">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="31169">INFOROS, OOO</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="35129">
+      <generalInfo>
+        <identityId>26753</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="37326" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91757" id="38027">CAATSA - RUSSIA</sanctionsProgram>
+        <sanctionsProgram refId="91741" id="38028">CYBER2</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="38048">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27527">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91758" id="24622">CAATSA - Section 224</legalAuthority>
+        <legalAuthority refId="1811" id="24623">Executive Order 13382 (Non-proliferation)</legalAuthority>
+        <legalAuthority refId="91711" id="24624">Executive Order 13694 (Cyber)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="55241">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="50350">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Nina Viktorovna</formattedFirstName>
+              <formattedLastName>DOROKHOVA</formattedLastName>
+              <formattedFullName>DOROKHOVA, Nina Viktorovna</formattedFullName>
+              <nameParts>
+                <namePart id="92753">
+                  <type refId="1520">Last Name</type>
+                  <value>Dorokhova</value>
+                </namePart>
+                <namePart id="92754">
+                  <type refId="1521">First Name</type>
+                  <value>Nina</value>
+                </namePart>
+                <namePart id="92755">
+                  <type refId="1522">Middle Name</type>
+                  <value>Viktorovna</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52754">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45396">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="47065">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44764</versionId>
+          <value>20 Nov 1965</value>
+          <valueDate id="65955">
+            <fromDateBegin>1965-11-20</fromDateBegin>
+            <fromDateEnd>1965-11-20</fromDateEnd>
+            <toDateBegin>1965-11-20</toDateBegin>
+            <toDateEnd>1965-11-20</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47066">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44765</versionId>
+          <value>Female</value>
+          <valueRefId>91527</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="47067">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44766</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="53808">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>51487</versionId>
+          <value>Ukraine-/Russia-Related Sanctions Regulations, 31 CFR 589.201</value>
+          <valueRefId>92127</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12460">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="31169">INFOROS, OOO</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="34836">
+      <generalInfo>
+        <identityId>26460</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="36873" datePublished="2022-03-03">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91807" id="37640">ELECTION-EO13848</sanctionsProgram>
+        <sanctionsProgram refId="91741" id="37742">CYBER2</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="37743">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="27094">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91870" id="24235">Executive Order 13848 (Election)</legalAuthority>
+        <legalAuthority refId="1811" id="24337">Executive Order 13382 (Non-proliferation)</legalAuthority>
+        <legalAuthority refId="91711" id="24338">Executive Order 13694 (Cyber)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="54706">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="49715">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Aelita Leonidovna</formattedFirstName>
+              <formattedLastName>MAMAKOVA</formattedLastName>
+              <formattedFullName>MAMAKOVA, Aelita Leonidovna</formattedFullName>
+              <nameParts>
+                <namePart id="91808">
+                  <type refId="1520">Last Name</type>
+                  <value>Mamakova</value>
+                </namePart>
+                <namePart id="91809">
+                  <type refId="1521">First Name</type>
+                  <value>Aelita</value>
+                </namePart>
+                <namePart id="91810">
+                  <type refId="1522">Middle Name</type>
+                  <value>Leonidovna</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="52244">
+          <country refId="11171">Russia</country>
+          <translations>
+            <translation id="45060">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="46307">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>44026</versionId>
+          <value>01 Nov 1988</value>
+          <valueDate id="64530">
+            <fromDateBegin>1988-11-01</fromDateBegin>
+            <fromDateEnd>1988-11-01</fromDateEnd>
+            <toDateBegin>1988-11-01</toDateBegin>
+            <toDateEnd>1988-11-01</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46308">
+          <type featureTypeId="224">Gender</type>
+          <versionId>44027</versionId>
+          <value>Female</value>
+          <valueRefId>91527</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="46773">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>44479</versionId>
+          <value>Russia</value>
+          <valueRefId>11171</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="54582">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>52261</versionId>
+          <value>Ukraine-/Russia-Related Sanctions Regulations, 31 CFR 589.201</value>
+          <valueRefId>92127</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="12279">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="31212">SOUTHFRONT</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="53101">
+      <generalInfo>
+        <identityId>44588</identityId>
+        <entityType refId="602">Vessel</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="55584" datePublished="2025-03-13">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91901" id="57216">IRAN-EO13902</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="45694">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91902" id="43585">Executive Order 13902 (Iran)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="83032">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="82831">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>POLARIS 1</formattedLastName>
+              <formattedFullName>POLARIS 1</formattedFullName>
+              <nameParts>
+                <namePart id="139787">
+                  <type refId="1526">Vessel Name</type>
+                  <value>POLARIS 1</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="81062" />
+      </addresses>
+      <features>
+        <feature id="85420">
+          <type featureTypeId="2">VESSEL TYPE</type>
+          <versionId>83039</versionId>
+          <value>Chemical/Oil Tanker</value>
+          <valueRefId>91838</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="85421">
+          <type featureTypeId="3">Vessel Flag</type>
+          <versionId>83040</versionId>
+          <value>Iran</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="85422">
+          <type featureTypeId="1">Vessel Call Sign</type>
+          <versionId>83041</versionId>
+          <value>EPXT5</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="46196">
+          <type refId="1626">Vessel Registration Identification</type>
+          <name nameId="83032" nameTranslationId="82831">POLARIS 1</name>
+          <documentNumber>IMO 9272694</documentNumber>
+          <isValid>true</isValid>
+        </identityDocument>
+        <identityDocument id="46197">
+          <type refId="91264">MMSI</type>
+          <name nameId="83032" nameTranslationId="82831">POLARIS 1</name>
+          <documentNumber>422546600</documentNumber>
+          <isValid>true</isValid>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="21748">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="53100">FALLON SHIPPING COMPANY LIMITED</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="55203">
+      <generalInfo>
+        <identityId>46586</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="57622" datePublished="2025-10-01">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91167" id="59715">IFSR</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="59716">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="47802">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1811" id="46247">Executive Order 13382 (Non-proliferation)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="85925">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="86003">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>SHAHID HEMMAT SPACE GROUP</formattedLastName>
+              <formattedFullName>SHAHID HEMMAT SPACE GROUP</formattedFullName>
+              <nameParts>
+                <namePart id="144053">
+                  <type refId="1525">Entity Name</type>
+                  <value>Shahid Hemmat Space Group</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+        <name id="85926">
+          <isPrimary>false</isPrimary>
+          <aliasType refId="1400">A.K.A.</aliasType>
+          <isLowQuality>true</isLowQuality>
+          <translations>
+            <translation id="86004">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>SHSG</formattedLastName>
+              <formattedFullName>SHSG</formattedFullName>
+              <nameParts>
+                <namePart id="144054">
+                  <type refId="1525">Entity Name</type>
+                  <value>SHSG</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="84434">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="65617">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="92387">
+          <type featureTypeId="826">Target Type</type>
+          <versionId>89992</versionId>
+          <value>Government Entity</value>
+          <valueRefId>92062</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="92388">
+          <type featureTypeId="647">Organization Type:</type>
+          <versionId>89993</versionId>
+          <value>Defense activities</value>
+          <valueRefId>92145</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="92634">
+          <type featureTypeId="125">Additional Sanctions Information -</type>
+          <versionId>90233</versionId>
+          <value>Subject to Secondary Sanctions</value>
+          <valueRefId>91473</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="23194">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="9348">AEROSPACE INDUSTRIES ORGANIZATION</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="55901">
+      <generalInfo>
+        <identityId>47276</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="58332" datePublished="2025-10-09">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91869" id="60486">IRAN-EO13846</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="48494">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91784" id="46952">Executive Order 13846 (Iran)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="86829">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="87053">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>KERMANSHAH PETROCHEMICAL INDUSTRIES CO.</formattedLastName>
+              <formattedFullName>KERMANSHAH PETROCHEMICAL INDUSTRIES CO.</formattedFullName>
+              <nameParts>
+                <namePart id="145270">
+                  <type refId="1525">Entity Name</type>
+                  <value>KERMANSHAH PETROCHEMICAL INDUSTRIES CO.</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="85563">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="66288">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="118354">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>No. 14, Salman St.</value>
+                </addressPart>
+                <addressPart id="118355">
+                  <type refId="1452">ADDRESS2</type>
+                  <value>North Sheikh Bahaei St.</value>
+                </addressPart>
+                <addressPart id="118356">
+                  <type refId="1453">ADDRESS3</type>
+                  <value>Mollasadra Ave.</value>
+                </addressPart>
+                <addressPart id="118357">
+                  <type refId="1454">CITY</type>
+                  <value>Tehran</value>
+                </addressPart>
+                <addressPart id="118358">
+                  <type refId="1456">POSTAL CODE</type>
+                  <value>1991713441</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="93939">
+          <type featureTypeId="125">Additional Sanctions Information -</type>
+          <versionId>91518</versionId>
+          <value>Subject to Secondary Sanctions</value>
+          <valueRefId>91473</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="93998">
+          <type featureTypeId="586">Executive Order 13846 information:</type>
+          <versionId>91577</versionId>
+          <value>BLOCKING PROPERTY AND INTERESTS IN PROPERTY.  Sec. 5(a)(iv)</value>
+          <valueRefId>91885</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="50046">
+          <type refId="1584">National ID No.</type>
+          <name nameId="86829" nameTranslationId="87053">KERMANSHAH PETROCHEMICAL INDUSTRIES CO.</name>
+          <documentNumber>10660049146</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11109">Iran</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+    </entity>
+    <entity id="54162">
+      <generalInfo>
+        <identityId>45549</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="56572" datePublished="2025-05-12">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91167" id="58276">IFSR</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="58277">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="46757">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1811" id="44707">Executive Order 13382 (Non-proliferation)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="84339">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="84244">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Sayyed Mohammad Reza Seddighi</formattedFirstName>
+              <formattedLastName>SABER</formattedLastName>
+              <formattedFullName>SABER, Sayyed Mohammad Reza Seddighi</formattedFullName>
+              <nameParts>
+                <namePart id="141565">
+                  <type refId="1520">Last Name</type>
+                  <value>Saber</value>
+                </namePart>
+                <namePart id="141566">
+                  <type refId="1521">First Name</type>
+                  <value>Sayyed</value>
+                </namePart>
+                <namePart id="141567">
+                  <type refId="1522">Middle Name</type>
+                  <value>Mohammad Reza Seddighi</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="82672">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="64522">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="89746">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>87365</versionId>
+          <value>24 Aug 1974</value>
+          <valueDate id="136850">
+            <fromDateBegin>1974-08-24</fromDateBegin>
+            <fromDateEnd>1974-08-24</fromDateEnd>
+            <toDateBegin>1974-08-24</toDateBegin>
+            <toDateEnd>1974-08-24</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="89747">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>87366</versionId>
+          <value>Iran</value>
+          <valueRefId>11109</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="89748">
+          <type featureTypeId="125">Additional Sanctions Information -</type>
+          <versionId>87367</versionId>
+          <value>Subject to Secondary Sanctions</value>
+          <valueRefId>91473</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="89749">
+          <type featureTypeId="224">Gender</type>
+          <versionId>87368</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="47654">
+          <type refId="1584">National ID No.</type>
+          <name nameId="84339" nameTranslationId="84244">SABER, Sayyed Mohammad Reza Seddighi</name>
+          <documentNumber>2739202830</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11109">Iran</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+    </entity>
+    <entity id="54024">
+      <generalInfo>
+        <identityId>45411</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="56427" datePublished="2025-04-29">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91167" id="58106">IFSR</sanctionsProgram>
+        <sanctionsProgram refId="91031" id="58107">NPWMD</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="46617">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1811" id="44554">Executive Order 13382 (Non-proliferation)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="84118">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="83976">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Mohammad</formattedFirstName>
+              <formattedLastName>ASGARI</formattedLastName>
+              <formattedFullName>ASGARI, Mohammad</formattedFullName>
+              <nameParts>
+                <namePart id="141201">
+                  <type refId="1520">Last Name</type>
+                  <value>Asgari</value>
+                </namePart>
+                <namePart id="141202">
+                  <type refId="1521">First Name</type>
+                  <value>Mohammad</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="82431">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="64415">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="89256">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>86875</versionId>
+          <value>03 Jul 1979</value>
+          <valueDate id="136122">
+            <fromDateBegin>1979-07-03</fromDateBegin>
+            <fromDateEnd>1979-07-03</fromDateEnd>
+            <toDateBegin>1979-07-03</toDateBegin>
+            <toDateEnd>1979-07-03</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="89257">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>86876</versionId>
+          <value>Iran</value>
+          <valueRefId>11109</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="89258">
+          <type featureTypeId="224">Gender</type>
+          <versionId>86877</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="89259">
+          <type featureTypeId="125">Additional Sanctions Information -</type>
+          <versionId>86878</versionId>
+          <value>Subject to Secondary Sanctions</value>
+          <valueRefId>91473</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="47461">
+          <type refId="1584">National ID No.</type>
+          <name nameId="84118" nameTranslationId="83976">ASGARI, Mohammad</name>
+          <documentNumber>1289040249</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11109">Iran</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="22233">
+          <type refId="15001">Providing support to</type>
+          <relatedEntity entityId="10391">ISLAMIC REVOLUTIONARY GUARD CORPS</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="55482">
+      <generalInfo>
+        <identityId>46829</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="57885" datePublished="2025-09-16">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91167" id="60019">IFSR</sanctionsProgram>
+        <sanctionsProgram refId="211" id="60020">SDGT</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="48075">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1828" id="46527">Executive Order 13224 (Terrorism)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="86307">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="86500">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Vahid</formattedFirstName>
+              <formattedLastName>DERAKHSHAN</formattedLastName>
+              <formattedFullName>DERAKHSHAN, Vahid</formattedFullName>
+              <nameParts>
+                <namePart id="144665">
+                  <type refId="1520">Last Name</type>
+                  <value>DERAKHSHAN</value>
+                </namePart>
+                <namePart id="144666">
+                  <type refId="1521">First Name</type>
+                  <value>Vahid</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="84835">
+          <country refId="11210">United Arab Emirates</country>
+          <translations>
+            <translation id="65899">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+        <address id="84859">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="65922">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="117265">
+                  <type refId="1454">CITY</type>
+                  <value>Tehran</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="92952">
+          <type featureTypeId="224">Gender</type>
+          <versionId>90551</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="92953">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>90552</versionId>
+          <value>Iran</value>
+          <valueRefId>11109</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="92954">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>90553</versionId>
+          <value>10 Aug 1978</value>
+          <valueDate id="142817">
+            <fromDateBegin>1978-08-10</fromDateBegin>
+            <fromDateEnd>1978-08-10</fromDateEnd>
+            <toDateBegin>1978-08-10</toDateBegin>
+            <toDateEnd>1978-08-10</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="93042">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>90641</versionId>
+          <value>section 1(b) of Executive Order 13224, as amended by Executive Order 13886</value>
+          <valueRefId>92084</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="23386">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="55455">ALPA TRADING - FZCO</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="55017">
+      <generalInfo>
+        <identityId>46404</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="57440" datePublished="2025-08-07">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91901" id="59485">IRAN-EO13902</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="47630">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91902" id="46018">Executive Order 13902 (Iran)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="85630">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="85669">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>PASARGAD ELECTRONIC PAYMENT SERVICES COMPANY</formattedLastName>
+              <formattedFullName>PASARGAD ELECTRONIC PAYMENT SERVICES COMPANY</formattedFullName>
+              <nameParts>
+                <namePart id="143556">
+                  <type refId="1525">Entity Name</type>
+                  <value>PASARGAD ELECTRONIC PAYMENT SERVICES COMPANY</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="85670">
+              <isPrimary>false</isPrimary>
+              <script refId="20100">Arabic</script>
+              <formattedLastName>‫شرکت خدمات پرداخت الکترونیک پاسارگاد‬</formattedLastName>
+              <formattedFullName>‫شرکت خدمات پرداخت الکترونیک پاسارگاد‬</formattedFullName>
+              <nameParts>
+                <namePart id="143557">
+                  <type refId="1525">Entity Name</type>
+                  <value>شرکت خدمات پرداخت الکترونیک پاسارگاد</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="84088">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="65406">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="115701">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>No. 123, Noavari 12 Alley, Pardis Technology Park</value>
+                </addressPart>
+                <addressPart id="115702">
+                  <type refId="1454">CITY</type>
+                  <value>Tehran</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="92000">
+          <type featureTypeId="125">Additional Sanctions Information -</type>
+          <versionId>89619</versionId>
+          <value>Subject to Secondary Sanctions</value>
+          <valueRefId>91473</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="48916">
+          <type refId="1584">National ID No.</type>
+          <name nameId="85630" nameTranslationId="85669">PASARGAD ELECTRONIC PAYMENT SERVICES COMPANY</name>
+          <documentNumber>10103105417</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11109">Iran</issuingCountry>
+        </identityDocument>
+        <identityDocument id="48917">
+          <type refId="91761">Registration Number</type>
+          <name nameId="85630" nameTranslationId="85669">PASARGAD ELECTRONIC PAYMENT SERVICES COMPANY</name>
+          <documentNumber>265088</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11109">Iran</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="23102">
+          <type refId="15003">Owned or Controlled By</type>
+          <relatedEntity entityId="54977">PASARGAD ARIAN INFORMATION AND COMMUNICATION TECHNOLOGY COMPANY</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="52947">
+      <generalInfo>
+        <identityId>44454</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="55450" datePublished="2025-02-24">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="91901" id="57082">IRAN-EO13902</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="45540">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="91902" id="43451">Executive Order 13902 (Iran)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="82872">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="82635">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Gholamhossein</formattedFirstName>
+              <formattedLastName>GERAMI</formattedLastName>
+              <formattedFullName>GERAMI, Gholamhossein</formattedFullName>
+              <nameParts>
+                <namePart id="139531">
+                  <type refId="1520">Last Name</type>
+                  <value>Gerami</value>
+                </namePart>
+                <namePart id="139532">
+                  <type refId="1521">First Name</type>
+                  <value>Gholamhossein</value>
+                </namePart>
+              </nameParts>
+            </translation>
+            <translation id="82636">
+              <isPrimary>false</isPrimary>
+              <script refId="20100">Arabic</script>
+              <formattedLastName>‫غلامحسین گرامی‬</formattedLastName>
+              <formattedFullName>‫غلامحسین گرامی‬</formattedFullName>
+              <nameParts>
+                <namePart id="139533">
+                  <type refId="1520">Last Name</type>
+                  <value>گرامی</value>
+                </namePart>
+                <namePart id="139534">
+                  <type refId="1521">First Name</type>
+                  <value>غلامحسین</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="80917">
+          <country refId="11109">Iran</country>
+          <translations>
+            <translation id="63618">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="84935">
+          <type featureTypeId="125">Additional Sanctions Information -</type>
+          <versionId>82554</versionId>
+          <value>Subject to Secondary Sanctions</value>
+          <valueRefId>91473</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="84936">
+          <type featureTypeId="9">Place of Birth</type>
+          <versionId>82555</versionId>
+          <value>Aghajari, Iran</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="84937">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>82556</versionId>
+          <value>Iran</value>
+          <valueRefId>11109</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="84938">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>82557</versionId>
+          <value>21 Mar 1971 to 21 Mar 1972</value>
+          <valueDate id="131826">
+            <fromDateBegin>1971-03-21</fromDateBegin>
+            <fromDateEnd>1971-03-21</fromDateEnd>
+            <toDateBegin>1972-03-21</toDateBegin>
+            <toDateEnd>1972-03-21</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>true</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="84963">
+          <type featureTypeId="224">Gender</type>
+          <versionId>82582</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="50928">
+      <generalInfo>
+        <identityId>42500</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="53456" datePublished="2024-10-30">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="54503">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="43501">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="40842">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="79783">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="79113">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>SHANGHAI ZHANJIA TRADING CO LTD</formattedLastName>
+              <formattedFullName>SHANGHAI ZHANJIA TRADING CO LTD</formattedFullName>
+              <nameParts>
+                <namePart id="134848">
+                  <type refId="1525">Entity Name</type>
+                  <value>SHANGHAI ZHANJIA TRADING CO LTD</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="77356">
+          <country refId="11065">China</country>
+          <translations>
+            <translation id="61795">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="105285">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>Room 307, No. 413 West Meilong Rd</value>
+                </addressPart>
+                <addressPart id="105286">
+                  <type refId="1454">CITY</type>
+                  <value>Shanghai</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="79727">
+          <type featureTypeId="647">Organization Type:</type>
+          <versionId>77366</versionId>
+          <value>Wholesale of other machinery and equipment</value>
+          <valueRefId>92018</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="79728">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>77367</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="50946">
+      <generalInfo>
+        <identityId>42518</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="53474" datePublished="2024-10-30">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="54521">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="43519">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="40861">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="79805">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="79135">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>ELE TECHNOLOGY CO LTD</formattedLastName>
+              <formattedFullName>ELE TECHNOLOGY CO LTD</formattedFullName>
+              <nameParts>
+                <namePart id="134871">
+                  <type refId="1525">Entity Name</type>
+                  <value>ELE TECHNOLOGY CO LTD</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="77391">
+          <country refId="11065">China</country>
+          <translations>
+            <translation id="61812">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="105330">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>No: 3712 Duhuixuan Building, Shennan Road</value>
+                </addressPart>
+                <addressPart id="105331">
+                  <type refId="1452">ADDRESS2</type>
+                  <value>Futian Area</value>
+                </addressPart>
+                <addressPart id="105332">
+                  <type refId="1454">CITY</type>
+                  <value>Shenzhen</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="79763">
+          <type featureTypeId="647">Organization Type:</type>
+          <versionId>77402</versionId>
+          <value>Wholesale of other machinery and equipment</value>
+          <valueRefId>92018</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="79764">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>77403</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="50929">
+      <generalInfo>
+        <identityId>42501</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="53457" datePublished="2024-10-30">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="54504">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="43502">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="40843">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="79784">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="79114">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>ROFO TRADING CO LTD</formattedLastName>
+              <formattedFullName>ROFO TRADING CO LTD</formattedFullName>
+              <nameParts>
+                <namePart id="134849">
+                  <type refId="1525">Entity Name</type>
+                  <value>ROFO TRADING CO LTD</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="77358">
+          <country refId="11065">China</country>
+          <translations>
+            <translation id="61796">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="105287">
+                  <type refId="1451">ADDRESS1</type>
+                  <value>No. 10, East Xieyuda Road</value>
+                </addressPart>
+                <addressPart id="105288">
+                  <type refId="1452">ADDRESS2</type>
+                  <value>Huizhou District</value>
+                </addressPart>
+                <addressPart id="105289">
+                  <type refId="1454">CITY</type>
+                  <value>Huangshan City</value>
+                </addressPart>
+                <addressPart id="105290">
+                  <type refId="1455">STATE/PROVINCE</type>
+                  <value>Anhui</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="79729">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>77368</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="79730">
+          <type featureTypeId="647">Organization Type:</type>
+          <versionId>77369</versionId>
+          <value>Wholesale of other machinery and equipment</value>
+          <valueRefId>92018</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="50945">
+      <generalInfo>
+        <identityId>42517</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="53473" datePublished="2024-10-30">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="54520">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="43518">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="40860">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="79804">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="79134">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>BHOOMI HK LIMITED</formattedLastName>
+              <formattedFullName>BHOOMI HK LIMITED</formattedFullName>
+              <nameParts>
+                <namePart id="134870">
+                  <type refId="1525">Entity Name</type>
+                  <value>BHOOMI HK LIMITED</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="77389">
+          <country refId="11065">China</country>
+          <translations>
+            <translation id="61811">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="105329">
+                  <type refId="1454">CITY</type>
+                  <value>Hong Kong</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="79761">
+          <type featureTypeId="646">Organization Established Date</type>
+          <versionId>77400</versionId>
+          <value>07 Nov 2023</value>
+          <valueDate id="121642">
+            <fromDateBegin>2023-11-07</fromDateBegin>
+            <fromDateEnd>2023-11-07</fromDateEnd>
+            <toDateBegin>2023-11-07</toDateBegin>
+            <toDateEnd>2023-11-07</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="79762">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>77401</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="42956">
+          <type refId="91760">Business Registration Number</type>
+          <name nameId="79804" nameTranslationId="79134">BHOOMI HK LIMITED</name>
+          <documentNumber>75886764</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11247">Hong Kong</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+    </entity>
+    <entity id="50940">
+      <generalInfo>
+        <identityId>42512</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="53468" datePublished="2024-10-30">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="54515">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="43513">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="40855">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="79799">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="79129">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>MINHOO LOGISTICS LIMITED</formattedLastName>
+              <formattedFullName>MINHOO LOGISTICS LIMITED</formattedFullName>
+              <nameParts>
+                <namePart id="134865">
+                  <type refId="1525">Entity Name</type>
+                  <value>MINHOO LOGISTICS LIMITED</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="77379">
+          <country refId="11065">China</country>
+          <translations>
+            <translation id="61806">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="105318">
+                  <type refId="1454">CITY</type>
+                  <value>Hong Kong</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="79751">
+          <type featureTypeId="646">Organization Established Date</type>
+          <versionId>77390</versionId>
+          <value>24 Nov 2017</value>
+          <valueDate id="121622">
+            <fromDateBegin>2017-11-24</fromDateBegin>
+            <fromDateEnd>2017-11-24</fromDateEnd>
+            <toDateBegin>2017-11-24</toDateBegin>
+            <toDateEnd>2017-11-24</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="79752">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>77391</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="42951">
+          <type refId="91760">Business Registration Number</type>
+          <name nameId="79799" nameTranslationId="79129">MINHOO LOGISTICS LIMITED</name>
+          <documentNumber>68542042</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11247">Hong Kong</issuingCountry>
+        </identityDocument>
+      </identityDocuments>
+    </entity>
+    <entity id="49530">
+      <generalInfo>
+        <identityId>41146</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="52061" datePublished="2024-06-12">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="53021">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="42095">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="39396">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="77273">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="76237">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Yi Xuan</formattedFirstName>
+              <formattedLastName>WU</formattedLastName>
+              <formattedFullName>WU, Yi Xuan</formattedFullName>
+              <nameParts>
+                <namePart id="130881">
+                  <type refId="1520">Last Name</type>
+                  <value>Wu</value>
+                </namePart>
+                <namePart id="130882">
+                  <type refId="1521">First Name</type>
+                  <value>Yi Xuan</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="74753">
+          <country refId="11065">China</country>
+          <translations>
+            <translation id="60278">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="72635">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>70314</versionId>
+          <value>China</value>
+          <valueRefId>11065</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="72637">
+          <type featureTypeId="224">Gender</type>
+          <versionId>70316</versionId>
+          <value>Female</value>
+          <valueRefId>91527</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="72639">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>70318</versionId>
+          <value>17 Dec 1982</value>
+          <valueDate id="114609">
+            <fromDateBegin>1982-12-17</fromDateBegin>
+            <fromDateEnd>1982-12-17</fromDateEnd>
+            <toDateBegin>1982-12-17</toDateBegin>
+            <toDateEnd>1982-12-17</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="72640">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>70319</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+    </entity>
+    <entity id="43152">
+      <generalInfo>
+        <identityId>34776</identityId>
+        <entityType refId="91120">Aircraft</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="45609" datePublished="2023-05-19">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="46357">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="35690">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="32872">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="66891">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="64305">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>RA-78776</formattedLastName>
+              <formattedFullName>RA-78776</formattedFullName>
+              <nameParts>
+                <namePart id="114968">
+                  <type refId="1524">Aircraft Name</type>
+                  <value>RA-78776</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="64392" />
+      </addresses>
+      <features>
+        <feature id="62157">
+          <type featureTypeId="47">Aircraft Model</type>
+          <versionId>59836</versionId>
+          <value>IL-76</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="62159">
+          <type featureTypeId="50">Aircraft Manufacturer's Serial Number (MSN)</type>
+          <versionId>59838</versionId>
+          <value>83489652</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="62630">
+          <type featureTypeId="64">Aircraft Tail Number</type>
+          <versionId>60309</versionId>
+          <value>RA-78776</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75573">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>73232</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="16452">
+          <type refId="92122">Property in the interest of</type>
+          <relatedEntity entityId="43113">JOINT STOCK COMPANY THE 224TH FLIGHT UNIT STATE AIRLINES</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="43166">
+      <generalInfo>
+        <identityId>34790</identityId>
+        <entityType refId="91120">Aircraft</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="45623" datePublished="2023-05-19">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="46371">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="35704">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="32886">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="66905">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="64319">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>RF-78764</formattedLastName>
+              <formattedFullName>RF-78764</formattedFullName>
+              <nameParts>
+                <namePart id="114982">
+                  <type refId="1524">Aircraft Name</type>
+                  <value>RF-78764</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="64406" />
+      </addresses>
+      <features>
+        <feature id="62196">
+          <type featureTypeId="50">Aircraft Manufacturer's Serial Number (MSN)</type>
+          <versionId>59875</versionId>
+          <value>83486585</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="62197">
+          <type featureTypeId="47">Aircraft Model</type>
+          <versionId>59876</versionId>
+          <value>IL-76</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="62588">
+          <type featureTypeId="64">Aircraft Tail Number</type>
+          <versionId>60267</versionId>
+          <value>RF-78764</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75587">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>73246</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="16467">
+          <type refId="92122">Property in the interest of</type>
+          <relatedEntity entityId="43113">JOINT STOCK COMPANY THE 224TH FLIGHT UNIT STATE AIRLINES</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="43172">
+      <generalInfo>
+        <identityId>34796</identityId>
+        <entityType refId="91120">Aircraft</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="45629" datePublished="2023-05-19">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="92042" id="46377">RUSSIA-EO14024</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="35710">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="92049" id="32892">Executive Order 14024 (Russia)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="66911">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="64325">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>RA-78846</formattedLastName>
+              <formattedFullName>RA-78846</formattedFullName>
+              <nameParts>
+                <namePart id="114988">
+                  <type refId="1524">Aircraft Name</type>
+                  <value>RA-78846</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="64412" />
+      </addresses>
+      <features>
+        <feature id="62206">
+          <type featureTypeId="47">Aircraft Model</type>
+          <versionId>59885</versionId>
+          <value>AN-124</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="62207">
+          <type featureTypeId="50">Aircraft Manufacturer's Serial Number (MSN)</type>
+          <versionId>59886</versionId>
+          <value>1003403113</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="62593">
+          <type featureTypeId="64">Aircraft Tail Number</type>
+          <versionId>60272</versionId>
+          <value>RA-78846</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="75593">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>73252</versionId>
+          <value>See Section 11 of Executive Order 14024.</value>
+          <valueRefId>92764</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="16474">
+          <type refId="92122">Property in the interest of</type>
+          <relatedEntity entityId="43113">JOINT STOCK COMPANY THE 224TH FLIGHT UNIT STATE AIRLINES</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="45677">
+      <generalInfo>
+        <identityId>37301</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="48174" datePublished="2023-10-18">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="211" id="48920">SDGT</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="38236">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1828" id="35475">Executive Order 13224 (Terrorism)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="70561">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="68427">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Ayman</formattedFirstName>
+              <formattedLastName>NOFAL</formattedLastName>
+              <formattedFullName>NOFAL, Ayman</formattedFullName>
+              <nameParts>
+                <namePart id="120471">
+                  <type refId="1520">Last Name</type>
+                  <value>Nofal</value>
+                </namePart>
+                <namePart id="120472">
+                  <type refId="1521">First Name</type>
+                  <value>Ayman</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="67892">
+          <translations>
+            <translation id="56107">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="89243">
+                  <type refId="1450">REGION</type>
+                  <value>Gaza</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="66227">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>63906</versionId>
+          <value>section 1(b) of Executive Order 13224, as amended by Executive Order 13886</value>
+          <valueRefId>92084</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="66228">
+          <type featureTypeId="224">Gender</type>
+          <versionId>63907</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="66229">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>63908</versionId>
+          <value>Palestinian</value>
+          <valueRefId>91021</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="66230">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>63909</versionId>
+          <value>1965</value>
+          <valueDate id="96447">
+            <fromDateBegin>1965-01-01</fromDateBegin>
+            <fromDateEnd>1965-01-01</fromDateEnd>
+            <toDateBegin>1965-12-31</toDateBegin>
+            <toDateEnd>1965-12-31</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="66231">
+          <type featureTypeId="9">Place of Birth</type>
+          <versionId>63910</versionId>
+          <value>Gaza Strip</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="17714">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="4695">HAMAS</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="52054">
+      <generalInfo>
+        <identityId>43646</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="54622" datePublished="2024-11-14">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="211" id="55689">SDGT</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="44647">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1828" id="42008">Executive Order 13224 (Terrorism)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="81512">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="81005">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>'Abbas</formattedFirstName>
+              <formattedLastName>KATERJI</formattedLastName>
+              <formattedFullName>KATERJI, 'Abbas</formattedFullName>
+              <nameParts>
+                <namePart id="137314">
+                  <type refId="1520">Last Name</type>
+                  <value>KATERJI</value>
+                </namePart>
+                <namePart id="137315">
+                  <type refId="1521">First Name</type>
+                  <value>'Abbas</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="79385" />
+      </addresses>
+      <features>
+        <feature id="82750">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>80389</versionId>
+          <value>01 Jan 2006</value>
+          <valueDate id="127846">
+            <fromDateBegin>2006-01-01</fromDateBegin>
+            <fromDateEnd>2006-01-01</fromDateEnd>
+            <toDateBegin>2006-01-01</toDateBegin>
+            <toDateEnd>2006-01-01</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="82751">
+          <type featureTypeId="224">Gender</type>
+          <versionId>80390</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="82752">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>80391</versionId>
+          <value>Syria</value>
+          <valueRefId>11197</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="82755">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>80394</versionId>
+          <value>section 1(b) of Executive Order 13224, as amended by Executive Order 13886</value>
+          <valueRefId>92084</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <identityDocuments>
+        <identityDocument id="44888">
+          <type refId="1571">Passport</type>
+          <name nameId="81512" nameTranslationId="81005">KATERJI, 'Abbas</name>
+          <documentNumber>016021971</documentNumber>
+          <isValid>true</isValid>
+          <issuingCountry refId="11197">Syria</issuingCountry>
+          <expirationDate id="127847">
+            <fromDateBegin>2024-10-17</fromDateBegin>
+            <fromDateEnd>2024-10-17</fromDateEnd>
+            <toDateBegin>2024-10-17</toDateBegin>
+            <toDateEnd>2024-10-17</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </expirationDate>
+        </identityDocument>
+      </identityDocuments>
+      <relationships>
+        <relationship id="21083">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="24903">AL-QATIRJI COMPANY</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="57715">
+      <generalInfo>
+        <identityId>49194</identityId>
+        <entityType refId="600">Individual</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="60250" datePublished="2026-05-19">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="211" id="62992">SDGT</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="50308">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities>
+        <legalAuthority refId="1828" id="49404">Executive Order 13224 (Terrorism)</legalAuthority>
+      </legalAuthorities>
+      <names>
+        <name id="89305">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="89846">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Marwan Muhammad Ayish</formattedFirstName>
+              <formattedLastName>ABU RAS</formattedLastName>
+              <formattedFullName>ABU RAS, Marwan Muhammad Ayish</formattedFullName>
+              <nameParts>
+                <namePart id="149338">
+                  <type refId="1520">Last Name</type>
+                  <value>Abu Ras</value>
+                </namePart>
+                <namePart id="149339">
+                  <type refId="1521">First Name</type>
+                  <value>Marwan</value>
+                </namePart>
+                <namePart id="149340">
+                  <type refId="1522">Middle Name</type>
+                  <value>Muhammad Ayish</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+        <name id="89306">
+          <isPrimary>false</isPrimary>
+          <aliasType refId="1400">A.K.A.</aliasType>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="89847">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedFirstName>Marwan Mohammed Ayesh</formattedFirstName>
+              <formattedLastName>ABU-RAS</formattedLastName>
+              <formattedFullName>ABU-RAS, Marwan Mohammed Ayesh</formattedFullName>
+              <nameParts>
+                <namePart id="149341">
+                  <type refId="1520">Last Name</type>
+                  <value>Abu-Ras</value>
+                </namePart>
+                <namePart id="149342">
+                  <type refId="1521">First Name</type>
+                  <value>Marwan</value>
+                </namePart>
+                <namePart id="149343">
+                  <type refId="1522">Middle Name</type>
+                  <value>Mohammed Ayesh</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="88498">
+          <translations>
+            <translation id="67854">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <addressParts>
+                <addressPart id="122323">
+                  <type refId="1450">REGION</type>
+                  <value>Gaza</value>
+                </addressPart>
+              </addressParts>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+      <features>
+        <feature id="98173">
+          <type featureTypeId="8">Birthdate</type>
+          <versionId>95748</versionId>
+          <value>12 Jul 1958</value>
+          <valueDate id="152127">
+            <fromDateBegin>1958-07-12</fromDateBegin>
+            <fromDateEnd>1958-07-12</fromDateEnd>
+            <toDateBegin>1958-07-12</toDateBegin>
+            <toDateEnd>1958-07-12</toDateEnd>
+            <isApproximate>false</isApproximate>
+            <isDateRange>false</isDateRange>
+          </valueDate>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="98174">
+          <type featureTypeId="10">Nationality Country</type>
+          <versionId>95749</versionId>
+          <value>Palestinian</value>
+          <valueRefId>91021</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="98175">
+          <type featureTypeId="224">Gender</type>
+          <versionId>95750</versionId>
+          <value>Male</value>
+          <valueRefId>91526</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="98203">
+          <type featureTypeId="504">Secondary sanctions risk:</type>
+          <versionId>95778</versionId>
+          <value>section 1(b) of Executive Order 13224, as amended by Executive Order 13886</value>
+          <valueRefId>92084</valueRefId>
+          <isPrimary>true</isPrimary>
+        </feature>
+        <feature id="98221">
+          <type featureTypeId="9">Place of Birth</type>
+          <versionId>95789</versionId>
+          <value>Gaza</value>
+          <isPrimary>true</isPrimary>
+        </feature>
+      </features>
+      <relationships>
+        <relationship id="25042">
+          <type refId="15002">Acting for or on behalf of</type>
+          <relatedEntity entityId="4695">HAMAS</relatedEntity>
+        </relationship>
+      </relationships>
+    </entity>
+    <entity id="536">
+      <generalInfo>
+        <identityId>4340</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="15250" datePublished="1986-12-10">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="202" id="1047">CUBA</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="6761">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities />
+      <names>
+        <name id="19539">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="4340">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>CIMEX IBERICA</formattedLastName>
+              <formattedFullName>CIMEX IBERICA</formattedFullName>
+              <nameParts>
+                <namePart id="6659">
+                  <type refId="1525">Entity Name</type>
+                  <value>CIMEX IBERICA</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="318">
+          <country refId="11190">Spain</country>
+          <translations>
+            <translation id="15360">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+    </entity>
+    <entity id="1570">
+      <generalInfo>
+        <identityId>4077</identityId>
+        <entityType refId="601">Entity</entityType>
+      </generalInfo>
+      <sanctionsLists>
+        <sanctionsList refId="1550" id="4077" datePublished="1986-12-10">SDN List</sanctionsList>
+      </sanctionsLists>
+      <sanctionsPrograms>
+        <sanctionsProgram refId="202" id="1200">CUBA</sanctionsProgram>
+      </sanctionsPrograms>
+      <sanctionsTypes>
+        <sanctionsType refId="1705" id="6326">Block</sanctionsType>
+      </sanctionsTypes>
+      <legalAuthorities />
+      <names>
+        <name id="19276">
+          <isPrimary>true</isPrimary>
+          <isLowQuality>false</isLowQuality>
+          <translations>
+            <translation id="4077">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+              <formattedLastName>NORDSTRAND LTD.</formattedLastName>
+              <formattedFullName>NORDSTRAND LTD.</formattedFullName>
+              <nameParts>
+                <namePart id="6311">
+                  <type refId="1525">Entity Name</type>
+                  <value>NORDSTRAND LTD.</value>
+                </namePart>
+              </nameParts>
+            </translation>
+          </translations>
+        </name>
+      </names>
+      <addresses>
+        <address id="1006">
+          <country refId="11130">Liechtenstein</country>
+          <translations>
+            <translation id="4189">
+              <isPrimary>true</isPrimary>
+              <script refId="20122">Latin</script>
+            </translation>
+          </translations>
+        </address>
+      </addresses>
+    </entity>
+  </entities>
+</sanctionsData>

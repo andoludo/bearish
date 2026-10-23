@@ -34,6 +34,7 @@ from bearish.macro.models import MacroQuery, Observation
 from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
 from bearish.macro.pipelines.commodities import run_commodities
 from bearish.macro.pipelines.linking import run_linking
+from bearish.signals.pipelines.conflict import run_conflict_sources
 from bearish.macro.sources import AbstractMacroSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
@@ -568,6 +569,10 @@ class Bearish(BaseModel):
             pause=pause,
         )
 
+    def conflicts(self, start: Optional[datetime.date] = None) -> MacroRunReport:
+        """Chokepoint transits, GDELT conflict/tone, OFAC designations, SIPRI spending and conflict events."""
+        return run_conflict_sources(self, start=start)
+
     def link(self) -> Dict[str, int]:
         """Populate the linking tables: country references, sector-commodity sensitivities, ETF exposure."""
         return run_linking(self._bearish_db)
@@ -848,6 +853,22 @@ def commodities(  # noqa: PLR0913
             exposures=exposures,
         )
     console.log("[bold][red]Commodity data downloaded!")
+
+
+@app.command()
+def conflicts(
+    path: Path,
+    start: Annotated[Optional[datetime.datetime], typer.Option(help="Earliest observation (GDELT: 120 days)")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch conflict and supply-chain shock signals and the curated conflict / sanctions-wave events."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching conflict signals..."):
+        report = bearish.conflicts(start=start.date() if start else None)
+    console.log(
+        f"[bold][red]Conflict signals downloaded! {report.series_with_data}/{report.series_requested} series, "
+        f"{report.vintages_written} new vintages ({report.sources})"
+    )
 
 
 @app.command()

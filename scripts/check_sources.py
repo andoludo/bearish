@@ -334,6 +334,54 @@ def _sec_13dg() -> str:
     return f"{len(rows)} reporting persons from 2 filings for AAPL"
 
 
+@probe("PortWatch")
+def _portwatch() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.portwatch import PortWatchSource
+
+    entries = select_series(MacroQuery(series_ids=["TRANSITS.SUEZ", "TRANSITS_TANKER.HORMUZ"]))
+    observations = PortWatchSource().read_observations(entries, start=date.today() - timedelta(days=30))
+    assert observations, "no chokepoint transits returned"
+    return f"{len(observations)} transit observations, latest {max(o.date for o in observations)}"
+
+
+@probe("GDELT")
+def _gdelt() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.gdelt import GdeltSource
+
+    entries = select_series(MacroQuery(series_ids=["GDELT_CONFLICT_EVENTS.RUS_UKR"]))
+    observations = GdeltSource(backfill_days=2).read_observations(entries)
+    assert observations, "no GDELT daily file parsed"
+    return f"RUS_UKR material-conflict events on {observations[-1].date}: {observations[-1].value:.0f}"
+
+
+@probe("OFAC")
+def _ofac() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.ofac import OfacSource
+
+    entries = select_series(MacroQuery(series_ids=["SANCTIONS_NEW.WLD"]))
+    observations = OfacSource().read_observations(entries, start=date.today() - timedelta(days=400))
+    assert observations, "no SDN designations parsed"
+    return f"{sum(o.value for o in observations):.0f} designations in the last 13 months"
+
+
+@probe("SIPRI")
+def _sipri() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.sipri import SipriSource
+
+    entries = select_series(MacroQuery(series_ids=["MILEX_USD.WLD"]))
+    observations = SipriSource().read_observations(entries)
+    assert observations, "no SIPRI world total parsed"
+    return f"world military spending {observations[-1].date.year}: US$ {observations[-1].value / 1e6:.2f} tn"
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("SOURCE HEALTH SUMMARY")
