@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/JILlIbu8PDW6rTeEL3ka7Hli2og</id>
+  <title>arXiv Query: search_query=(abs:"quantum computing" OR abs:"quantum computer") AND submittedDate:"202601010000 TO 202601312359"&amp;id_list=&amp;start=0&amp;max_results=1</title>
+  <updated>2026-10-23T19:23:06Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=(abs:%22quantum+computing%22+OR+abs:%22quantum+computer%22)+AND+submittedDate:%22202601010000+TO+202601312359%22&amp;start=0&amp;max_results=1&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>1</opensearch:itemsPerPage>
+  <opensearch:totalResults>246</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2601.07890v3</id>
+    <title>Quantum circuit synthesis for fermionic excitations in coupled cluster theory using the Jordan-Wigner mapping</title>
+    <updated>2026-06-05T08:32:50Z</updated>
+    <link href="https://arxiv.org/abs/2601.07890v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.07890v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>This work provides a quantum-computing-first derivation of the Unitary Coupled Cluster ansatz, showing that its structure emerges naturally from fermionic algebra under unitary constraints. By explicitly connecting second quantization, Jordan-Wigner mapping, and circuit synthesis, we clarify conceptual gaps between quantum chemistry and quantum computing implementations, particularly regarding operator locality, commutation structure, and hardware realization.</summary>
+    <category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-12T07:51:31Z</published>
+    <arxiv:comment>12 pages. 2 figures</arxiv:comment>
+    <arxiv:primary_category term="quant-ph"/>
+    <author>
+      <name>Yu-Hao Chen</name>
+    </author>
+    <author>
+      <name>Renata Wong</name>
+    </author>
+  </entry>
+</feed>

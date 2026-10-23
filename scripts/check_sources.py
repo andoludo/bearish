@@ -334,6 +334,171 @@ def _sec_13dg() -> str:
     return f"{len(rows)} reporting persons from 2 filings for AAPL"
 
 
+@probe("PortWatch")
+def _portwatch() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.portwatch import PortWatchSource
+
+    entries = select_series(MacroQuery(series_ids=["TRANSITS.SUEZ", "TRANSITS_TANKER.HORMUZ"]))
+    observations = PortWatchSource().read_observations(entries, start=date.today() - timedelta(days=30))
+    assert observations, "no chokepoint transits returned"
+    return f"{len(observations)} transit observations, latest {max(o.date for o in observations)}"
+
+
+@probe("GDELT")
+def _gdelt() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.gdelt import GdeltSource
+
+    entries = select_series(MacroQuery(series_ids=["GDELT_CONFLICT_EVENTS.RUS_UKR"]))
+    observations = GdeltSource(backfill_days=2).read_observations(entries)
+    assert observations, "no GDELT daily file parsed"
+    return f"RUS_UKR material-conflict events on {observations[-1].date}: {observations[-1].value:.0f}"
+
+
+@probe("OFAC")
+def _ofac() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.ofac import OfacSource
+
+    entries = select_series(MacroQuery(series_ids=["SANCTIONS_NEW.WLD"]))
+    observations = OfacSource().read_observations(entries, start=date.today() - timedelta(days=400))
+    assert observations, "no SDN designations parsed"
+    return f"{sum(o.value for o in observations):.0f} designations in the last 13 months"
+
+
+@probe("SIPRI")
+def _sipri() -> str:
+    from bearish.macro.catalog import select_series
+    from bearish.macro.models import MacroQuery
+    from bearish.macro.sources.sipri import SipriSource
+
+    entries = select_series(MacroQuery(series_ids=["MILEX_USD.WLD"]))
+    observations = SipriSource().read_observations(entries)
+    assert observations, "no SIPRI world total parsed"
+    return f"world military spending {observations[-1].date.year}: US$ {observations[-1].value / 1e6:.2f} tn"
+
+
+@probe("EDGAR-themes")
+def _edgar_themes() -> str:
+    from bearish.signals.sources.edgar_themes import fetch_theme_hits
+    from bearish.signals.themes import THEMES
+
+    end = date.today()
+    hits = fetch_theme_hits(THEMES["hbm"], end - timedelta(days=90), end)
+    assert hits.filings() > 0, "no filings mention the theme"
+    return f"{hits.filings()} filings mention HBM in the last 90 days"
+
+
+@probe("FINRA-short-interest")
+def _finra_short_interest() -> str:
+    from bearish.signals.sources.finra import fetch_short_interest
+
+    signals = fetch_short_interest(["NVDA"], date.today() - timedelta(days=60))
+    assert signals, "no short-interest rows"
+    return f"{len(signals)} short-interest signals for NVDA"
+
+
+@probe("FINRA-short-volume")
+def _finra_short_volume() -> str:
+    from bearish.signals.sources.finra import fetch_short_volume
+
+    signals = fetch_short_volume(days=7, symbols=["NVDA"])
+    assert signals, "no short-volume file in the last 7 days"
+    return f"{len(signals)} daily short-volume ratios for NVDA"
+
+
+@probe("USAspending")
+def _usaspending() -> str:
+    from bearish.signals.sources.usaspending import fetch_federal_awards
+
+    start = date.today() - timedelta(days=200)
+    signals = fetch_federal_awards({"PLTR": "Palantir Technologies Inc."}, start)
+    assert signals, "no quarters returned"
+    return f"{len(signals)} quarters of awards for PLTR"
+
+
+@probe("arXiv")
+def _arxiv() -> str:
+    from bearish.macro.catalog import series_by_id
+    from bearish.macro.sources.adoption import ArxivSource
+
+    start = date.today().replace(day=1) - timedelta(days=40)
+    observations = ArxivSource().read_observations([series_by_id()["ADOPTION_PAPERS.QUANTUM"]], start=start)
+    assert observations, "no arXiv counts"
+    return f"{len(observations)} monthly counts, latest {observations[-1].value:.0f} papers"
+
+
+@probe("Congress-party-divisions")
+def _party_divisions() -> str:
+    import requests
+
+    from bearish.signals.elections import (
+        CONGRESS_CONTROL,
+        HOUSE_DIVISIONS_URL,
+        SENATE_DIVISIONS_URL,
+        parse_house_divisions,
+        parse_senate_divisions,
+    )
+
+    headers = {"User-Agent": "bearish (https://github.com/andoludo/bearish)"}
+    house = parse_house_divisions(requests.get(HOUSE_DIVISIONS_URL, headers=headers, timeout=60).text)
+    senate = parse_senate_divisions(requests.get(SENATE_DIVISIONS_URL, headers=headers, timeout=60).text)
+    house_diff = [c for c, (h, _) in CONGRESS_CONTROL.items() if house.get(c) != h]
+    senate_diff = [c for c, (_, s) in CONGRESS_CONTROL.items() if senate.get(c) != s and c != 107]
+    assert not house_diff and not senate_diff, f"curated table differs: house {house_diff}, senate {senate_diff}"
+    return f"{len(house)} Congresses parsed, curated table matches"
+
+
+@probe("FOMC-calendar")
+def _fomc() -> str:
+    from bearish.signals.fomc import fetch_fomc_meetings
+
+    events = fetch_fomc_meetings(start_year=date.today().year - 1, pause=0.5)
+    assert events, "no meetings parsed"
+    upcoming = [e for e in events if "upcoming" in e.tag_set()]
+    return f"{len(events)} meetings, next {upcoming[0].date if upcoming else 'n/a'}"
+
+
+@probe("Polymarket")
+def _polymarket() -> str:
+    from bearish.signals.sources.prediction import ELECTION_QUERIES, fetch_prediction_quotes
+
+    quotes = fetch_prediction_quotes([q for q in ELECTION_QUERIES if q.platform == "Polymarket"][:1], pause=0.5)
+    assert quotes, "no Polymarket quotes"
+    return f"{len(quotes)} outcome quotes"
+
+
+@probe("Kalshi")
+def _kalshi() -> str:
+    from bearish.signals.sources.prediction import ELECTION_QUERIES, fetch_prediction_quotes
+
+    quotes = fetch_prediction_quotes([q for q in ELECTION_QUERIES if q.platform == "Kalshi"], pause=1.0)
+    assert quotes, "no Kalshi quotes"
+    return f"{len(quotes)} outcome quotes"
+
+
+@probe("House-PTR")
+def _house_ptr() -> str:
+    from bearish.signals.sources.congress import fetch_house_trades
+
+    result = fetch_house_trades(date.today().year, max_filings=3, pause=0.5)
+    assert result.filings, "no PTR filings listed"
+    return f"{result.parsed}/{result.filings} PTRs parsed, {len(result.trades)} trades, {result.scanned} scanned"
+
+
+@probe("LDA-lobbying")
+def _lobbying() -> str:
+    from bearish.signals.sources.lobbying import fetch_lobbying
+
+    signals = fetch_lobbying(["LMT"], [date.today().year - 1], names={"LMT": "Lockheed Martin Corp"}, pause=1.0)
+    assert signals, "no lobbying quarters"
+    return f"{len(signals)} quarters for LMT"
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("SOURCE HEALTH SUMMARY")

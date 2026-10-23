@@ -1,0 +1,82 @@
+{
+ "category": "recipient",
+ "spending_level": "transactions",
+ "limit": 100,
+ "page_metadata": {
+  "page": 1,
+  "next": null,
+  "previous": null,
+  "hasNext": false,
+  "hasPrevious": false
+ },
+ "results": [
+  {
+   "amount": 512741759.88,
+   "recipient_id": "9232b26d-789d-bdd2-5a6d-28714f1dfa2c-C",
+   "name": "ORACLE HEALTH GOVERNMENT SERVICES, INC.",
+   "code": "080898173",
+   "uei": "DT2KS3HH5FP5",
+   "total_outlays": null
+  },
+  {
+   "amount": 7308503.16,
+   "recipient_id": "272478a2-195f-1dd5-da03-0969b678caf4-C",
+   "name": "ORACLE AMERICA, INC",
+   "code": "963664193",
+   "uei": "FKUCYGRK1EQ3",
+   "total_outlays": null
+  },
+  {
+   "amount": 1432778.36,
+   "recipient_id": "356513a4-7506-f7a6-46cb-afad7507daf6-C",
+   "name": "ORACLE AMERICA, INC.",
+   "code": "620827688",
+   "uei": "HE98WLUBNW88",
+   "total_outlays": null
+  },
+  {
+   "amount": 424849.0,
+   "recipient_id": "061886cd-585d-0175-54e3-c3e199cd2f83-C",
+   "name": "OHC ADVISORS, INC.",
+   "code": "019887192",
+   "uei": "N715LNRDX4Q5",
+   "total_outlays": null
+  },
+  {
+   "amount": 218494.95,
+   "recipient_id": "c950a5bf-ba6b-b7ce-f499-3fd4a413af18-C",
+   "name": "ORACLE ELEVATOR HOLDCO, INC.",
+   "code": "876726266",
+   "uei": "NVM3KTJCLC28",
+   "total_outlays": null
+  },
+  {
+   "amount": 62776.48,
+   "recipient_id": "3022ed2d-d2c0-d316-c018-574f5c49ad72-C",
+   "name": "ORACLE FREIGHT DISPATCHING LLC",
+   "code": null,
+   "uei": "L58QA37S9BK9",
+   "total_outlays": null
+  },
+  {
+   "amount": 34445.71,
+   "recipient_id": "2ea2c599-5ef3-590b-0ffb-c29c884788a4-C",
+   "name": "ORACLE INSURANCE BROKERS LIMITED",
+   "code": "559904468",
+   "uei": "DQK8EU3L28G4",
+   "total_outlays": null
+  },
+  {
+   "amount": 4500.0,
+   "recipient_id": "45eaeff1-753c-4d24-15cb-142ee432e816-C",
+   "name": "ORACLE SCHOOL DISTRICT",
+   "code": "002902906",
+   "uei": "HH8BXN95P4V4",
+   "total_outlays": null
+  }
+ ],
+ "messages": [
+  "For searches, time period start and end dates are currently limited to an earliest date of 2007-10-01.  For data going back to 2000-10-01, use either the Custom Award Download feature on the website or one of our download or bulk_download API endpoints as listed on https://api.usaspending.gov/docs/endpoints. ",
+  "'subawards' will be deprecated in the future. Set \u2018spending_level\u2019 to \u2018subawards\u2019 instead. See documentation for more information. "
+ ]
+}

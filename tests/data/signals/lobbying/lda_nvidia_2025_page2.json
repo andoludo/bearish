@@ -1,0 +1,187 @@
+{
+ "count": 24,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "filing_uuid": "7120ccdd-3c3a-44fb-b52e-7e5b60b69bde",
+   "filing_type": "Q3",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2025-10-19T17:16:11-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "TIBER CREEK GROUP"
+   }
+  },
+  {
+   "filing_uuid": "e8ea6e2c-ac50-4320-b0b2-ae6b96ff9ffd",
+   "filing_type": "Q3",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": "40000.00",
+   "expenses": null,
+   "dt_posted": "2025-10-20T11:10:21-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "BGR GOVERNMENT AFFAIRS"
+   }
+  },
+  {
+   "filing_uuid": "5970151e-1f21-4cec-a20a-4596046aec34",
+   "filing_type": "Q3",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": null,
+   "expenses": "1900000.00",
+   "dt_posted": "2025-10-20T14:46:40-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  },
+  {
+   "filing_uuid": "8d910e83-e936-4c03-bce5-d0f49248dac8",
+   "filing_type": "Q3",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": "40000.00",
+   "expenses": null,
+   "dt_posted": "2025-10-20T21:36:28-04:00",
+   "client": {
+    "name": "NVIDIA"
+   },
+   "registrant": {
+    "name": "THE VOGEL GROUP"
+   }
+  },
+  {
+   "filing_uuid": "528e6285-a580-4a03-b186-3725a08ae5a6",
+   "filing_type": "Q4",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2026-01-15T16:22:05-05:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "THE NICKLES GROUP, LLC"
+   }
+  },
+  {
+   "filing_uuid": "fd23349f-a9c1-4d45-a7e3-f13e5eb9c51c",
+   "filing_type": "Q4",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2026-01-15T16:33:48-05:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "BROWNSTEIN HYATT FARBER SCHRECK, LLP"
+   }
+  },
+  {
+   "filing_uuid": "4da03236-bf95-421d-a135-5825aeff8412",
+   "filing_type": "Q4",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2026-01-17T18:02:26-05:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "TIBER CREEK GROUP"
+   }
+  },
+  {
+   "filing_uuid": "adf866b5-9207-4479-a012-8697cf851bd5",
+   "filing_type": "3A",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": null,
+   "expenses": "1950000.00",
+   "dt_posted": "2026-01-18T15:42:24-05:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  },
+  {
+   "filing_uuid": "ade7c6b4-395e-472b-8eae-224087b0eed8",
+   "filing_type": "Q4",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": null,
+   "expenses": "1440000.00",
+   "dt_posted": "2026-01-18T15:43:12-05:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  },
+  {
+   "filing_uuid": "de2c1c2c-c7df-407f-951f-b602011fdc7f",
+   "filing_type": "Q4",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": "120000.00",
+   "expenses": null,
+   "dt_posted": "2026-01-20T13:19:52-05:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "BGR GOVERNMENT AFFAIRS"
+   }
+  },
+  {
+   "filing_uuid": "96f4b825-dade-41f4-b899-32d7c9cc6c9a",
+   "filing_type": "Q4",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": "60000.00",
+   "expenses": null,
+   "dt_posted": "2026-01-20T17:53:17-05:00",
+   "client": {
+    "name": "NVIDIA"
+   },
+   "registrant": {
+    "name": "THE VOGEL GROUP"
+   }
+  },
+  {
+   "filing_uuid": "e76ce48d-8b5c-46c3-b47e-6c146ad0909e",
+   "filing_type": "4A",
+   "filing_year": 2025,
+   "filing_period": "fourth_quarter",
+   "income": null,
+   "expenses": "1460000.00",
+   "dt_posted": "2026-04-20T15:56:34-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  }
+ ]
+}

@@ -23,7 +23,13 @@ MacroSources = Literal[
     "EIA",
     "Comtrade",
     "KenFrench",
+    "EDGAR",
+    "arXiv",
     "Yfinance",
+    "PortWatch",
+    "GDELT",
+    "OFAC",
+    "SIPRI",
 ]
 
 Category = Literal[
@@ -41,7 +47,7 @@ Category = Literal[
     "factor",
 ]
 
-EntityType = Literal["country", "region", "commodity", "sector", "global"]
+EntityType = Literal["country", "region", "commodity", "sector", "global", "chokepoint", "country_pair", "theme"]
 
 Frequency = Literal["D", "W", "M", "Q", "A"]
 
