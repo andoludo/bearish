@@ -115,5 +115,6 @@ def test_fetch_index_members_live() -> None:
         by_index.setdefault(member.index_symbol, set()).add(member.symbol)
     assert len(by_index["^GSPC"]) > 490
     assert "NVDA" in by_index["^GSPC"] and "BRK-B" in by_index["^GSPC"]
-    assert len(by_index["^GDAXI"]) >= 30 and all(s.endswith(".DE") for s in by_index["^GDAXI"])
+    # Airbus is listed in Paris (AIR.PA), so not every DAX ticker carries .DE
+    assert len(by_index["^GDAXI"]) >= 30 and sum(s.endswith(".DE") for s in by_index["^GDAXI"]) >= 35
     assert len(by_index["^BFX"]) >= 18
