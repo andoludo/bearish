@@ -215,6 +215,56 @@ known_then = bearish.read_observations(MacroQuery(concepts=["GDP_YOY"], as_of="2
 
 ---
 
+## 🗓️ Events, conflicts & early-winner signals
+
+Three groups of commands feed event studies and per-stock signals. Everything
+is stored point-in-time (`as_of`), so a screen or study can be re-run "as
+known on" any past date.
+
+**Elections and policy**
+
+```bash
+bearish events /path/to/sqlite/db          # US elections 1946-2026, 28 curated conflict onsets, FOMC meetings
+bearish midterms /path/to/sqlite/db        # returns around every midterm: ^GSPC + sector SPDRs, with bootstrap CIs
+bearish predictions /path/to/sqlite/db     # Polymarket / Kalshi odds (elections, geopolitics)
+bearish congress /path/to/sqlite/db        # House members' trades (STOCK Act periodic transaction reports)
+bearish lobbying /path/to/sqlite/db US --filters NVDA,LMT
+```
+
+Tables: `marketevent`, `eventreturn`, `predictionquote`, `congresstrade`,
+lobbying spend in `tickersignal` (`LOBBYING_USD`). Senate trade reports are
+not fetched (the Senate site requires interactive terms acceptance).
+
+**Conflict and supply-chain shocks**
+
+```bash
+bearish conflicts /path/to/sqlite/db
+```
+
+Daily vessel transits through 28 chokepoints (IMF PortWatch), GDELT daily
+conflict counts / Goldstein score / tone for 15 country pairs, monthly new
+OFAC sanctions designations per country, SIPRI military spending, plus
+sanctions-wave events. GDELT (~8 MB per day) and OFAC (~110 MB) only run here;
+PortWatch and SIPRI are also part of `bearish macro`.
+
+**Early-winner signals ("the next NVIDIA")**
+
+```bash
+bearish themes /path/to/sqlite/db US --theme ai_accelerator --theme ai_datacenter
+bearish shorts /path/to/sqlite/db US --filters NVDA,SMCI
+bearish awards /path/to/sqlite/db US --filters PLTR,LMT
+bearish screen /path/to/sqlite/db --as-of 2025-06-30 --output screen.csv
+```
+
+`tickersignal` holds `THEME_MENTIONS:<theme>` (SEC filings mentioning a
+theme, per quarter), `CAPEX_USD` / `CAPEX_YOY` (with a `HYPERSCALERS`
+aggregate), `SHORT_INTEREST`, `SHORT_VOLUME_RATIO`, `FED_AWARDS_USD`. The
+screen ranks stocks on revenue acceleration, gross-margin change, 13F holder
+growth, insider buying, theme-mention growth, short-interest change, relative
+strength and AI-capex tailwind, using only data public on `--as-of`.
+
+---
+
 ## 🔄 Updating Data
 
 ### 💵 Update Prices

@@ -432,6 +432,73 @@ def _arxiv() -> str:
     return f"{len(observations)} monthly counts, latest {observations[-1].value:.0f} papers"
 
 
+@probe("Congress-party-divisions")
+def _party_divisions() -> str:
+    import requests
+
+    from bearish.signals.elections import (
+        CONGRESS_CONTROL,
+        HOUSE_DIVISIONS_URL,
+        SENATE_DIVISIONS_URL,
+        parse_house_divisions,
+        parse_senate_divisions,
+    )
+
+    headers = {"User-Agent": "bearish (https://github.com/andoludo/bearish)"}
+    house = parse_house_divisions(requests.get(HOUSE_DIVISIONS_URL, headers=headers, timeout=60).text)
+    senate = parse_senate_divisions(requests.get(SENATE_DIVISIONS_URL, headers=headers, timeout=60).text)
+    house_diff = [c for c, (h, _) in CONGRESS_CONTROL.items() if house.get(c) != h]
+    senate_diff = [c for c, (_, s) in CONGRESS_CONTROL.items() if senate.get(c) != s and c != 107]
+    assert not house_diff and not senate_diff, f"curated table differs: house {house_diff}, senate {senate_diff}"
+    return f"{len(house)} Congresses parsed, curated table matches"
+
+
+@probe("FOMC-calendar")
+def _fomc() -> str:
+    from bearish.signals.fomc import fetch_fomc_meetings
+
+    events = fetch_fomc_meetings(start_year=date.today().year - 1, pause=0.5)
+    assert events, "no meetings parsed"
+    upcoming = [e for e in events if "upcoming" in e.tag_set()]
+    return f"{len(events)} meetings, next {upcoming[0].date if upcoming else 'n/a'}"
+
+
+@probe("Polymarket")
+def _polymarket() -> str:
+    from bearish.signals.sources.prediction import ELECTION_QUERIES, fetch_prediction_quotes
+
+    quotes = fetch_prediction_quotes([q for q in ELECTION_QUERIES if q.platform == "Polymarket"][:1], pause=0.5)
+    assert quotes, "no Polymarket quotes"
+    return f"{len(quotes)} outcome quotes"
+
+
+@probe("Kalshi")
+def _kalshi() -> str:
+    from bearish.signals.sources.prediction import ELECTION_QUERIES, fetch_prediction_quotes
+
+    quotes = fetch_prediction_quotes([q for q in ELECTION_QUERIES if q.platform == "Kalshi"], pause=1.0)
+    assert quotes, "no Kalshi quotes"
+    return f"{len(quotes)} outcome quotes"
+
+
+@probe("House-PTR")
+def _house_ptr() -> str:
+    from bearish.signals.sources.congress import fetch_house_trades
+
+    result = fetch_house_trades(date.today().year, max_filings=3, pause=0.5)
+    assert result.filings, "no PTR filings listed"
+    return f"{result.parsed}/{result.filings} PTRs parsed, {len(result.trades)} trades, {result.scanned} scanned"
+
+
+@probe("LDA-lobbying")
+def _lobbying() -> str:
+    from bearish.signals.sources.lobbying import fetch_lobbying
+
+    signals = fetch_lobbying(["LMT"], [date.today().year - 1], names={"LMT": "Lockheed Martin Corp"}, pause=1.0)
+    assert signals, "no lobbying quarters"
+    return f"{len(signals)} quarters for LMT"
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("SOURCE HEALTH SUMMARY")

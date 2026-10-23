@@ -34,7 +34,17 @@ from bearish.macro.models import MacroQuery, Observation
 from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
 from bearish.macro.pipelines.commodities import run_commodities
 from bearish.macro.pipelines.linking import run_linking
-from bearish.signals.pipelines.conflict import run_conflict_sources
+from bearish.signals.pipelines.conflict import run_conflict_sources, write_conflict_events
+from bearish.signals.pipelines.elections import (
+    run_midterm_study,
+    write_congress_trades,
+    write_election_events,
+    write_fomc_events,
+    write_lobbying,
+    write_prediction_quotes,
+)
+from bearish.signals.sources.congress import HouseTradesResult
+from bearish.signals.sources.prediction import ELECTION_QUERIES, GEOPOLITICS_QUERIES
 from bearish.signals.pipelines.early_winners import (
     run_screen,
     write_federal_awards,
@@ -418,6 +428,38 @@ class Bearish(BaseModel):
             report = fetch_macro(self._bearish_db, [ArxivSource()], series, start=start)
             counts["adoption_vintages"] = report.vintages_written
         return counts
+
+    def write_events(self, fomc_start_year: int = 1994) -> Dict[str, int]:
+        """Curated elections and conflicts plus the FOMC calendar into the marketevent table."""
+        return {
+            "elections": write_election_events(self._bearish_db),
+            "conflicts": write_conflict_events(self._bearish_db),
+            "fomc": write_fomc_events(self._bearish_db, start_year=fomc_start_year),
+        }
+
+    def midterm_study(self, assets: Optional[List[str]] = None, price_source: str = "yfinance") -> pd.DataFrame:
+        """Returns around every US midterm since 1946, stored in eventreturn and summarised by group."""
+        kwargs: Dict[str, Any] = {"price_source": price_source}
+        if assets:
+            kwargs["assets"] = assets
+        return run_midterm_study(self._bearish_db, **kwargs)
+
+    def predictions(self, category: str = "all") -> int:
+        """Snapshot Polymarket/Kalshi odds for elections and/or geopolitics."""
+        queries = {
+            "election": ELECTION_QUERIES,
+            "geopolitics": GEOPOLITICS_QUERIES,
+            "all": ELECTION_QUERIES + GEOPOLITICS_QUERIES,
+        }[category]
+        return write_prediction_quotes(self._bearish_db, queries=queries)
+
+    def congress_trades(
+        self, year: Optional[int] = None, since: Optional[datetime.date] = None, max_filings: int = 200
+    ) -> HouseTradesResult:
+        return write_congress_trades(self._bearish_db, year=year, since=since, max_filings=max_filings)
+
+    def get_lobbying(self, filter: Filter, years: List[int]) -> int:
+        return write_lobbying(self._bearish_db, self._filtered_symbols(filter), years)
 
     def get_short_data(self, filter: Filter, days: int = 20, history_days: int = 400) -> Dict[str, int]:
         return write_short_data(self._bearish_db, self._filtered_symbols(filter), days=days, history_days=history_days)
@@ -1002,6 +1044,85 @@ def screen(  # noqa: PLR0913
     if output:
         frame.to_csv(output)
     console.print(frame.head(top).to_string())
+
+
+@app.command()
+def events(
+    path: Path,
+    fomc_start_year: Annotated[int, typer.Option(help="First year of the FOMC calendar")] = 1994,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Load dated events: US elections since 1946, curated conflicts and FOMC meetings."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Loading events..."):
+        counts = bearish.write_events(fomc_start_year=fomc_start_year)
+    console.log(f"[bold][red]Events written! {counts}")
+
+
+@app.command()
+def midterms(
+    path: Path,
+    asset: Annotated[Optional[List[str]], typer.Option(help="Symbols (default: ^GSPC + sector SPDRs)")] = None,
+    price_source: Annotated[str, typer.Option(help="yfinance, db or factor")] = "yfinance",
+    output: Annotated[Optional[Path], typer.Option(help="Write the summary table to this CSV")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Event study of market returns around every US midterm election since 1946."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Measuring returns around midterms..."):
+        summary = bearish.midterm_study(assets=asset, price_source=price_source)
+    if output:
+        summary.to_csv(output)
+    console.print(summary.to_string())
+
+
+@app.command()
+def predictions(
+    path: Path,
+    category: Annotated[str, typer.Option(help="election, geopolitics or all")] = "all",
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Snapshot Polymarket and Kalshi probabilities into the predictionquote table."""
+    if category not in {"election", "geopolitics", "all"}:
+        raise typer.BadParameter("category must be election, geopolitics or all")
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching prediction markets..."):
+        written = bearish.predictions(category=category)
+    console.log(f"[bold][red]{written} prediction-market quotes written!")
+
+
+@app.command()
+def congress(
+    path: Path,
+    year: Annotated[Optional[int], typer.Option(help="Filing year (default: current year)")] = None,
+    since: Annotated[Optional[datetime.datetime], typer.Option(help="Only filings on/after this date")] = None,
+    max_filings: Annotated[int, typer.Option(help="Newest periodic transaction reports to parse")] = 200,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch House members' stock trades (STOCK Act periodic transaction reports)."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Parsing House periodic transaction reports..."):
+        result = bearish.congress_trades(year=year, since=since.date() if since else None, max_filings=max_filings)
+    console.log(
+        f"[bold][red]{len(result.trades)} trades from {result.parsed}/{result.filings} reports "
+        f"({result.scanned} scanned on paper, {result.failed} failed)"
+    )
+
+
+@app.command()
+def lobbying(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    year: Annotated[Optional[List[int]], typer.Option(help="Filing years (default: last two)")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch quarterly federal lobbying spend per company (Senate LDA filings)."""
+    bearish = _bearish_from(path, api_keys)
+    years = year or [datetime.date.today().year - 1, datetime.date.today().year]
+    with console.status("[bold green]Fetching lobbying filings..."):
+        written = bearish.get_lobbying(Filter(countries=countries, filters=filters), years)
+    console.log(f"[bold][red]{written} lobbying values written!")
 
 
 @app.command()

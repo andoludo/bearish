@@ -1,0 +1,187 @@
+{
+ "count": 24,
+ "next": "https://lda.gov/api/v1/filings/?client_name=nvidia&filing_year=2025&page=2&page_size=25",
+ "previous": null,
+ "results": [
+  {
+   "filing_uuid": "3335276e-3c12-4258-b4c5-50f1a52d1274",
+   "filing_type": "RR",
+   "filing_year": 2025,
+   "filing_period": "first_quarter",
+   "income": null,
+   "expenses": null,
+   "dt_posted": "2025-03-31T16:19:50-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  },
+  {
+   "filing_uuid": "54a7ee4c-34a2-4878-a089-e6421bd05417",
+   "filing_type": "Q1",
+   "filing_year": 2025,
+   "filing_period": "first_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2025-04-18T14:44:57-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "THE NICKLES GROUP, LLC"
+   }
+  },
+  {
+   "filing_uuid": "c9243e49-af50-42b7-9c90-3dddc9dd3765",
+   "filing_type": "Q1",
+   "filing_year": 2025,
+   "filing_period": "first_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2025-04-19T19:35:24-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "TIBER CREEK GROUP"
+   }
+  },
+  {
+   "filing_uuid": "ded7018b-7ab1-48f6-a144-fe1f88924dfe",
+   "filing_type": "1A",
+   "filing_year": 2025,
+   "filing_period": "first_quarter",
+   "income": null,
+   "expenses": "940000.00",
+   "dt_posted": "2025-04-25T12:27:20-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  },
+  {
+   "filing_uuid": "4a750167-bc49-4f73-95b5-2630a30bc0a1",
+   "filing_type": "Q2",
+   "filing_year": 2025,
+   "filing_period": "second_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2025-07-17T08:52:19-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "THE NICKLES GROUP, LLC"
+   }
+  },
+  {
+   "filing_uuid": "65879724-313e-4683-a5e5-95c3dbc310e0",
+   "filing_type": "Q2",
+   "filing_year": 2025,
+   "filing_period": "second_quarter",
+   "income": null,
+   "expenses": "620000.00",
+   "dt_posted": "2025-07-18T12:54:17-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "NVIDIA CORPORATION"
+   }
+  },
+  {
+   "filing_uuid": "efd82774-90be-4740-976b-b6b2094c3244",
+   "filing_type": "Q2",
+   "filing_year": 2025,
+   "filing_period": "second_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2025-07-20T22:46:34-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "TIBER CREEK GROUP"
+   }
+  },
+  {
+   "filing_uuid": "838b7711-7926-4a1d-87b4-cc6b85a39a47",
+   "filing_type": "RR",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": null,
+   "expenses": null,
+   "dt_posted": "2025-08-13T16:52:40-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "BROWNSTEIN HYATT FARBER SCHRECK, LLP"
+   }
+  },
+  {
+   "filing_uuid": "20e47892-626f-4bce-b948-79c4e194c561",
+   "filing_type": "RR",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": null,
+   "expenses": null,
+   "dt_posted": "2025-08-19T14:15:49-04:00",
+   "client": {
+    "name": "NVIDIA"
+   },
+   "registrant": {
+    "name": "THE VOGEL GROUP"
+   }
+  },
+  {
+   "filing_uuid": "3c3341d3-1349-4ea2-a7be-424ac68f4d1c",
+   "filing_type": "RR",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": null,
+   "expenses": null,
+   "dt_posted": "2025-08-20T14:31:00-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "BGR GOVERNMENT AFFAIRS"
+   }
+  },
+  {
+   "filing_uuid": "cfd97d85-ffe5-43b0-8139-d77584f45166",
+   "filing_type": "Q3",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": "80000.00",
+   "expenses": null,
+   "dt_posted": "2025-10-17T11:36:57-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "THE NICKLES GROUP, LLC"
+   }
+  },
+  {
+   "filing_uuid": "ce2780f8-a08d-4881-883a-5c26b8db6ed8",
+   "filing_type": "Q3",
+   "filing_year": 2025,
+   "filing_period": "third_quarter",
+   "income": "50000.00",
+   "expenses": null,
+   "dt_posted": "2025-10-17T16:32:44-04:00",
+   "client": {
+    "name": "NVIDIA CORPORATION"
+   },
+   "registrant": {
+    "name": "BROWNSTEIN HYATT FARBER SCHRECK, LLP"
+   }
+  }
+ ]
+}
