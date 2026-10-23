@@ -39,6 +39,7 @@ from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
 from bearish.models.assets.snapshots import Snapshots
+from bearish.fx import write_fx_prices
 from bearish.models.base import Ticker, TrackerQuery, FinancialsTracker, PriceTracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
@@ -506,6 +507,12 @@ class Bearish(BaseModel):
         )
         return etf_symbols
 
+    def get_prices_fx(
+        self, series_length: SeriesLength = "max", currencies: Optional[List[str]] = None
+    ) -> List[str]:
+        """Daily USD<CCY>=X quotes into ``pricecurrency`` for every currency in use (plus the core set)."""
+        return write_fx_prices(self, series_length=series_length, currencies=currencies)
+
     # --- macro -------------------------------------------------------------
 
     @staticmethod
@@ -646,6 +653,7 @@ def run(  # noqa: PLR0913
     api_keys: Optional[Path] = None,
     etf: bool = True,
     index: bool = True,
+    fx: bool = True,
     sec: bool = True,
     financials: bool = True,
 ) -> None:
@@ -669,6 +677,10 @@ def run(  # noqa: PLR0913
         with console.status("[bold green]Fetching Etf price..."):
             bearish.get_prices_etf()
             console.log("[bold][red]Price etf downloaded!")
+    if fx:
+        with console.status("[bold green]Fetching FX rates..."):
+            bearish.get_prices_fx()
+            console.log("[bold][red]FX rates downloaded!")
     if sec:
         with console.status("[bold green]Fetching SEC data..."):
             Secs.upload(bearish._bearish_db)  # type: ignore
@@ -855,6 +867,20 @@ def commodities(  # noqa: PLR0913
 
 
 @app.command()
+def fx(
+    path: Path,
+    currencies: Annotated[Optional[List[str]], typer.Argument(help="ISO codes; default: every currency in use")] = None,
+    series_length: str = "max",
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch daily USD<CCY>=X exchange rates into the pricecurrency table (fxrate view)."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching FX rates..."):
+        symbols = bearish.get_prices_fx(series_length=series_length, currencies=currencies)  # type: ignore[arg-type]
+    console.log(f"[bold][red]FX rates downloaded for {len(symbols)} pairs!")
+
+
+@app.command()
 def link(path: Path, api_keys: Optional[Path] = None) -> None:
     """Build the tables that connect macro/commodity entities to equities, sectors and ETFs."""
     bearish = _bearish_from(path, api_keys)
@@ -868,6 +894,7 @@ def update(  # noqa: PLR0913
     path: Path,
     etf: bool = True,
     index: bool = True,
+    fx: bool = True,
     sec: bool = True,
     financials: bool = True,
     macro: bool = True,
@@ -881,6 +908,8 @@ def update(  # noqa: PLR0913
         bearish.get_prices_index(series_length=series_length)  # type: ignore
     if etf:
         bearish.get_prices_etf(series_length=series_length)  # type: ignore
+    if fx:
+        bearish.get_prices_fx(series_length=series_length)  # type: ignore[arg-type]
     if sec:
         Secs.upload(bearish._bearish_db)  # type: ignore
     if financials:

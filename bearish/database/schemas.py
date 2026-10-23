@@ -112,6 +112,15 @@ class PriceCommodityORM(SQLModel, Price, table=True):  # type: ignore
     date: datetime = Field(primary_key=True, index=True)
 
 
+class PriceCurrencyORM(SQLModel, Price, table=True):  # type: ignore
+    """Daily quotes of ``USD<CCY>=X`` pairs: units of CCY per one US dollar."""
+
+    __tablename__ = "pricecurrency"
+    symbol: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, index=True)  # type: ignore[assignment]
+    date: datetime = Field(primary_key=True, index=True)
+
+
 class PriceEtfORM(SQLModel, Price, table=True):  # type: ignore
     __tablename__ = "priceetf"
     date: datetime = Field(primary_key=True, index=True)

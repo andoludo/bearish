@@ -98,6 +98,23 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ---
 
+## 💱 FX rates
+
+Assets are priced in their listing currency. `bearish fx` stores the daily
+Yahoo Finance quotes of every `USD<CCY>=X` pair for the currencies found in
+the `equity`, `etf` and `index` tables (plus a core set: EUR, GBP, JPY, CHF,
+CAD, AUD, CNY, ...) in **`pricecurrency`**; the **`fxrate`** view reads them
+as `(date, base, quote, rate)` with `rate` = units of `quote` per one `base`.
+Any cross rate is the ratio of two USD pairs. `bearish run` and
+`bearish update` include this step (`--no-fx` to skip).
+
+```bash
+bearish fx /path/to/sqlite/db            # every currency in use
+bearish fx /path/to/sqlite/db EUR JPY    # a subset
+```
+
+---
+
 ## 📸 Daily snapshots of asset fields
 
 The `equity` and `etf` tables are overwritten on every detailed fetch, so
