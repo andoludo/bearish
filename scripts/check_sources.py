@@ -382,6 +382,56 @@ def _sipri() -> str:
     return f"world military spending {observations[-1].date.year}: US$ {observations[-1].value / 1e6:.2f} tn"
 
 
+@probe("EDGAR-themes")
+def _edgar_themes() -> str:
+    from bearish.signals.sources.edgar_themes import fetch_theme_hits
+    from bearish.signals.themes import THEMES
+
+    end = date.today()
+    hits = fetch_theme_hits(THEMES["hbm"], end - timedelta(days=90), end)
+    assert hits.filings() > 0, "no filings mention the theme"
+    return f"{hits.filings()} filings mention HBM in the last 90 days"
+
+
+@probe("FINRA-short-interest")
+def _finra_short_interest() -> str:
+    from bearish.signals.sources.finra import fetch_short_interest
+
+    signals = fetch_short_interest(["NVDA"], date.today() - timedelta(days=60))
+    assert signals, "no short-interest rows"
+    return f"{len(signals)} short-interest signals for NVDA"
+
+
+@probe("FINRA-short-volume")
+def _finra_short_volume() -> str:
+    from bearish.signals.sources.finra import fetch_short_volume
+
+    signals = fetch_short_volume(days=7, symbols=["NVDA"])
+    assert signals, "no short-volume file in the last 7 days"
+    return f"{len(signals)} daily short-volume ratios for NVDA"
+
+
+@probe("USAspending")
+def _usaspending() -> str:
+    from bearish.signals.sources.usaspending import fetch_federal_awards
+
+    start = date.today() - timedelta(days=200)
+    signals = fetch_federal_awards({"PLTR": "Palantir Technologies Inc."}, start)
+    assert signals, "no quarters returned"
+    return f"{len(signals)} quarters of awards for PLTR"
+
+
+@probe("arXiv")
+def _arxiv() -> str:
+    from bearish.macro.catalog import series_by_id
+    from bearish.macro.sources.adoption import ArxivSource
+
+    start = date.today().replace(day=1) - timedelta(days=40)
+    observations = ArxivSource().read_observations([series_by_id()["ADOPTION_PAPERS.QUANTUM"]], start=start)
+    assert observations, "no arXiv counts"
+    return f"{len(observations)} monthly counts, latest {observations[-1].value:.0f} papers"
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("SOURCE HEALTH SUMMARY")

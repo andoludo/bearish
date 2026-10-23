@@ -35,7 +35,13 @@ from bearish.macro.pipeline import MacroRunReport, fetch_macro, update_macro
 from bearish.macro.pipelines.commodities import run_commodities
 from bearish.macro.pipelines.linking import run_linking
 from bearish.signals.pipelines.conflict import run_conflict_sources
-from bearish.macro.sources import AbstractMacroSource, default_macro_sources
+from bearish.signals.pipelines.early_winners import (
+    run_screen,
+    write_federal_awards,
+    write_short_data,
+    write_theme_mentions,
+)
+from bearish.macro.sources import AbstractMacroSource, ArxivSource, default_macro_sources
 from bearish.models.api_keys.api_keys import SourceApiKeys
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
@@ -386,6 +392,56 @@ class Bearish(BaseModel):
         logger.debug(f"Fetched {len(filings)} EDGAR filings")
         self._bearish_db.write_filings(filings)
         self._bearish_db.backfill_filed_dates()
+
+    def _filtered_symbols(self, filter: Filter) -> List[str]:
+        """Symbols of the stored tickers matching a country / symbol filter."""
+        tickers = self.get_tickers(
+            self.exchanges.get_exchange_query(
+                cast(List[Countries], filter.countries),
+                self.get_detailed_asset_sources(),
+            )
+        )
+        return sorted({t.symbol for t in filter.filter(tickers)})
+
+    def get_theme_mentions(
+        self,
+        filter: Optional[Filter] = None,
+        themes: Optional[List[str]] = None,
+        start: Optional[datetime.date] = None,
+        adoption: bool = False,
+    ) -> Dict[str, int]:
+        """Theme mentions in SEC filings per company and market-wide; optionally arXiv adoption series."""
+        symbols = self._filtered_symbols(filter) if filter else None
+        counts = write_theme_mentions(self._bearish_db, symbols=symbols, themes=themes, start=start)
+        if adoption:
+            series = select_series(MacroQuery(concepts=["ADOPTION_PAPERS"]))
+            report = fetch_macro(self._bearish_db, [ArxivSource()], series, start=start)
+            counts["adoption_vintages"] = report.vintages_written
+        return counts
+
+    def get_short_data(self, filter: Filter, days: int = 20, history_days: int = 400) -> Dict[str, int]:
+        return write_short_data(self._bearish_db, self._filtered_symbols(filter), days=days, history_days=history_days)
+
+    def get_federal_awards(self, filter: Filter, years: int = 2) -> int:
+        return write_federal_awards(self._bearish_db, self._filtered_symbols(filter), years=years)
+
+    def screen(
+        self,
+        as_of: Optional[datetime.date] = None,
+        universe: Optional[List[str]] = None,
+        min_market_cap: Optional[float] = None,
+        max_market_cap: Optional[float] = None,
+        top: Optional[int] = None,
+    ) -> pd.DataFrame:
+        """Early-winner screen using only data public on ``as_of``."""
+        return run_screen(
+            self._bearish_db,
+            as_of=as_of,
+            universe=universe,
+            min_market_cap=min_market_cap,
+            max_market_cap=max_market_cap,
+            top=top,
+        )
 
     def get_insiders(
         self,
@@ -869,6 +925,83 @@ def conflicts(
         f"[bold][red]Conflict signals downloaded! {report.series_with_data}/{report.series_requested} series, "
         f"{report.vintages_written} new vintages ({report.sources})"
     )
+
+
+@app.command()
+def themes(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[Optional[List[CountriesEnum]], typer.Argument()] = None,
+    filters: Optional[str] = None,
+    theme: Annotated[Optional[List[str]], typer.Option(help="Theme keys, e.g. ai_accelerator (default: all)")] = None,
+    start: Annotated[Optional[datetime.datetime], typer.Option(help="First quarter (default: two years ago)")] = None,
+    adoption: Annotated[bool, typer.Option(help="Also fetch arXiv paper counts per theme (slow)")] = False,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Count technology-theme mentions in SEC filings, per company and market-wide."""
+    bearish = _bearish_from(path, api_keys)
+    filter = Filter(countries=countries, filters=filters) if countries else None
+    with console.status("[bold green]Searching EDGAR filings for themes..."):
+        counts = bearish.get_theme_mentions(
+            filter, themes=theme, start=start.date() if start else None, adoption=adoption
+        )
+    console.log(f"[bold][red]Theme mentions written! {counts}")
+
+
+@app.command()
+def shorts(  # noqa: PLR0913
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    days: Annotated[int, typer.Option(help="Trading days of FINRA daily short volume")] = 20,
+    history_days: Annotated[int, typer.Option(help="Days of short-interest history")] = 400,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch FINRA short interest and daily short-volume ratios for the filtered tickers."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching FINRA short data..."):
+        counts = bearish.get_short_data(
+            Filter(countries=countries, filters=filters), days=days, history_days=history_days
+        )
+    console.log(f"[bold][red]Short data written! {counts}")
+
+
+@app.command()
+def awards(
+    path: Path,
+    countries: Annotated[List[CountriesEnum], typer.Argument()],
+    filters: Optional[str] = None,
+    years: Annotated[int, typer.Option(help="Years of USAspending history")] = 2,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch quarterly federal contract awards per company from USAspending."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching federal awards..."):
+        written = bearish.get_federal_awards(Filter(countries=countries, filters=filters), years=years)
+    console.log(f"[bold][red]{written} federal-award values written!")
+
+
+@app.command()
+def screen(  # noqa: PLR0913
+    path: Path,
+    as_of: Annotated[Optional[datetime.datetime], typer.Option(help="Screen date (default: today)")] = None,
+    universe: Annotated[Optional[List[str]], typer.Option(help="Restrict to these symbols")] = None,
+    min_market_cap: Optional[float] = None,
+    max_market_cap: Optional[float] = None,
+    top: Annotated[int, typer.Option(help="Rows to show")] = 25,
+    output: Annotated[Optional[Path], typer.Option(help="Write the full ranked table to this CSV")] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Rank stocks on early-winner signals known on the screen date (no look-ahead)."""
+    bearish = _bearish_from(path, api_keys)
+    frame = bearish.screen(
+        as_of=as_of.date() if as_of else None,
+        universe=universe,
+        min_market_cap=min_market_cap,
+        max_market_cap=max_market_cap,
+    )
+    if output:
+        frame.to_csv(output)
+    console.print(frame.head(top).to_string())
 
 
 @app.command()

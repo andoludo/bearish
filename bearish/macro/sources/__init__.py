@@ -2,6 +2,7 @@
 
 from typing import List
 
+from bearish.macro.sources.adoption import ArxivSource, EdgarThemeSource
 from bearish.macro.sources.base import AbstractMacroSource
 from bearish.macro.sources.bis import BisSource
 from bearish.macro.sources.cftc import CftcSource
@@ -22,10 +23,12 @@ from bearish.macro.sources.worldbank import WorldBankSource
 
 __all__ = [
     "AbstractMacroSource",
+    "ArxivSource",
     "BisSource",
     "CftcSource",
     "DbnomicsSource",
     "EcbSource",
+    "EdgarThemeSource",
     "EpuSource",
     "EurostatSource",
     "FredSource",
@@ -46,7 +49,8 @@ def default_macro_sources() -> List[AbstractMacroSource]:
     """Providers fetched by ``bearish macro`` / ``bearish update``; cheap keyless APIs first, bulk files last.
 
     GDELT (one ~8 MB file per day) and OFAC (a ~110 MB list) are heavy and are
-    fetched by ``bearish conflicts`` instead.
+    fetched by ``bearish conflicts`` instead; arXiv allows one request every
+    3 s, so theme adoption papers are fetched by ``bearish themes --adoption``.
     """
     return [
         FredSource(),
@@ -65,4 +69,5 @@ def default_macro_sources() -> List[AbstractMacroSource]:
         GdpNowSource(),
         PortWatchSource(),
         SipriSource(),
+        EdgarThemeSource(),
     ]
