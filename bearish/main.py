@@ -40,6 +40,7 @@ from bearish.models.assets.assets import Assets
 from bearish.models.assets.index import PRICE_INDEX
 from bearish.models.assets.snapshots import Snapshots
 from bearish.fx import write_fx_prices
+from bearish.sources.wikipedia_index import fetch_index_members, pages_for
 from bearish.models.base import Ticker, TrackerQuery, FinancialsTracker, PriceTracker
 from bearish.models.financials.base import Financials
 from bearish.models.price.price import Price
@@ -513,6 +514,12 @@ class Bearish(BaseModel):
         """Daily USD<CCY>=X quotes into ``pricecurrency`` for every currency in use (plus the core set)."""
         return write_fx_prices(self, series_length=series_length, currencies=currencies)
 
+    def get_index_members(self, indices: Optional[List[str]] = None) -> int:
+        """Index constituent snapshots (Wikipedia) into ``indexmember``; returns rows written."""
+        members = fetch_index_members(pages_for(indices))
+        self._bearish_db.write_index_members(members)
+        return len(members)
+
     # --- macro -------------------------------------------------------------
 
     @staticmethod
@@ -673,6 +680,9 @@ def run(  # noqa: PLR0913
         with console.status("[bold green]Fetching Price index..."):
             bearish.get_prices_index()
             console.log("[bold][red]Price index downloaded!")
+        with console.status("[bold green]Fetching index constituents..."):
+            bearish.get_index_members()
+            console.log("[bold][red]Index constituents downloaded!")
     if etf:
         with console.status("[bold green]Fetching Etf price..."):
             bearish.get_prices_etf()
@@ -867,6 +877,21 @@ def commodities(  # noqa: PLR0913
 
 
 @app.command()
+def members(
+    path: Path,
+    indices: Annotated[
+        Optional[List[str]], typer.Argument(help="Index symbols, e.g. ^GSPC ^GDAXI; default: all")
+    ] = None,
+    api_keys: Optional[Path] = None,
+) -> None:
+    """Fetch index constituents (S&P 500, Nasdaq-100, DAX, CAC 40, BEL 20, FTSE 100, ...) into indexmember."""
+    bearish = _bearish_from(path, api_keys)
+    with console.status("[bold green]Fetching index constituents..."):
+        written = bearish.get_index_members(indices)
+    console.log(f"[bold][red]{written} index constituents downloaded!")
+
+
+@app.command()
 def fx(
     path: Path,
     currencies: Annotated[Optional[List[str]], typer.Argument(help="ISO codes; default: every currency in use")] = None,
@@ -906,6 +931,7 @@ def update(  # noqa: PLR0913
     bearish.update_prices(symbols, series_length=series_length)  # type: ignore
     if index:
         bearish.get_prices_index(series_length=series_length)  # type: ignore
+        bearish.get_index_members()
     if etf:
         bearish.get_prices_etf(series_length=series_length)  # type: ignore
     if fx:

@@ -98,6 +98,23 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ---
 
+## 🧩 Index constituents
+
+`bearish members` stores who is in the major indices (S&P 500, Nasdaq-100,
+Dow Jones, DAX, CAC 40, BEL 20, AEX, FTSE 100, Euro Stoxx 50, SMI, IBEX 35,
+FTSE MIB, Nikkei 225) from the Wikipedia constituent tables into
+**`indexmember`** as a dated snapshot `(index_symbol, symbol, as_of)`, with
+symbols in Yahoo Finance notation (`BRK-B`, `ADS.DE`, `III.L`). Breadth
+measures and ETF tracking need this; `bearish run` and `bearish update`
+refresh it with the index prices.
+
+```bash
+bearish members /path/to/sqlite/db                 # every configured index
+bearish members /path/to/sqlite/db ^GSPC ^GDAXI    # a subset
+```
+
+---
+
 ## 💱 FX rates
 
 Assets are priced in their listing currency. `bearish fx` stores the daily

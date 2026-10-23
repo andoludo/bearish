@@ -17,6 +17,7 @@ from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
+from bearish.models.assets.index_members import IndexMember
 from bearish.models.base import (
     TrackerQuery,
     Ticker,
@@ -53,6 +54,16 @@ class BearishDbBase(BaseModel):
 
     def read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
         return self._read_etf_snapshots(symbol=symbol)
+
+    @validate_call
+    def write_index_members(self, members: List[IndexMember]) -> None:
+        return self._write_index_members(members)
+
+    def read_index_members(
+        self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
+    ) -> List[IndexMember]:
+        """Members of an index (or the indices a symbol belongs to); ``latest`` keeps only the newest snapshot."""
+        return self._read_index_members(index_symbol=index_symbol, symbol=symbol, latest=latest)
 
     @observability
     @validate_call
@@ -355,6 +366,14 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]: ...
+
+    @abc.abstractmethod
+    def _write_index_members(self, members: List[IndexMember]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_index_members(
+        self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
+    ) -> List[IndexMember]: ...
 
     @abc.abstractmethod
     def _write_series(

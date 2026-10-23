@@ -12,6 +12,7 @@ from bearish.models.assets.currency import Currency
 from bearish.models.assets.etfs import Etf
 from bearish.models.assets.index import Index
 from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot
+from bearish.models.assets.index_members import IndexMember
 from bearish.models.base import PriceTracker, FinancialsTracker
 from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
@@ -89,6 +90,13 @@ class EtfSnapshotORM(SQLModel, EtfSnapshot, table=True):  # type: ignore
     as_of: dt.date = Field(primary_key=True, index=True)
     holding_percent: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
     sector_weightings: Optional[Dict[str, float]] = Field(None, sa_column=Column(JSON))
+
+
+class IndexMemberORM(SQLModel, IndexMember, table=True):  # type: ignore
+    __tablename__ = "indexmember"
+    index_symbol: str = Field(primary_key=True, index=True)
+    symbol: str = Field(primary_key=True, index=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
 
 
 class PriceORM(SQLModel, Price, table=True):  # type: ignore

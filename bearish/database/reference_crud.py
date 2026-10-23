@@ -2,6 +2,7 @@
 references, trade exposure, sector sensitivities, ETF exposure) and insider
 transactions. All are simple upsert / filtered-read tables."""
 
+import datetime
 from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
@@ -18,6 +19,7 @@ from bearish.database.schemas import (
     EtfSnapshotORM,
     Holding13FORM,
     Holding13FSummaryORM,
+    IndexMemberORM,
     InsiderTransactionORM,
     Ownership13DGORM,
     SectorAliasORM,
@@ -27,6 +29,7 @@ from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.sectors import SectorAlias
 from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
+from bearish.models.assets.index_members import IndexMember
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.utils.utils import batch
@@ -97,6 +100,22 @@ class ReferenceCrudMixin:
 
     def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
         return self._select(EtfSnapshotORM, EtfSnapshot, symbol=symbol)
+
+    # index membership ----------------------------------------------------
+
+    def _write_index_members(self, members: List[IndexMember]) -> None:
+        self._upsert(IndexMemberORM, [m.model_dump() for m in members])
+
+    def _read_index_members(
+        self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
+    ) -> List[IndexMember]:
+        members = self._select(IndexMemberORM, IndexMember, index_symbol=index_symbol, symbol=symbol)
+        if not latest:
+            return members
+        newest: Dict[str, datetime.date] = {}
+        for member in members:
+            newest[member.index_symbol] = max(newest.get(member.index_symbol, member.as_of), member.as_of)
+        return [member for member in members if member.as_of == newest[member.index_symbol]]
 
     # insiders ------------------------------------------------------------
 
