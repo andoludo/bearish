@@ -6,7 +6,7 @@ import datetime
 from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import Engine, insert
+from sqlalchemy import Engine, delete, insert
 from sqlmodel import Session, SQLModel, col, select
 
 from bearish.database.schemas import (
@@ -14,6 +14,7 @@ from bearish.database.schemas import (
     CountryAliasORM,
     CountryCommodityExposureORM,
     CountryRefORM,
+    CoverageORM,
     EquitySnapshotORM,
     EtfExposureORM,
     EtfSnapshotORM,
@@ -30,6 +31,7 @@ from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCom
 from bearish.macro.sectors import SectorAlias
 from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
 from bearish.models.assets.index_members import IndexMember
+from bearish.models.coverage import Coverage
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.utils.utils import batch
@@ -100,6 +102,18 @@ class ReferenceCrudMixin:
 
     def _read_etf_snapshots(self, symbol: Optional[str] = None) -> List[EtfSnapshot]:
         return self._select(EtfSnapshotORM, EtfSnapshot, symbol=symbol)
+
+    # coverage ------------------------------------------------------------
+
+    def _write_coverage(self, rows: List[Coverage], replace: bool = True) -> None:
+        if replace:
+            with Session(self._reference_engine()) as session:
+                session.exec(delete(CoverageORM))
+                session.commit()
+        self._upsert(CoverageORM, [r.model_dump() for r in rows])
+
+    def _read_coverage(self, symbol: Optional[str] = None, table_name: Optional[str] = None) -> List[Coverage]:
+        return self._select(CoverageORM, Coverage, symbol=symbol, table_name=table_name)
 
     # index membership ----------------------------------------------------
 

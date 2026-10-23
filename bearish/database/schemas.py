@@ -13,6 +13,7 @@ from bearish.models.assets.etfs import Etf
 from bearish.models.assets.index import Index
 from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot
 from bearish.models.assets.index_members import IndexMember
+from bearish.models.coverage import Coverage
 from bearish.models.base import PriceTracker, FinancialsTracker
 from bearish.models.financials.analyst import AnalystRecommendation, PriceTarget
 from bearish.models.financials.balance_sheet import BalanceSheet, QuarterlyBalanceSheet
@@ -97,6 +98,13 @@ class IndexMemberORM(SQLModel, IndexMember, table=True):  # type: ignore
     index_symbol: str = Field(primary_key=True, index=True)
     symbol: str = Field(primary_key=True, index=True)
     as_of: dt.date = Field(primary_key=True, index=True)
+
+
+class CoverageORM(SQLModel, Coverage, table=True):  # type: ignore
+    __tablename__ = "coverage"
+    symbol: str = Field(primary_key=True, index=True)
+    table_name: str = Field(primary_key=True, index=True)
+    source: str = Field(primary_key=True, default="")
 
 
 class PriceORM(SQLModel, Price, table=True):  # type: ignore

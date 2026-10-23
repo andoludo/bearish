@@ -6,6 +6,7 @@
   "countryalias": [],
   "countrycommodityexposure": [],
   "countryref": [],
+  "coverage": [],
   "crypto": [
     {
       "base_symbol": "AAVE-CAD",

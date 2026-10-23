@@ -98,6 +98,23 @@ The `config.json` contains the API keys of the different providers (if needed):
 
 ---
 
+## 🗂️ Coverage census
+
+Before judging a stock it helps to know whether the database can support
+the judgement. `bearish coverage` (also run at the end of `bearish run` and
+`bearish update`) writes one row per `(symbol, table_name, source)` into
+**`coverage`** with the first date, last date and row count of every dated
+table (prices, statements, earnings, analyst rows, filings, insiders, 13F
+summaries, 13D/G, snapshots, index membership). Grading it ("enough years
+of statements?", "prices fresh?") is downstream work.
+
+```bash
+bearish coverage /path/to/sqlite/db              # full census
+bearish coverage /path/to/sqlite/db NVDA AAPL    # refresh two symbols
+```
+
+---
+
 ## 🧩 Index constituents
 
 `bearish members` stores who is in the major indices (S&P 500, Nasdaq-100,

@@ -18,6 +18,7 @@ from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.assets.assets import Assets
 from bearish.models.assets.snapshots import EquitySnapshot, EtfSnapshot, Snapshots
 from bearish.models.assets.index_members import IndexMember
+from bearish.models.coverage import Coverage
 from bearish.models.base import (
     TrackerQuery,
     Ticker,
@@ -64,6 +65,14 @@ class BearishDbBase(BaseModel):
     ) -> List[IndexMember]:
         """Members of an index (or the indices a symbol belongs to); ``latest`` keeps only the newest snapshot."""
         return self._read_index_members(index_symbol=index_symbol, symbol=symbol, latest=latest)
+
+    @validate_call
+    def write_coverage(self, rows: List[Coverage], replace: bool = True) -> None:
+        """Store a coverage census; ``replace`` drops the previous census first (a full run), else upserts."""
+        return self._write_coverage(rows, replace=replace)
+
+    def read_coverage(self, symbol: Optional[str] = None, table_name: Optional[str] = None) -> List[Coverage]:
+        return self._read_coverage(symbol=symbol, table_name=table_name)
 
     @observability
     @validate_call
@@ -374,6 +383,12 @@ class BearishDbBase(BaseModel):
     def _read_index_members(
         self, index_symbol: Optional[str] = None, symbol: Optional[str] = None, latest: bool = True
     ) -> List[IndexMember]: ...
+
+    @abc.abstractmethod
+    def _write_coverage(self, rows: List[Coverage], replace: bool = True) -> None: ...
+
+    @abc.abstractmethod
+    def _read_coverage(self, symbol: Optional[str] = None, table_name: Optional[str] = None) -> List[Coverage]: ...
 
     @abc.abstractmethod
     def _write_series(
