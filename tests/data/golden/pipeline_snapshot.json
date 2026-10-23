@@ -3,6 +3,7 @@
   "balancesheet": [],
   "cashflow": [],
   "commodity": [],
+  "congresstrade": [],
   "countryalias": [],
   "countrycommodityexposure": [],
   "countryref": [],
@@ -7472,6 +7473,7 @@
     }
   ],
   "etfexposure": [],
+  "eventreturn": [],
   "filing": [],
   "financialmetrics": [],
   "financialstracker": [],
@@ -7899,7 +7901,9 @@
   "macroobservation": [],
   "macroseries": [],
   "macrotracker": [],
+  "marketevent": [],
   "ownership13dg": [],
+  "predictionquote": [],
   "price": [
     {
       "close": 106.84,
@@ -27284,5 +27288,6 @@
     {
       "source": "investpy"
     }
-  ]
+  ],
+  "tickersignal": []
 }

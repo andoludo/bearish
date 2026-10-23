@@ -14,6 +14,7 @@ from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCom
 from bearish.macro.models import MacroQuery, MacroSeries, MacroTracker, Observation
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
+from bearish.signals.models import CongressTrade, EventReturn, MarketEvent, PredictionQuote, TickerSignal
 from bearish.models.assets.assets import Assets
 from bearish.models.base import (
     TrackerQuery,
@@ -218,6 +219,65 @@ class BearishDbBase(BaseModel):
     def read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]:
         return self._read_ownership13dg(symbol=symbol)
 
+    # --- events & signals ---------------------------------------------------
+
+    @validate_call
+    def write_events(self, events: List[MarketEvent]) -> None:
+        return self._write_events(events)
+
+    def read_events(self, event_type: Optional[str] = None, tag: Optional[str] = None) -> List[MarketEvent]:
+        return self._read_events(event_type=event_type, tag=tag)
+
+    @validate_call
+    def write_event_returns(self, returns: List[EventReturn]) -> None:
+        return self._write_event_returns(returns)
+
+    def read_event_returns(self, event_id: Optional[str] = None, asset: Optional[str] = None) -> List[EventReturn]:
+        return self._read_event_returns(event_id=event_id, asset=asset)
+
+    @validate_call
+    def write_ticker_signals(self, signals: List[TickerSignal]) -> int:
+        """Store signals point-in-time; returns the number of new vintages written."""
+        return self._write_ticker_signals(signals)
+
+    def read_ticker_signals(
+        self,
+        symbols: Optional[List[str]] = None,
+        signals: Optional[List[str]] = None,
+        signal_prefix: Optional[str] = None,
+        start: Optional[date] = None,
+        as_of: Optional[date] = None,
+    ) -> List[TickerSignal]:
+        return self._read_ticker_signals(
+            symbols=symbols, signals=signals, signal_prefix=signal_prefix, start=start, as_of=as_of
+        )
+
+    def read_ticker_signal_frame(
+        self, signals: Optional[List[str]] = None, signal_prefix: Optional[str] = None, as_of: Optional[date] = None
+    ) -> pd.DataFrame:
+        """Latest-known signal values as a frame indexed by (symbol, date) with one column per signal."""
+        rows = self.read_ticker_signals(signals=signals, signal_prefix=signal_prefix, as_of=as_of)
+        if not rows:
+            return pd.DataFrame()
+        frame = pd.DataFrame([r.model_dump() for r in rows])
+        return frame.pivot_table(index=["symbol", "date"], columns="signal", values="value", aggfunc="last")
+
+    @validate_call
+    def write_congress_trades(self, trades: List[CongressTrade]) -> None:
+        return self._write_congress_trades(trades)
+
+    def read_congress_trades(self, symbol: Optional[str] = None, member: Optional[str] = None) -> List[CongressTrade]:
+        return self._read_congress_trades(symbol=symbol, member=member)
+
+    @validate_call
+    def write_prediction_quotes(self, quotes: List[PredictionQuote]) -> None:
+        return self._write_prediction_quotes(quotes)
+
+    def read_prediction_quotes(
+        self, category: Optional[str] = None, platform: Optional[str] = None
+    ) -> List[PredictionQuote]:
+        return self._read_prediction_quotes(category=category, platform=platform)
+
     @validate_call
     def write_country_references(self, refs: List[CountryRef], aliases: List[CountryAlias]) -> None:
         return self._write_country_references(refs, aliases)
@@ -301,6 +361,49 @@ class BearishDbBase(BaseModel):
 
     @abc.abstractmethod
     def _read_ownership13dg(self, symbol: Optional[str] = None) -> List[Ownership13DG]: ...
+
+    @abc.abstractmethod
+    def _write_events(self, events: List[MarketEvent]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_events(self, event_type: Optional[str] = None, tag: Optional[str] = None) -> List[MarketEvent]: ...
+
+    @abc.abstractmethod
+    def _write_event_returns(self, returns: List[EventReturn]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_event_returns(
+        self, event_id: Optional[str] = None, asset: Optional[str] = None
+    ) -> List[EventReturn]: ...
+
+    @abc.abstractmethod
+    def _write_ticker_signals(self, signals: List[TickerSignal]) -> int: ...
+
+    @abc.abstractmethod
+    def _read_ticker_signals(
+        self,
+        symbols: Optional[List[str]] = None,
+        signals: Optional[List[str]] = None,
+        signal_prefix: Optional[str] = None,
+        start: Optional[date] = None,
+        as_of: Optional[date] = None,
+    ) -> List[TickerSignal]: ...
+
+    @abc.abstractmethod
+    def _write_congress_trades(self, trades: List[CongressTrade]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_congress_trades(
+        self, symbol: Optional[str] = None, member: Optional[str] = None
+    ) -> List[CongressTrade]: ...
+
+    @abc.abstractmethod
+    def _write_prediction_quotes(self, quotes: List[PredictionQuote]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_prediction_quotes(
+        self, category: Optional[str] = None, platform: Optional[str] = None
+    ) -> List[PredictionQuote]: ...
 
     @abc.abstractmethod
     def _write_country_references(self, refs: List[CountryRef], aliases: List[CountryAlias]) -> None: ...

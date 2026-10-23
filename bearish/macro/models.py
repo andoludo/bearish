@@ -41,7 +41,7 @@ Category = Literal[
     "factor",
 ]
 
-EntityType = Literal["country", "region", "commodity", "sector", "global"]
+EntityType = Literal["country", "region", "commodity", "sector", "global", "chokepoint", "country_pair"]
 
 Frequency = Literal["D", "W", "M", "Q", "A"]
 

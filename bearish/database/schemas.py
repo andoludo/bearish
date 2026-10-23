@@ -26,6 +26,7 @@ from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCom
 from bearish.macro.models import MacroSeries, MacroTracker, Observation
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
+from bearish.signals.models import CongressTrade, EventReturn, MarketEvent, PredictionQuote, TickerSignal
 from bearish.models.sec.filing import Filing
 from bearish.models.sec.sec import Sec, SecShareIncrease
 
@@ -291,3 +292,45 @@ class Ownership13DGORM(SQLModel, Ownership13DG, table=True):  # type: ignore
     reporting_person: str = Field(primary_key=True)
     symbol: str = Field(index=True)
     filed_date: dt.date = Field(index=True)
+
+
+class MarketEventORM(SQLModel, MarketEvent, table=True):  # type: ignore
+    __tablename__ = "marketevent"
+    event_id: str = Field(primary_key=True)
+    event_type: str = Field(index=True)  # type: ignore[assignment]
+    date: dt.date = Field(index=True)
+
+
+class EventReturnORM(SQLModel, EventReturn, table=True):  # type: ignore
+    __tablename__ = "eventreturn"
+    event_id: str = Field(primary_key=True, index=True)
+    asset: str = Field(primary_key=True, index=True)
+    window: str = Field(primary_key=True)
+
+
+class TickerSignalORM(SQLModel, TickerSignal, table=True):  # type: ignore
+    """Point-in-time store: one row per (symbol, signal, date, vintage)."""
+
+    __tablename__ = "tickersignal"
+    symbol: str = Field(primary_key=True, index=True)
+    signal: str = Field(primary_key=True, index=True)
+    date: dt.date = Field(primary_key=True, index=True)
+    as_of: dt.date = Field(primary_key=True)
+
+
+class CongressTradeORM(SQLModel, CongressTrade, table=True):  # type: ignore
+    __tablename__ = "congresstrade"
+    doc_id: str = Field(primary_key=True)
+    line_no: int = Field(primary_key=True)
+    chamber: str = Field(index=True)  # type: ignore[assignment]
+    symbol: Optional[str] = Field(default=None, index=True)
+    filed_date: dt.date = Field(index=True)
+
+
+class PredictionQuoteORM(SQLModel, PredictionQuote, table=True):  # type: ignore
+    __tablename__ = "predictionquote"
+    platform: str = Field(primary_key=True)  # type: ignore[assignment]
+    market_id: str = Field(primary_key=True)
+    outcome: str = Field(primary_key=True)
+    as_of: dt.date = Field(primary_key=True, index=True)
+    category: Optional[str] = Field(default=None, index=True)
