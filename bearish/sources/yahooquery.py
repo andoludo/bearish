@@ -144,6 +144,10 @@ class YahooQueryFinancialMetrics(YahooQueryFinancialBase, QuarterlyFinancialMetr
         "CostOfRevenue": "cost_of_revenue",
         "TaxProvision": "tax_provision",
         "TaxRateForCalcs": "tax_rate",
+        "InterestExpense": "interest_expense",
+        "ResearchAndDevelopment": "research_and_development",
+        "SellingGeneralAndAdministration": "selling_general_and_administrative",
+        "DilutedAverageShares": "diluted_average_shares",
     }
 
 
@@ -200,6 +204,7 @@ class YahooQueryCashFlow(YahooQueryFinancialBase, QuarterlyCashFlow):
         "CommonStockIssuance": "proceeds_from_issuance_of_common_stock",
         "ChangesInCash": "changes_in_cash",
         "NetIncomeFromContinuingOperations": "net_income_from_continuing_operations",
+        "StockBasedCompensation": "stock_based_compensation",
     }
 
 

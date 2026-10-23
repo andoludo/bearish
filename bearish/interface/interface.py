@@ -12,6 +12,7 @@ from bearish.exchanges.exchanges import ExchangeQuery
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
 from bearish.macro.models import MacroQuery, MacroSeries, MacroTracker, Observation
+from bearish.macro.sectors import SectorAlias
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.models.assets.assets import Assets
@@ -58,8 +59,8 @@ class BearishDbBase(BaseModel):
         return self._write_filings(filings)
 
     @validate_call
-    def read_filings(self, symbol: str) -> List[Filing]:
-        return self._read_filings(symbol)
+    def read_filings(self, symbol: str, forms: Optional[List[str]] = None) -> List[Filing]:
+        return self._read_filings(symbol, forms=forms)
 
     def backfill_filed_dates(self) -> None:
         return self._backfill_filed_dates()
@@ -226,6 +227,13 @@ class BearishDbBase(BaseModel):
         return self._read_country_references()
 
     @validate_call
+    def write_sector_aliases(self, aliases: List[SectorAlias]) -> None:
+        return self._write_sector_aliases(aliases)
+
+    def read_sector_aliases(self, level: Optional[str] = None) -> List[SectorAlias]:
+        return self._read_sector_aliases(level=level)
+
+    @validate_call
     def write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None:
         return self._write_sector_sensitivities(sensitivities)
 
@@ -309,6 +317,12 @@ class BearishDbBase(BaseModel):
     def _read_country_references(self) -> List[CountryRef]: ...
 
     @abc.abstractmethod
+    def _write_sector_aliases(self, aliases: List[SectorAlias]) -> None: ...
+
+    @abc.abstractmethod
+    def _read_sector_aliases(self, level: Optional[str] = None) -> List[SectorAlias]: ...
+
+    @abc.abstractmethod
     def _write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None: ...
 
     @abc.abstractmethod
@@ -334,7 +348,7 @@ class BearishDbBase(BaseModel):
     def _write_filings(self, filings: List[Filing]) -> None: ...
 
     @abc.abstractmethod
-    def _read_filings(self, symbol: str) -> List[Filing]: ...
+    def _read_filings(self, symbol: str, forms: Optional[List[str]] = None) -> List[Filing]: ...
 
     @abc.abstractmethod
     def _backfill_filed_dates(self) -> None: ...

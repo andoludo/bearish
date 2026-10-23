@@ -112,8 +112,13 @@ yFinance on every financials run:
 
 For US tickers, SEC EDGAR filing metadata can be fetched into the
 **`filing`** table (form type, period of report, filed date, accession
-number) and the filing date is copied onto financial statement rows whose
-`(symbol, period_end)` matches exactly (`filed_date` column):
+number) and the 10-K / 10-Q filing date is copied onto financial statement
+rows whose `(symbol, period_end)` matches exactly (`filed_date` column).
+8-K current reports are stored too, with their EDGAR **item codes** in
+`items` (`2.02` results, `4.01` auditor change, `4.02` restatement, `5.02`
+officer departure, `1.03` bankruptcy, ...) and the event date in
+`period_end`, so downstream analysis can tell a routine results filing from
+a structural red flag without parsing the documents:
 
 ```bash
 bearish filings /path/to/sqlite/db US --filters NVDA,AAPL

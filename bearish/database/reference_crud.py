@@ -18,10 +18,12 @@ from bearish.database.schemas import (
     Holding13FSummaryORM,
     InsiderTransactionORM,
     Ownership13DGORM,
+    SectorAliasORM,
     SectorCommoditySensitivityORM,
 )
 from bearish.macro.commodities import Commodity, CountryCommodityExposure
 from bearish.macro.links import CountryAlias, CountryRef, EtfExposure, SectorCommoditySensitivity
+from bearish.macro.sectors import SectorAlias
 from bearish.models.sec.holdings import Holding13F, Holding13FSummary, Ownership13DG
 from bearish.models.sec.insider import InsiderTransaction
 from bearish.utils.utils import batch
@@ -117,6 +119,12 @@ class ReferenceCrudMixin:
 
     def _read_country_references(self) -> List[CountryRef]:
         return self._select(CountryRefORM, CountryRef)
+
+    def _write_sector_aliases(self, aliases: List[SectorAlias]) -> None:
+        self._upsert(SectorAliasORM, [a.model_dump() for a in aliases])
+
+    def _read_sector_aliases(self, level: Optional[str] = None) -> List[SectorAlias]:
+        return self._select(SectorAliasORM, SectorAlias, level=level)
 
     def _write_sector_sensitivities(self, sensitivities: List[SectorCommoditySensitivity]) -> None:
         self._upsert(SectorCommoditySensitivityORM, [s.model_dump() for s in sensitivities])

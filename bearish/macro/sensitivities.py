@@ -1,7 +1,9 @@
 """Curated sign of equity sector / industry sensitivity to commodity prices.
 
-Sector names follow the GICS-style vocabulary stored in ``equity.sector`` and
-``equity.industry`` (``Energy``, ``Materials``, ``Airlines``, ...). The signs
+Sector names are the canonical GICS names of ``bearish.macro.sectors``
+(``Energy``, ``Materials``, ``Passenger Airlines``, ...); provider spellings
+in ``equity.sector`` / ``equity.industry`` resolve to them through the
+``equitysector`` view. The signs
 are deliberately coarse priors: a positive direction means the group tends to
 benefit from a higher commodity price, a negative one that it is an input
 cost. Downstream KPIs may replace them with estimated betas; keeping them
@@ -36,10 +38,10 @@ SECTOR_COMMODITY_SENSITIVITIES: Tuple[SectorCommoditySensitivity, ...] = (
     _s("Oil, Gas & Consumable Fuels", "COAL", 1, "medium", "Coal miners sit in this industry group"),
     _s("Energy Equipment & Services", "BRENT", 1, "high", "Drilling and services demand follows producer cash flow"),
     # Transport: fuel is the main variable cost
-    _s("Airlines", "BRENT", -1, "high", "Jet fuel is 20-30% of airline operating cost"),
+    _s("Passenger Airlines", "BRENT", -1, "high", "Jet fuel is 20-30% of airline operating cost"),
     _s("Air Freight & Logistics", "BRENT", -1, "medium", "Fuel surcharges lag cost increases"),
-    _s("Marine", "BRENT", -1, "medium", "Bunker fuel is the largest voyage cost"),
-    _s("Road & Rail", "BRENT", -1, "low", "Diesel cost partly passed through via surcharges"),
+    _s("Marine Transportation", "BRENT", -1, "medium", "Bunker fuel is the largest voyage cost"),
+    _s("Ground Transportation", "BRENT", -1, "low", "Diesel cost partly passed through via surcharges"),
     _s("Transportation Infrastructure", "BRENT", -1, "low", "Higher fuel dampens traffic volumes"),
     # Materials and mining
     _s("Materials", "COPPER", 1, "high", "Copper is the bellwether metal for diversified miners"),
@@ -103,7 +105,13 @@ SECTOR_COMMODITY_SENSITIVITIES: Tuple[SectorCommoditySensitivity, ...] = (
     _s("Beverages", "ALUMINIUM", -1, "low", "Cans are an aluminium cost"),
     _s("Hotels, Restaurants & Leisure", "LIVE_CATTLE", -1, "low", "Beef is a major restaurant input"),
     _s("Hotels, Restaurants & Leisure", "COFFEE", -1, "low", "Cafes absorb bean cost"),
-    _s("Food & Staples Retailing", "WHEAT", -1, "low", "Food inflation squeezes grocer margins before pass-through"),
+    _s(
+        "Consumer Staples Distribution & Retail",
+        "WHEAT",
+        -1,
+        "low",
+        "Food inflation squeezes grocer margins before pass-through",
+    ),
     # Agriculture producers benefit from grain prices
     _s("Agricultural Products", "WHEAT", 1, "high", "Grain merchants and farmers earn more at higher prices"),
     _s("Agricultural Products", "CORN", 1, "high", "Corn producers and processors benefit"),
@@ -115,8 +123,8 @@ SECTOR_COMMODITY_SENSITIVITIES: Tuple[SectorCommoditySensitivity, ...] = (
     _s("Automobiles", "PLATINUM", -1, "low", "Diesel catalysts use platinum"),
     _s("Automobiles", "ALUMINIUM", -1, "medium", "Body and powertrain parts use aluminium"),
     _s("Automobiles", "COPPER", -1, "low", "Wiring and EV motors use copper"),
-    _s("Auto Components", "ALUMINIUM", -1, "medium", "Castings and components use aluminium"),
-    _s("Auto Components", "PALLADIUM", -1, "medium", "Catalyst suppliers buy PGMs"),
+    _s("Automobile Components", "ALUMINIUM", -1, "medium", "Castings and components use aluminium"),
+    _s("Automobile Components", "PALLADIUM", -1, "medium", "Catalyst suppliers buy PGMs"),
     _s("Household Durables", "COPPER", -1, "low", "Appliances and housing fittings use copper"),
     _s("Textiles, Apparel & Luxury Goods", "COTTON", -1, "medium", "Cotton is the main fibre input"),
     # Industrials

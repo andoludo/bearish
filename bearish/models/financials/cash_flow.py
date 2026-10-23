@@ -104,6 +104,11 @@ class CashFlow(FiledDateMixin, DataSourceBase):
         BeforeValidator(to_float),
         Field(default=None, description="Net income from continuing operations"),
     ]
+    stock_based_compensation: Annotated[
+        Optional[float],
+        BeforeValidator(to_float),
+        Field(default=None, description="Share-based compensation expense added back in operating cash flow"),
+    ]
 
 
 class QuarterlyCashFlow(CashFlow): ...
