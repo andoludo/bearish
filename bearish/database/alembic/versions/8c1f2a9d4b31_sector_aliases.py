@@ -6,7 +6,7 @@ FinanceDatabase, ETF sector-weight keys) to the canonical GICS name, and the
 ``equity.industry``.
 
 Revision ID: 8c1f2a9d4b31
-Revises: 42a7c5b11570
+Revises: 9c21f96faefe
 Create Date: 2026-10-23 20:10:00.000000
 
 """
@@ -19,7 +19,7 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision: str = '8c1f2a9d4b31'
-down_revision: Union[str, None] = '42a7c5b11570'
+down_revision: Union[str, None] = '9c21f96faefe'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

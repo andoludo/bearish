@@ -247,6 +247,29 @@ COUNTRIES: Tuple[Country, ...] = (
     Country(iso3="GAB", iso2="GA", name="Gabon", region="Africa"),
     Country(iso3="CIV", iso2="CI", name="Ivory Coast", aliases=("Cote d'Ivoire", "Côte d'Ivoire"), region="Africa"),
     Country(iso3="REU", iso2="RE", name="Reunion", aliases=("Réunion",), region="Africa"),
+    # Conflict- and sanctions-relevant countries (no listed equities needed).
+    Country(
+        iso3="IRN",
+        iso2="IR",
+        name="Iran",
+        aliases=("Iran, Islamic Republic of", "Islamic Republic of Iran"),
+        region="Middle East",
+    ),
+    Country(
+        iso3="PRK",
+        iso2="KP",
+        name="North Korea",
+        aliases=("Korea, North", "Korea, Dem. People's Rep.", "Democratic People's Republic of Korea", "DPRK"),
+        region="Asia Pacific",
+    ),
+    Country(iso3="SYR", iso2="SY", name="Syria", aliases=("Syrian Arab Republic",), region="Middle East"),
+    Country(iso3="BLR", iso2="BY", name="Belarus", region="Europe"),
+    Country(iso3="YEM", iso2="YE", name="Yemen", aliases=("Yemen, Rep.",), region="Middle East"),
+    Country(iso3="CUB", iso2="CU", name="Cuba", region="Latin America"),
+    Country(iso3="ARM", iso2="AM", name="Armenia", region="Europe"),
+    Country(iso3="LBY", iso2="LY", name="Libya", region="Africa"),
+    Country(iso3="SDN", iso2="SD", name="Sudan", region="Africa"),
+    Country(iso3="XKX", iso2="XK", name="Kosovo", region="Europe"),
 )
 
 # Aggregates that providers publish as if they were countries.

@@ -1,0 +1,34 @@
+{
+ "category": "recipient",
+ "spending_level": "transactions",
+ "limit": 100,
+ "page_metadata": {
+  "page": 1,
+  "next": null,
+  "previous": null,
+  "hasNext": false,
+  "hasPrevious": false
+ },
+ "results": [
+  {
+   "amount": 568808986.82,
+   "recipient_id": "11a97fdb-cb3b-16d2-aa67-a0f7b265b4ae-C",
+   "name": "PALANTIR USG INC",
+   "code": "825284321",
+   "uei": "HNN4F9JZWDY8",
+   "total_outlays": null
+  },
+  {
+   "amount": 60906881.77,
+   "recipient_id": "1ea8a9a4-3726-3491-9040-66950bb67606-C",
+   "name": "PALANTIR TECHNOLOGIES INC.",
+   "code": "362130952",
+   "uei": "FSY4LVSBGWB7",
+   "total_outlays": null
+  }
+ ],
+ "messages": [
+  "For searches, time period start and end dates are currently limited to an earliest date of 2007-10-01.  For data going back to 2000-10-01, use either the Custom Award Download feature on the website or one of our download or bulk_download API endpoints as listed on https://api.usaspending.gov/docs/endpoints. ",
+  "'subawards' will be deprecated in the future. Set \u2018spending_level\u2019 to \u2018subawards\u2019 instead. See documentation for more information. "
+ ]
+}

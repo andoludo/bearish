@@ -129,4 +129,43 @@ CONCEPTS: Dict[str, ConceptDefinition] = {
     "FF_CMA": ConceptDefinition(category="factor", unit="%", description="Fama-French investment factor"),
     "FF_MOM": ConceptDefinition(category="factor", unit="%", description="Momentum factor"),
     "FF_RF": ConceptDefinition(category="factor", unit="%", description="Risk-free rate used by Fama-French"),
+    # technology themes (attention / adoption)
+    "THEME_FILINGS": ConceptDefinition(
+        category="sentiment", unit="filings", description="SEC filings per quarter mentioning a technology theme"
+    ),
+    "ADOPTION_PAPERS": ConceptDefinition(
+        category="sentiment", unit="papers", description="arXiv papers per month on a technology theme"
+    ),
+    # conflict & supply-chain shocks
+    "TRANSITS": ConceptDefinition(
+        category="supply_demand", unit="vessels/day", description="Vessel transits through a maritime chokepoint"
+    ),
+    "TRANSITS_TANKER": ConceptDefinition(
+        category="supply_demand", unit="vessels/day", description="Tanker transits through a maritime chokepoint"
+    ),
+    "TRANSITS_CONTAINER": ConceptDefinition(
+        category="supply_demand", unit="vessels/day", description="Container-ship transits through a chokepoint"
+    ),
+    "CAPACITY_TONNES": ConceptDefinition(
+        category="supply_demand", unit="dwt/day", description="Deadweight tonnage transiting a chokepoint"
+    ),
+    "GDELT_CONFLICT_EVENTS": ConceptDefinition(
+        category="sentiment", unit="events/day", description="GDELT material-conflict events (QuadClass 4)"
+    ),
+    "GDELT_VERBAL_CONFLICT": ConceptDefinition(
+        category="sentiment", unit="events/day", description="GDELT verbal-conflict events (QuadClass 3)"
+    ),
+    "GDELT_GOLDSTEIN": ConceptDefinition(
+        category="sentiment", unit="scale -10..10", description="Mean Goldstein cooperation/conflict score"
+    ),
+    "GDELT_TONE": ConceptDefinition(
+        category="sentiment", unit="tone", description="Mean article tone of GDELT events"
+    ),
+    "SANCTIONS_NEW": ConceptDefinition(
+        category="external", unit="designations/month", description="New OFAC SDN designations (still listed)"
+    ),
+    "MILEX_USD": ConceptDefinition(
+        category="fiscal", unit="USD m, constant prices", description="Military expenditure (SIPRI)"
+    ),
+    "MILEX_GDP": ConceptDefinition(category="fiscal", unit="% GDP", description="Military expenditure share of GDP"),
 }
