@@ -1,6 +1,8 @@
 /.venv*/
 /System Volume Information/
 *.html
+# recorded HTTP fixtures are test data, not build output
+!tests/data/**/*.html
 *.mat
 *.doc
 *.docx
