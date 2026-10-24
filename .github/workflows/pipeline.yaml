@@ -85,12 +85,19 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    # The default GITHUB_TOKEN is read-only unless the job asks for more:
+    # creating the GitHub release needs contents: write. Every tagged build
+    # since 0.50.0 failed here with "Resource not accessible by integration",
+    # which also skipped the PyPI upload.
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -108,7 +115,12 @@ jobs:
       - name: Get Commit Messages Since Last Tag
         id: commit_messages
         run: |
-          RELEASE_NOTES=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}^" 2>/dev/null || echo "")
+          if [ -n "$PREVIOUS_TAG" ]; then
+            RELEASE_NOTES=$(git log "$PREVIOUS_TAG"..HEAD --pretty=format:"- %s")
+          else
+            RELEASE_NOTES=$(git log -20 --pretty=format:"- %s")
+          fi
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -129,7 +141,7 @@ jobs:
 
           files: dist/*.whl
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish distribution 📦 to PyPI
         if: "contains(github.event.head_commit.message, 'Auto-increment release version')"
