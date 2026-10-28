@@ -3,6 +3,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import date, timedelta
+from functools import lru_cache
 from io import StringIO
 from pathlib import Path
 from typing import Optional, List, Dict, TYPE_CHECKING, Self
@@ -29,7 +30,13 @@ def normalize(s: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", s)
 
 
+@lru_cache(maxsize=1)
 def company_ticker() -> Dict[str, str]:
+    """Security name -> ticker, from the NASDAQ symbol directories plus the SEC CIK mapper.
+
+    Downloaded on first use and cached for the process; importing this module
+    no longer touches the network.
+    """
     nasdaq_url = "https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt"
     other_url = "https://www.nasdaqtrader.com/dynamic/symdir/otherlisted.txt"
     data_ = []
@@ -51,9 +58,6 @@ def company_ticker() -> Dict[str, str]:
         {normalize(n): t for t, n in mapper.ticker_to_company_name.items()}  # type: ignore
     )
     return ticker_mapping
-
-
-TICKER_MAPPING = company_ticker()
 
 
 class BaseSecShare(BaseModel):
@@ -217,7 +221,7 @@ class Secs(BaseModel):
             for p in list(Path(tmpdir).rglob("*.txt")):
                 rows.extend(
                     _info_table_to_rows(
-                        p.read_text(), source, ticker_mapping=TICKER_MAPPING
+                        p.read_text(), source, ticker_mapping=company_ticker()
                     )
                 )
             for item in rows:
